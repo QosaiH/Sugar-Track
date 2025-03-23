@@ -17,12 +17,6 @@ export default function SignUp3() {
   const router = useRouter();
   const params = useLocalSearchParams();
 
-  const [open, setOpen] = useState(false);
-  const [value, setValue] = useState(params.diabetesType || null);
-  const [items, setItems] = useState([
-    { label: "סוכרת סוג 1", value: "סוכרת סוג 1" },
-    { label: "סוכרת סוג 2", value: "סוכרת סוג 2" },
-  ]);
   const [password, setPassword] = useState(params.password || "");
   const [confirmPassword, setConfirmPassword] = useState(
     params.confirmPassword || ""
@@ -31,10 +25,6 @@ export default function SignUp3() {
 
   const validateFields = () => {
     const newErrors = {};
-
-    if (!value) {
-      newErrors.diabetesType = "סוג סוכרת הוא שדה חובה";
-    }
 
     if (!password.trim()) {
       newErrors.password = "סיסמא היא שדה חובה";
@@ -56,7 +46,7 @@ export default function SignUp3() {
     if (validateFields()) {
       router.push({
         pathname: "/SignUp4",
-        params: { ...params, diabetesType: value, password, confirmPassword },
+        params: { ...params, password, confirmPassword },
       });
     } else {
       Alert.alert("שגיאה", "אנא מלא את כל השדות בצורה תקינה");
@@ -66,7 +56,7 @@ export default function SignUp3() {
   const handlePrev = () => {
     router.push({
       pathname: "/SignUp2",
-      params: { ...params, password, confirmPassword, diabetesType: value },
+      params: { ...params, password, confirmPassword },
     });
   };
 
@@ -77,7 +67,9 @@ export default function SignUp3() {
           <Image style={styles.image} source={require("../Images/logo.png")} />
           <View style={styles.container}>
             <View style={styles.timeline}>
-              <View style={[styles.circle]}></View>
+              <View style={styles.circle}></View>
+              <View style={styles.line}></View>
+              <View style={styles.circle}></View>
               <View style={styles.line}></View>
               <View style={[styles.circle, styles.filled]}></View>
               <View style={styles.line}></View>
@@ -92,34 +84,6 @@ export default function SignUp3() {
           source={require("../Images/Vector.png")}
           resizeMode="cover">
           <View style={styles.form}>
-            <DropDownPicker
-              open={open}
-              value={value}
-              items={items}
-              setOpen={setOpen}
-              setValue={setValue}
-              setItems={setItems}
-              placeholder="בחר סוג סוכרת"
-              style={[
-                styles.DropDown,
-                errors.diabetesType && styles.inputError,
-              ]}
-              dropDownContainerStyle={[
-                styles.dropDownContainer,
-                errors.diabetesType && styles.inputError,
-              ]}
-              listItemContainerStyle={[
-                styles.listItemContainer,
-                errors.diabetesType && styles.inputError,
-              ]}
-              dropDownDirection="BOTTOM"
-              labelStyle={{ textAlign: "right" }}
-              placeholderStyle={{ textAlign: "right" }}
-              listItemLabelStyle={{ textAlign: "right" }}
-            />
-            {errors.diabetesType && (
-              <Text style={styles.errorText}>{errors.diabetesType}</Text>
-            )}
             <TextInput
               style={[styles.input, errors.password && styles.inputError]}
               placeholder="בחר סיסמא"
@@ -167,14 +131,15 @@ const styles = StyleSheet.create({
   },
   upperSide: {
     alignItems: "center",
+    justifyContent: "center",
     backgroundColor: "white",
     width: "100%",
     height: "50%",
   },
   image: {
-    width: 220,
-    height: 220,
-    marginTop: 20,
+    width: 170,
+    height: 170,
+    marginTop: 5,
   },
   background: {
     height: "100%",
@@ -252,8 +217,8 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   circle: {
-    width: 30,
-    height: 30,
+    width: 25,
+    height: 25,
     borderRadius: 15,
     borderWidth: 2,
     borderColor: "black",

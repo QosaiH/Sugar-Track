@@ -68,6 +68,8 @@ export default function SignUp() {
               <View style={styles.line}></View>
               <View style={styles.circle}></View>
               <View style={styles.line}></View>
+              <View style={styles.circle}></View>
+              <View style={styles.line}></View>
               <View style={[styles.circle, styles.filled]}></View>
             </View>
           </View>
@@ -130,14 +132,15 @@ const styles = StyleSheet.create({
   },
   upperSide: {
     alignItems: "center",
+    justifyContent: "center",
     backgroundColor: "white",
     width: "100%",
     height: "50%",
   },
   image: {
-    width: 220,
-    height: 220,
-    marginTop: 20,
+    width: 170,
+    height: 170,
+    marginTop: 5,
   },
   background: {
     height: "100%",
@@ -195,8 +198,8 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   circle: {
-    width: 30,
-    height: 30,
+    width: 25,
+    height: 25,
     borderRadius: 15,
     borderWidth: 2,
     borderColor: "black",

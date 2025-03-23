@@ -1,61 +1,64 @@
-import React, { useState } from "react";
 import {
   Text,
   View,
   Image,
   StyleSheet,
-  TouchableOpacity,
   ImageBackground,
   Alert,
+  TouchableOpacity,
 } from "react-native";
 import { SafeAreaView, SafeAreaProvider } from "react-native-safe-area-context";
-import * as ImagePicker from "expo-image-picker";
-import { useRouter, useLocalSearchParams } from "expo-router";
+import React, { useState } from "react";
+import DropDownPicker from "react-native-dropdown-picker";
+import { Link, useLocalSearchParams, useRouter } from "expo-router";
 
-export default function SignUp4() {
+export default function SignUp3() {
   const router = useRouter();
   const params = useLocalSearchParams();
 
-  const [image, setImage] = useState(params.image || null);
-  const [imageBase64, setImageBase64] = useState(params.imageBase64 || null);
+  const [open, setOpen] = useState(false);
+  const [value, setValue] = useState(params.diabetesType || null);
+  const [items, setItems] = useState([
+    { label: "סוכרת סוג 1", value: "סוכרת סוג 1" },
+    { label: "סוכרת סוג 2", value: "סוכרת סוג 2" },
+  ]);
+  const [genderOpen, setGenderOpen] = useState(false);
+  const [genderValue, setGenderValue] = useState(params.gender || "");
+  const [genderItems, setGenderItems] = useState([
+    { label: "זכר", value: "זכר" },
+    { label: "נקבה", value: "נקבה" },
+    { label: "אחר", value: "אחר" },
+  ]);
+  const [errors, setErrors] = useState({});
 
-  const pickImage = async () => {
-    const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      allowsEditing: true,
-      aspect: [1, 1],
-      quality: 1,
-      base64: true,
-    });
-    const pickedImage = result.assets[0];
-    setImage(pickedImage.uri);
-    const imageBase64 = pickedImage.base64;
-    setImageBase64(imageBase64);
-  };
-  const deleteImage = () => {
-    setImage(null);
-    setImageBase64(null);
+  const validateFields = () => {
+    const newErrors = {};
+
+    if (!value) {
+      newErrors.diabetesType = "סוג סוכרת הוא שדה חובה";
+    }
+    if (!genderValue) {
+      newErrors.gender = "מגדר הוא שדה חובה";
+    }
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
   };
 
   const handleNext = () => {
-    router.push({
-      pathname: "/SignUp5",
-      params: {
-        ...params,
-        image,
-        imageBase64, // שולח את הבייס64 למסך הבא
-      },
-    });
+    if (validateFields()) {
+      router.push({
+        pathname: "/SignUp5",
+        params: { ...params, diabetesType: value, gender: genderValue },
+      });
+    } else {
+      Alert.alert("שגיאה", "אנא מלא את כל השדות בצורה תקינה");
+    }
   };
 
   const handlePrev = () => {
     router.push({
       pathname: "/SignUp3",
-      params: {
-        ...params,
-        image,
-        imageBase64,
-      },
+      params: { ...params, diabetesType: value, gender: genderValue },
     });
   };
 
@@ -66,6 +69,8 @@ export default function SignUp4() {
           <Image style={styles.image} source={require("../Images/logo.png")} />
           <View style={styles.container}>
             <View style={styles.timeline}>
+              <View style={styles.circle}></View>
+              <View style={styles.line}></View>
               <View style={[styles.circle, styles.filled]}></View>
               <View style={styles.line}></View>
               <View style={[styles.circle, styles.filled]}></View>
@@ -76,38 +81,77 @@ export default function SignUp4() {
             </View>
           </View>
         </View>
-
         <ImageBackground
           style={styles.background}
           source={require("../Images/Vector.png")}
           resizeMode="cover">
-          <TouchableOpacity style={styles.profileContainer} onPress={pickImage}>
-            {image ? (
-              <Image source={{ uri: image }} style={styles.profileImage} />
-            ) : (
-              <View style={styles.plusContainer}>
-                <Text style={styles.plus}>+</Text>
-              </View>
-            )}
-          </TouchableOpacity>
+          <View style={styles.form}>
+            <View style={styles.diabetesType}>
+              <DropDownPicker
+                open={open}
+                value={value}
+                items={items}
+                setOpen={setOpen}
+                setValue={setValue}
+                setItems={setItems}
+                placeholder="בחר סוג סוכרת"
+                style={[
+                  styles.DropDown,
+                  errors.diabetesType && styles.inputError,
+                ]}
+                dropDownContainerStyle={[
+                  styles.dropDownContainer,
+                  errors.diabetesType && styles.inputError,
+                ]}
+                listItemContainerStyle={[
+                  styles.listItemContainer,
+                  errors.diabetesType && styles.inputError,
+                ]}
+                dropDownDirection="BOTTOM"
+                labelStyle={{ textAlign: "right" }}
+                placeholderStyle={{ textAlign: "right" }}
+                listItemLabelStyle={{ textAlign: "right" }}
+              />
+              {errors.diabetesType && (
+                <Text style={styles.errorText}>{errors.diabetesType}</Text>
+              )}
+            </View>
+            <View style={styles.gender}>
+              <DropDownPicker
+                open={genderOpen}
+                value={genderValue}
+                items={genderItems}
+                setOpen={setGenderOpen}
+                setValue={setGenderValue}
+                setItems={setGenderItems}
+                placeholder="מגדר"
+                style={[styles.DropDown, errors.gender && styles.inputError]}
+                dropDownContainerStyle={[
+                  styles.dropDownContainer,
+                  errors.gender && styles.inputError,
+                ]}
+                listItemContainerStyle={[
+                  styles.listItemContainer,
+                  errors.gender && styles.inputError,
+                ]}
+                dropDownDirection="BOTTOM"
+                labelStyle={{ textAlign: "right" }}
+                placeholderStyle={{ textAlign: "right" }}
+                listItemLabelStyle={{ textAlign: "right" }}
+              />
+              {errors.gender && (
+                <Text style={styles.errorText}>{errors.gender}</Text>
+              )}
+            </View>
 
-          <TouchableOpacity onPress={pickImage}>
-            <Text style={styles.instruction}>הוסף תמונת פרופיל</Text>
-          </TouchableOpacity>
-
-          {image && (
-            <TouchableOpacity onPress={deleteImage}>
-              <Text style={styles.instruction}>מחק תמונה</Text>
-            </TouchableOpacity>
-          )}
-
-          <View style={styles.buttonContainer}>
-            <TouchableOpacity onPress={handleNext}>
-              <Text style={styles.color}>הבא</Text>
-            </TouchableOpacity>
-            <TouchableOpacity onPress={handlePrev}>
-              <Text style={styles.color}>הקודם</Text>
-            </TouchableOpacity>
+            <View style={styles.rememberMeContainer}>
+              <TouchableOpacity onPress={handleNext}>
+                <Text style={styles.color}>הבא</Text>
+              </TouchableOpacity>
+              <TouchableOpacity onPress={handlePrev}>
+                <Text style={styles.color}>הקודם</Text>
+              </TouchableOpacity>
+            </View>
           </View>
         </ImageBackground>
       </SafeAreaView>
@@ -122,14 +166,15 @@ const styles = StyleSheet.create({
   },
   upperSide: {
     alignItems: "center",
+    justifyContent: "center",
     backgroundColor: "white",
     width: "100%",
     height: "50%",
   },
   image: {
-    width: 220,
-    height: 220,
-    marginTop: 20,
+    width: 170,
+    height: 170,
+    marginTop: 5,
   },
   background: {
     height: "100%",
@@ -143,22 +188,18 @@ const styles = StyleSheet.create({
     width: "80%",
     alignItems: "center",
   },
-  input: {
-    height: 40,
-    marginBottom: 8,
-    paddingHorizontal: 10,
+  diabetesType: {
+    zIndex: 2000,
     width: "100%",
-    backgroundColor: "white",
-    borderWidth: 1,
-    borderColor: "#ccc",
-    borderRadius: 5,
-    textAlign: "right",
+  },
+  gender: {
+    zIndex: 1000,
+    width: "100%",
   },
   DropDown: {
     height: 40,
     marginBottom: 20,
     paddingHorizontal: 10,
-    width: "100%",
     backgroundColor: "white",
     borderWidth: 1,
     borderColor: "#ccc",
@@ -207,8 +248,8 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   circle: {
-    width: 30,
-    height: 30,
+    width: 25,
+    height: 25,
     borderRadius: 15,
     borderWidth: 2,
     borderColor: "black",
@@ -224,43 +265,5 @@ const styles = StyleSheet.create({
     width: 100,
     backgroundColor: "black",
     flex: 1,
-  },
-  profileContainer: {
-    width: 200,
-    height: 200,
-    borderRadius: 100,
-    backgroundColor: "white",
-    alignItems: "center",
-    justifyContent: "center",
-    overflow: "hidden",
-  },
-  plusContainer: {
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  plus: {
-    fontSize: 80,
-    color: "Black",
-  },
-  profileImage: {
-    width: "100%",
-    height: "100%",
-    resizeMode: "cover",
-  },
-  instruction: {
-    marginTop: 20,
-    fontSize: 18,
-    color: "white",
-    textAlign: "center",
-  },
-  buttonContainer: {
-    marginTop: 25,
-    flexDirection: "row",
-    justifyContent: "space-around",
-    width: "80%",
-  },
-  buttonText: {
-    color: "white",
-    fontSize: 20,
   },
 });

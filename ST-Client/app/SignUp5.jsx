@@ -1,116 +1,115 @@
+import React, { useState } from "react";
 import {
   Text,
   View,
   Image,
   StyleSheet,
+  TouchableOpacity,
   ImageBackground,
-  ActivityIndicator,
-  Alert,
 } from "react-native";
 import { SafeAreaView, SafeAreaProvider } from "react-native-safe-area-context";
-import React, { useEffect, useState } from "react";
-import { Link, useRouter, useLocalSearchParams } from "expo-router";
+import * as ImagePicker from "expo-image-picker";
+import { useRouter, useLocalSearchParams } from "expo-router";
 
-export default function SignUp5() {
+export default function SignUp4() {
   const router = useRouter();
-  const params = useLocalSearchParams(); // These are the params from previous screens
-  const [loading, setLoading] = useState(true);
+  const params = useLocalSearchParams();
 
-  useEffect(() => {
-    const sendData = async () => {
-      try {
-        const response = await fetch("https://localhost:7256/api/User", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            id: 1,
-            name: params.firstName + " " + params.lastName,
-            email: params.email,
-            password: params.password,
-            role: "משתמש רגיל",
-            coins: 0,
-            diabetesType: params.diabetesType,
-            gender: "Male",
-            profilePicture: params.imageBase64 || "null",
-            isActive: true,
-            //username: params.username,
-          }),
-        });
-        console.log(
-          JSON.stringify({
-            id: 1,
-            name: params.firstName + " " + params.lastName,
-            email: params.email,
-            password: params.password,
-            role: "משתמש רגיל",
-            coins: 0,
-            diabetesType: params.diabetesType,
-            gender: "Male",
-            profilePicture: params.imageBase64 || "null",
-            isActive: true,
-            //username: params.username,
-          })
-        );
+  const [image, setImage] = useState(params.image || null);
+  const [imageBase64, setImageBase64] = useState(params.imageBase64 || null);
 
-        const data = await response.json();
+  const pickImage = async () => {
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      aspect: [1, 1],
+      quality: 1,
+      base64: true,
+    });
+    const pickedImage = result.assets[0];
+    setImage(pickedImage.uri);
+    const imageBase64 = pickedImage.base64;
+    setImageBase64(imageBase64);
+  };
+  const deleteImage = () => {
+    setImage(null);
+    setImageBase64(null);
+  };
 
-        if (response.ok) {
-          // Successfully signed up!
-          console.log("Signup successful", data);
-          // Move to BottomNav after successful signup
-          router.replace("/BottomNav");
-        } else {
-          // Show error message from the backend response
-          console.error("Signup failed", data);
-          Alert.alert("שגיאה", data.message || "משהו השתבש בהרשמה");
-          setLoading(false); // Stop loading if error happens
-        }
-      } catch (error) {
-        console.error("Error:", error);
-        Alert.alert("שגיאה", "בעיה בחיבור לשרת");
-        setLoading(false); // Stop loading if error happens
-      }
-    };
+  const handleNext = () => {
+    router.push({
+      pathname: "/SignUp6",
+      params: {
+        ...params,
+        image,
+        imageBase64, // שולח את הבייס64 למסך הבא
+      },
+    });
+  };
 
-    sendData();
-  }, []);
+  const handlePrev = () => {
+    router.push({
+      pathname: "/SignUp4",
+      params: {
+        ...params,
+        image,
+        imageBase64,
+      },
+    });
+  };
 
   return (
     <SafeAreaProvider>
       <SafeAreaView style={styles.logo}>
         <View style={styles.upperSide}>
-          <Image
-            style={{ width: 200, height: 200, marginTop: 20 }}
-            source={require("../Images/logo.png")}
-          />
-          <Text style={styles.buttonText}>
-            {loading ? "כבר מחברים אותך למערכת..." : "התרחשה שגיאה, נסה שוב"}
-          </Text>
-          {loading ? (
-            <ActivityIndicator
-              style={{ marginTop: 10 }}
-              size="large"
-              color="black"
-            />
-          ) : null}
+          <Image style={styles.image} source={require("../Images/logo.png")} />
+          <View style={styles.container}>
+            <View style={styles.timeline}>
+              <View style={[styles.circle, styles.filled]}></View>
+              <View style={styles.line}></View>
+              <View style={[styles.circle, styles.filled]}></View>
+              <View style={styles.line}></View>
+              <View style={[styles.circle, styles.filled]}></View>
+              <View style={styles.line}></View>
+              <View style={[styles.circle, styles.filled]}></View>
+              <View style={styles.line}></View>
+              <View style={[styles.circle, styles.filled]}></View>
+            </View>
+          </View>
         </View>
 
         <ImageBackground
           style={styles.background}
           source={require("../Images/Vector.png")}
           resizeMode="cover">
-          {!loading && (
-            <View style={styles.rememberMeContainer}>
-              <Link href="/BottomNav">
-                <Text style={styles.color}>הבא</Text>
-              </Link>
-              <Link href="/SignUp4">
-                <Text style={styles.color}>הקודם</Text>
-              </Link>
-            </View>
+          <TouchableOpacity style={styles.profileContainer} onPress={pickImage}>
+            {image ? (
+              <Image source={{ uri: image }} style={styles.profileImage} />
+            ) : (
+              <View style={styles.plusContainer}>
+                <Text style={styles.plus}>+</Text>
+              </View>
+            )}
+          </TouchableOpacity>
+
+          <TouchableOpacity onPress={pickImage}>
+            <Text style={styles.instruction}>הוסף תמונת פרופיל</Text>
+          </TouchableOpacity>
+
+          {image && (
+            <TouchableOpacity onPress={deleteImage}>
+              <Text style={styles.instruction}>מחק תמונה</Text>
+            </TouchableOpacity>
           )}
+
+          <View style={styles.buttonContainer}>
+            <TouchableOpacity onPress={handleNext}>
+              <Text style={styles.color}>הבא</Text>
+            </TouchableOpacity>
+            <TouchableOpacity onPress={handlePrev}>
+              <Text style={styles.color}>הקודם</Text>
+            </TouchableOpacity>
+          </View>
         </ImageBackground>
       </SafeAreaView>
     </SafeAreaProvider>
@@ -129,6 +128,11 @@ const styles = StyleSheet.create({
     width: "100%",
     height: "50%",
   },
+  image: {
+    width: 170,
+    height: 170,
+    marginTop: 5,
+  },
   background: {
     height: "100%",
     width: "100%",
@@ -137,19 +141,128 @@ const styles = StyleSheet.create({
     flexDirection: "column",
     justifyContent: "center",
   },
-  buttonText: {
-    color: "black",
-    fontSize: 22,
-    textAlign: "center",
+  form: {
+    width: "80%",
+    alignItems: "center",
+  },
+  input: {
+    height: 40,
+    marginBottom: 8,
+    paddingHorizontal: 10,
+    width: "100%",
+    backgroundColor: "white",
+    borderWidth: 1,
+    borderColor: "#ccc",
+    borderRadius: 5,
+    textAlign: "right",
+  },
+  DropDown: {
+    height: 40,
+    marginBottom: 20,
+    paddingHorizontal: 10,
+    width: "100%",
+    backgroundColor: "white",
+    borderWidth: 1,
+    borderColor: "#ccc",
+    borderRadius: 5,
+    textAlign: "right",
+  },
+
+  dropDownContainer: {
+    width: "100%",
+    borderColor: "#ccc",
+    borderWidth: 1,
+  },
+
+  listItemContainer: {
+    height: 40,
+    justifyContent: "center",
+  },
+  inputError: {
+    borderColor: "red",
+  },
+  errorText: {
+    color: "red",
+    fontSize: 12,
+    marginBottom: 8,
+    alignSelf: "flex-end",
   },
   rememberMeContainer: {
     marginTop: 25,
     flexDirection: "row",
     alignItems: "center",
-    justifyContent: "center",
-    gap: 250,
+    justifyContent: "space-between",
+    width: "80%",
   },
   color: {
     color: "white",
+  },
+  container: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "#fff",
+    width: "50%",
+  },
+  timeline: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  circle: {
+    width: 25,
+    height: 25,
+    borderRadius: 15,
+    borderWidth: 2,
+    borderColor: "black",
+    backgroundColor: "#fff",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  filled: {
+    backgroundColor: "black",
+  },
+  line: {
+    height: 2,
+    width: 100,
+    backgroundColor: "black",
+    flex: 1,
+  },
+  profileContainer: {
+    width: 150,
+    height: 150,
+    borderRadius: 80,
+    backgroundColor: "white",
+    alignItems: "center",
+    justifyContent: "center",
+    overflow: "hidden",
+  },
+  plusContainer: {
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  plus: {
+    fontSize: 48,
+    color: "Black",
+  },
+  profileImage: {
+    width: "100%",
+    height: "100%",
+    resizeMode: "cover",
+  },
+  instruction: {
+    marginTop: 20,
+    fontSize: 18,
+    color: "white",
+    textAlign: "center",
+  },
+  buttonContainer: {
+    marginTop: 25,
+    flexDirection: "row",
+    justifyContent: "space-around",
+    width: "80%",
+  },
+  buttonText: {
+    color: "white",
+    fontSize: 20,
   },
 });
