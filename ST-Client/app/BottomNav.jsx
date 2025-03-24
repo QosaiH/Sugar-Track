@@ -7,12 +7,14 @@ import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 import Statics from "./Statics";
 import Forum from "./Forum";
 import Menu from "./Menu";
+import Header from "./Header";
 
 const Tab = createBottomTabNavigator();
 
 export default function BottomNav() {
   return (
     <>
+      <Header />
       <Tab.Navigator
         screenOptions={({ route }) => ({
           tabBarIcon: ({ focused, color, size }) => {

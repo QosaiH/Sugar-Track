@@ -1,12 +1,10 @@
 import React from "react";
 import { Text, View, Image, ImageBackground, StyleSheet } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import Header from "./Header";
 
 export default function Chat() {
   return (
     <SafeAreaView style={styles.container}>
-      <Header />
       <ImageBackground
         style={styles.background}
         source={require("../Images/Vector.png")}
