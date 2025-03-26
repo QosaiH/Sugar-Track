@@ -603,11 +603,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\QosaiH\\Desktop\\Sugar Track\\ST-Server\\ST-Server.csproj",
+      "projectUniqueName": "C:\\Users\\QosaiH\\Desktop\\Sugar-Track\\ST-Server\\ST-Server.csproj",
       "projectName": "ST-Server",
-      "projectPath": "C:\\Users\\QosaiH\\Desktop\\Sugar Track\\ST-Server\\ST-Server.csproj",
+      "projectPath": "C:\\Users\\QosaiH\\Desktop\\Sugar-Track\\ST-Server\\ST-Server.csproj",
       "packagesPath": "C:\\Users\\QosaiH\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\QosaiH\\Desktop\\Sugar Track\\ST-Server\\obj\\",
+      "outputPath": "C:\\Users\\QosaiH\\Desktop\\Sugar-Track\\ST-Server\\obj\\",
       "projectStyle": "PackageReference",
       "configFilePaths": [
         "C:\\Users\\QosaiH\\AppData\\Roaming\\NuGet\\NuGet.Config",

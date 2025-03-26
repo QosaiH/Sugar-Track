@@ -35,10 +35,10 @@ export default function SignUp5() {
             gender: params.gender,
             profilePicture: params.imageBase64 || null,
             isActive: true,
-            //username: params.username,
+            userName: params.username,
           }),
         });
-        console.log(
+        /* console.log(
           JSON.stringify({
             id: 1,
             name: params.firstName + " " + params.lastName,
@@ -50,10 +50,10 @@ export default function SignUp5() {
             gender: "Male",
             profilePicture: params.imageBase64 || "null",
             isActive: true,
-            //username: params.username,
+            username: params.username,
           })
         );
-
+*/
         const data = await response.json();
 
         if (response.ok) {

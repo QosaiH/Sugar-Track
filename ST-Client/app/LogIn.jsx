@@ -6,14 +6,47 @@ import {
   ImageBackground,
   TouchableOpacity,
   TextInput,
+  Alert,
 } from "react-native";
 import { SafeAreaView, SafeAreaProvider } from "react-native-safe-area-context";
 import { Checkbox } from "react-native-paper";
-import React, { useState } from "react";
-import { Link } from "expo-router"; // Use Link from expo-router for navigation
+import React, { useState, useEffect } from "react";
+import { Link, useRouter } from "expo-router"; // Use Link from expo-router for navigation
 
 export default function LogIn() {
+  const router = useRouter();
   const [checked, setChecked] = useState(false);
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+
+  const sendData = async () => {
+    try {
+      const response = await fetch(
+        `https://localhost:7256/api/User/Login/${email}`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(password),
+        }
+      );
+      const data = await response.json();
+      if (response.ok) {
+        // Successfully signed up!
+        console.log("Login successful", data);
+        // Move to BottomNav after successful signup
+        router.replace("/BottomNav");
+      } else {
+        // Show error message from the backend response
+        console.error("Login failed", data);
+        Alert.alert("שגיאה", data.message || "משהו השתבש בהרשמה");
+      }
+    } catch (error) {
+      console.error("Error:", error);
+      Alert.alert("שגיאה", "בעיה בחיבור לשרת");
+    }
+  };
 
   return (
     <SafeAreaProvider>
@@ -32,8 +65,19 @@ export default function LogIn() {
           style={styles.background}
           source={require("../Images/Vector.png")}
           resizeMode="cover">
-          <TextInput style={styles.input} placeholder="אימייל" />
-          <TextInput style={styles.input} placeholder="סיסמא" secureTextEntry />
+          <TextInput
+            style={styles.input}
+            placeholder="אימייל"
+            value={email}
+            onChangeText={setEmail}
+          />
+          <TextInput
+            style={styles.input}
+            placeholder="סיסמא"
+            secureTextEntry
+            value={password}
+            onChangeText={setPassword}
+          />
           <View style={styles.rememberMeContainer}>
             <Checkbox
               status={checked ? "checked" : "unchecked"}
@@ -45,7 +89,7 @@ export default function LogIn() {
             <Text style={styles.color}>זכור אותי</Text>
           </View>
           <View>
-            <TouchableOpacity style={styles.button}>
+            <TouchableOpacity style={styles.button} onPress={sendData}>
               <Text style={styles.buttonText}>התחברות</Text>
             </TouchableOpacity>
           </View>

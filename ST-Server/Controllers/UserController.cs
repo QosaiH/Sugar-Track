@@ -30,10 +30,23 @@ namespace ST_Server.Controllers
             return Userr.Insert(user);
         }
 
+        [HttpPost("Login/{email}")]
+        public int login([FromBody] string password, string email)
+        {
+            return Userr.Login(email, password);
+        }
+
         // PUT api/<UserController>/5
         [HttpPut("{id}")]
-        public void Put(int id, [FromBody] string value)
+        public int Put([FromBody] Userr user)
         {
+            return Userr.Update(user);
+        }
+
+        [HttpPut("{id}/{isActive}")]
+        public int isActivePut(int id, bool isActive)
+        {
+            return Userr.updateIsActive(id, isActive);
         }
 
         // DELETE api/<UserController>/5

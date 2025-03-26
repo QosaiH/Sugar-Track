@@ -6,6 +6,7 @@ namespace ST_Server.Models
     {
         public int id;
         public string name;
+        public string userName;
         public string email;
         public string password;
         public string profilePicture;
@@ -13,13 +14,14 @@ namespace ST_Server.Models
         public int coins;
         public string diabetesType;
         public string gender;
-        bool isActive;
+        public bool isActive;
 
         public Userr() { }
 
-        public Userr(int id, string name, string email, string password, string profilePicture, string role, int coins, string diabetesType, string gender, bool isActive)
+        public Userr(int id, string name,string userName ,string email, string password, string profilePicture, string role, int coins, string diabetesType, string gender, bool isActive)
         {
             Id = id;
+            UserName = userName;
             Name = name;
             Email = email;
             Password = password;
@@ -32,6 +34,7 @@ namespace ST_Server.Models
         }
         public int Id { get; set; }
         public string Name { get; set; }
+        public string UserName { get; set; }
         public string Email { get; set; }
         public string Password { get; set; }
         public string ProfilePicture { get; set; }
@@ -51,6 +54,21 @@ namespace ST_Server.Models
         {
             UserDBservices dbs = new UserDBservices();
             return dbs.InsertUser(userr);
+        }
+        public static int Login(string email, string password)
+        {
+            UserDBservices dbs = new UserDBservices();
+            return dbs.Login(email, password);
+        }
+        public static int updateIsActive(int id, bool isActive)
+        {
+            UserDBservices dbs = new UserDBservices();
+            return dbs.UpdateIsActive(id, isActive);
+        }
+        public static int Update(Userr userr)
+        {
+            UserDBservices dbs = new UserDBservices();
+            return dbs.UpdateUser(userr);
         }
     }
 }

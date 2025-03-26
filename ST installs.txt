@@ -2,4 +2,5 @@ npm install @react-navigation/native @react-navigation/native-stack
 npm install react-native-gesture-handler react-native-reanimated react-native-screens react-native-safe-area-context @react-native-community/masked-view
 npm install @react-native-community/checkbox
 expo install expo-image-picker
-
+npm install @react-navigation/drawer
+@react-navigation/bottom-tabs

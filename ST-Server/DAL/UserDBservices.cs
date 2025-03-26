@@ -146,6 +146,7 @@ namespace ST_Server.DAL
 
             Dictionary<string, object> paramDic = new Dictionary<string, object>();
             paramDic.Add("@name", userr.Name);
+            paramDic.Add("@username", userr.UserName);
             paramDic.Add("@email", userr.Email);
             paramDic.Add("@password", userr.Password);
             paramDic.Add("@profilePicture", userr.ProfilePicture);
@@ -175,7 +176,145 @@ namespace ST_Server.DAL
                 }
             }
         }
+        public int Login(string email, string password)
+        {
+
+            SqlConnection con;
+            SqlCommand cmd;
+            SqlDataReader reader;
 
 
+            try
+            {
+                con = connect("igroup15_test2"); // create the connection
+            }
+            catch (Exception ex)
+            {
+                // write to log
+                throw (ex);
+            }
+
+            Dictionary<string, object> paramDic = new Dictionary<string, object>();
+            paramDic.Add("@email", email);
+            paramDic.Add("@password", password);
+
+            cmd = CreateCommandWithStoredProcedureGeneral("STUserLogin", con, paramDic);          // create the command
+            reader = cmd.ExecuteReader(); // Execute the command and get a data reader
+            reader.Read();
+
+            try
+            {
+                bool isActive = reader.GetBoolean(reader.GetOrdinal("isActive"));
+                if (isActive == true)
+                {
+                    return 1;
+                }
+                else
+                {
+                    return 2;
+                }
+            }
+            catch
+            {
+                return 0;
+            }
+
+            finally
+            {
+                if (con != null)
+                {
+                    // close the db connection
+                    con.Close();
+                }
+            }
+        }
+        public int UpdateIsActive(int id, bool isActive)
+        {
+
+            SqlConnection con;
+            SqlCommand cmd;
+
+            try
+            {
+                con = connect("igroup15_test2"); // create the connection
+            }
+            catch (Exception ex)
+            {
+                // write to log
+                throw (ex);
+            }
+
+            Dictionary<string, object> paramDic = new Dictionary<string, object>();
+            paramDic.Add("@isActive", isActive);
+            paramDic.Add("@id", id);
+
+            cmd = CreateCommandWithStoredProcedureGeneral("STisActiveUpdate ", con, paramDic);
+
+            try
+            {
+                int numEffected = cmd.ExecuteNonQuery(); // execute the command
+                return numEffected;
+            }
+            catch (Exception ex)
+            {
+                // write to log
+                throw (ex);
+            }
+
+            finally
+            {
+                if (con != null)
+                {
+                    // close the db connection
+                    con.Close();
+                }
+            }
+        }
+        public int UpdateUser(Userr userr)
+        {
+
+            SqlConnection con;
+            SqlCommand cmd;
+
+            try
+            {
+                con = connect("igroup15_test2"); // create the connection
+            }
+            catch (Exception ex)
+            {
+                // write to log
+                throw (ex);
+            }
+
+            Dictionary<string, object> paramDic = new Dictionary<string, object>();
+            paramDic.Add("@name", userr.Name);
+            paramDic.Add("@username", userr.UserName);
+            paramDic.Add("@email", userr.Email);
+            paramDic.Add("@password", userr.Password);
+            paramDic.Add("@profilePicture", userr.ProfilePicture);
+            paramDic.Add("@userid", userr.Id);
+
+            cmd = CreateCommandWithStoredProcedureGeneral("STUpdateUserInfo ", con, paramDic);
+
+            try
+            {
+                int numEffected = cmd.ExecuteNonQuery(); // execute the command
+                return numEffected;
+            }
+            catch (Exception ex)
+            {
+                // write to log
+                throw (ex);
+            }
+
+            finally
+            {
+                if (con != null)
+                {
+                    // close the db connection
+                    con.Close();
+                }
+            }
+        }
     }
 }
