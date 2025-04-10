@@ -45,7 +45,7 @@ namespace ST_Server.Models
         public bool IsActive { get; set; }
 
 
-        public static List<Userr> Read()
+        public static List<int> Read()
         {
             UserDBservices dbs = new UserDBservices();
             return dbs.GetUsersList();
@@ -69,6 +69,11 @@ namespace ST_Server.Models
         {
             UserDBservices dbs = new UserDBservices();
             return dbs.UpdateUser(userr);
+        }
+        public static Userr getUserByEmail(string email)
+        {
+            UserDBservices dbs = new UserDBservices();
+            return dbs.getUserByEmail(email);
         }
     }
 }

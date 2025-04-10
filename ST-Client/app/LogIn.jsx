@@ -12,6 +12,7 @@ import { SafeAreaView, SafeAreaProvider } from "react-native-safe-area-context";
 import { Checkbox } from "react-native-paper";
 import React, { useState, useEffect } from "react";
 import { Link, useRouter } from "expo-router"; // Use Link from expo-router for navigation
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 export default function LogIn() {
   const router = useRouter();
@@ -33,10 +34,8 @@ export default function LogIn() {
       );
       const data = await response.json();
       if (response.ok) {
-        // Successfully signed up!
-        console.log("Login successful", data);
+        getData(); // Fetch user data after successful login
         // Move to BottomNav after successful signup
-        router.replace("/BottomNav");
       } else {
         // Show error message from the backend response
         console.error("Login failed", data);
@@ -47,7 +46,27 @@ export default function LogIn() {
       Alert.alert("שגיאה", "בעיה בחיבור לשרת");
     }
   };
-
+  const getData = async () => {
+    try {
+      const response = await fetch(`https://localhost:7256/api/User/${email}`, {
+        method: "GET",
+      });
+      const data = await response.json();
+      await storeData(data);
+    } catch (error) {
+      console.error("Error:", error);
+      Alert.alert("שגיאה", "בעיה בחיבור לשרת");
+    }
+  };
+  const storeData = async (data) => {
+    try {
+      await AsyncStorage.setItem("user", JSON.stringify(data)); // Store user data as a string
+      router.replace("/BottomNav");
+    } catch (e) {
+      // saving error
+      console.error(e);
+    }
+  };
   return (
     <SafeAreaProvider>
       <SafeAreaView style={styles.logo}>

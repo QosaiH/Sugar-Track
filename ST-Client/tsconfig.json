@@ -12,6 +12,7 @@
     ".expo/types/**/*.ts",
     "expo-env.d.ts",
     "app/_layout.jsx",
-    "app/Welcome.jsx"
+    "app/Welcome.jsx",
+    "fireBaseConfig.js"
   ]
 }

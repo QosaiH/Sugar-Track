@@ -1,5 +1,5 @@
 import { View, StyleSheet, TouchableOpacity } from "react-native";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 import Chat from "./Chat";
@@ -9,12 +9,29 @@ import Forum from "./Forum";
 import Menu from "./Menu"; // Import modal
 import Header from "./Header";
 import { SafeAreaProvider } from "react-native-safe-area-context";
+import AsyncStorage from "@react-native-async-storage/async-storage"; // Import AsyncStorage
 
 const Tab = createBottomTabNavigator();
 
 export default function BottomNav() {
   const [drawerVisible, setDrawerVisible] = useState(false);
+  const [userData, setUserData] = useState(null); // State to hold user data
 
+  useEffect(() => {
+    const getData = async () => {
+      try {
+        const data = await AsyncStorage.getItem("user"); // Retrieve user data
+        if (data !== null) {
+          setUserData(JSON.parse(data)); // Parse and set user data
+        } else {
+          console.log("No user data found");
+        }
+      } catch (e) {
+        console.error("Error retrieving user data:", e);
+      }
+    };
+    getData();
+  }, []);
   return (
     <SafeAreaProvider>
       <Header />
@@ -51,10 +68,18 @@ export default function BottomNav() {
           tabBarInactiveTintColor: "white",
           headerShown: false,
         })}>
-        <Tab.Screen name="צ'אט" component={Chat} />
-        <Tab.Screen name="פורום" component={Forum} />
-        <Tab.Screen name="דף הבית" component={HomePage} />
-        <Tab.Screen name="סטטיסטיקה" component={Statics} />
+        <Tab.Screen name="צ'אט">
+          {() => <Chat userData={userData} />}
+        </Tab.Screen>
+        <Tab.Screen name="פורום">
+          {() => <Forum userData={userData} />}
+        </Tab.Screen>
+        <Tab.Screen name="דף הבית">
+          {() => <HomePage userData={userData} />}
+        </Tab.Screen>
+        <Tab.Screen name="סטטיסטיקה">
+          {() => <Statics userData={userData} />}
+        </Tab.Screen>
 
         {/* Fake screen for "תפריט" that triggers the modal */}
         <Tab.Screen
@@ -65,8 +90,7 @@ export default function BottomNav() {
               e.preventDefault(); // Stop navigation
               setDrawerVisible(true); // Open modal
             },
-          }}
-        />
+          }}></Tab.Screen>
       </Tab.Navigator>
 
       {/* Custom Modal */}

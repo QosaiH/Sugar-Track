@@ -11,7 +11,7 @@ import { SafeAreaView, SafeAreaProvider } from "react-native-safe-area-context";
 import * as ImagePicker from "expo-image-picker";
 import { useRouter, useLocalSearchParams } from "expo-router";
 
-export default function SignUp4() {
+export default function SignUp5() {
   const router = useRouter();
   const params = useLocalSearchParams();
 

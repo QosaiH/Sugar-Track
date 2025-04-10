@@ -12,7 +12,7 @@ import React, { useState } from "react";
 import DropDownPicker from "react-native-dropdown-picker";
 import { Link, useLocalSearchParams, useRouter } from "expo-router";
 
-export default function SignUp3() {
+export default function SignUp4() {
   const router = useRouter();
   const params = useLocalSearchParams();
 

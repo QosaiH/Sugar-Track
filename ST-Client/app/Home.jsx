@@ -1,8 +1,10 @@
 import React from "react";
-import { Text, View, Image, ImageBackground, StyleSheet } from "react-native";
+import { Text, View, ImageBackground, StyleSheet } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-export default function Home() {
+export default function Home({ userData }) {
+  console.log(userData); // For debugging
+
   return (
     <SafeAreaView style={styles.container}>
       <ImageBackground
@@ -10,7 +12,9 @@ export default function Home() {
         source={require("../Images/Vector.png")}
         resizeMode="cover">
         <View>
-          <Text style={styles.color}>דף הבית</Text>
+          <Text style={styles.color}>
+            Hi {userData?.firstName ?? userData?.name.split(" ")[0] ?? "guest"}
+          </Text>
         </View>
       </ImageBackground>
     </SafeAreaView>
@@ -30,7 +34,7 @@ const styles = StyleSheet.create({
   },
   color: {
     color: "white",
-    fontSize: 18, // Adjust font size as needed
-    padding: 10, // Add padding for better touch area
+    fontSize: 18,
+    padding: 10,
   },
 });

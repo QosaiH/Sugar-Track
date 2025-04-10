@@ -71,12 +71,12 @@ namespace ST_Server.DAL
             return cmd;
         }
 
-        public List<Userr> GetUsersList()
+        public List<int> GetUsersList()
         {
             SqlConnection con;
             SqlCommand cmd;
             SqlDataReader reader;
-            List<Userr> users = new List<Userr>();
+            List<int> users = new List<int>();
 
             try
             {
@@ -96,20 +96,8 @@ namespace ST_Server.DAL
             // Read the data
             while (reader.Read())
             {
-                Userr userr = new Userr
-                {
-                    Id = reader.GetInt32(reader.GetOrdinal("id")),
-                    Name = reader.GetString(reader.GetOrdinal("name")),
-                    Email = reader.GetString(reader.GetOrdinal("email")),
-                    Password = reader.GetString(reader.GetOrdinal("password")),
-                    ProfilePicture = reader.GetString(reader.GetOrdinal("profilePicture")),
-                    Role = reader.GetString(reader.GetOrdinal("role")),
-                    Coins = reader.GetInt32(reader.GetOrdinal("coins")),
-                    DiabetesType = reader.GetString(reader.GetOrdinal("diabetesType")),
-                    Gender = reader.GetString(reader.GetOrdinal("gender"))
-                };
-
-                users.Add(userr); // Add the user to the list
+                int id = reader.GetInt32(reader.GetOrdinal("id"));
+                users.Add(id); // Add the user to the list
             }
             try
             {
@@ -316,5 +304,62 @@ namespace ST_Server.DAL
                 }
             }
         }
+        public Userr getUserByEmail(string email)
+        {
+            SqlConnection con;
+            SqlCommand cmd;
+            SqlDataReader reader;
+
+            try
+            {
+                con = connect("igroup15_test2"); // create the connection
+            }
+            catch (Exception ex)
+            {
+                // write to log
+                throw (ex);
+            }
+
+            // Create the command for the stored procedure or SQL query
+            cmd = CreateCommandWithStoredProcedureGeneral("STGetUserByEmail ", con, new Dictionary<string, object> { { "@email", email } });
+
+
+            reader = cmd.ExecuteReader(); // Execute the command and get a data reader
+
+            // Read the data
+            reader.Read();
+            Userr userr = new Userr
+            {
+                Id = reader.GetInt32(reader.GetOrdinal("id")),
+                Name = reader.GetString(reader.GetOrdinal("name")),
+                UserName = reader.GetString(reader.GetOrdinal("username")),
+                Email = reader.GetString(reader.GetOrdinal("email")),
+                Password = reader.GetString(reader.GetOrdinal("password")),
+                ProfilePicture = reader.GetString(reader.GetOrdinal("profilePicture")),
+                Role = reader.GetString(reader.GetOrdinal("role")),
+                Coins = reader.GetInt32(reader.GetOrdinal("coins")),
+                DiabetesType = reader.GetString(reader.GetOrdinal("diabetesType")),
+                Gender = reader.GetString(reader.GetOrdinal("gender")),
+                IsActive = reader.GetBoolean(reader.GetOrdinal("isActive"))
+            };
+            try
+            {
+                return userr;
+            }
+            catch (Exception ex)
+            {
+                // Write to log
+                throw; // Rethrow the exception
+            }
+            finally
+            {
+                if (con != null)
+                {
+                    // close the db connection
+                    con.Close();
+                }
+            }
+        }
     }
 }
+

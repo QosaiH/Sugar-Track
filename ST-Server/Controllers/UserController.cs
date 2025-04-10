@@ -11,16 +11,23 @@ namespace ST_Server.Controllers
     {
         // GET: api/<UserController>
         [HttpGet]
-        public IEnumerable<Userr> Get()
+        public IEnumerable<int> Get()
         {
             return Userr.Read();
         }
 
         // GET api/<UserController>/5
+       /*
         [HttpGet("{id}")]
         public string Get(int id)
         {
             return "value";
+        }
+       */
+        [HttpGet("{email}")]
+        public Userr getUserByEmail(string email)
+        {
+            return Userr.getUserByEmail(email);
         }
 
         // POST api/<UserController>
