@@ -1,0 +1,11 @@
+{
+  "Version": 1,
+  "Hash": "3ZZKNuJPtWbigwvzbzhTCVC7BGc5K4zP8DdcyFsVMPI=",
+  "Source": "ST-Server",
+  "BasePath": "_content/ST-Server",
+  "Mode": "Default",
+  "ManifestType": "Build",
+  "ReferencedProjectsConfiguration": [],
+  "DiscoveryPatterns": [],
+  "Assets": []
+}

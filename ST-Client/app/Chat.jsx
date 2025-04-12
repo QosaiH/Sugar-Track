@@ -20,10 +20,8 @@ import {
   arrayUnion,
 } from "firebase/firestore";
 import { Link, useLocalSearchParams, useRouter } from "expo-router";
-
-export default function Chat() {
+export default function Chat({ userData }) {
   const [activeTab, setActiveTab] = useState("private");
-
   return (
     <SafeAreaView style={styles.container}>
       <ImageBackground
@@ -51,7 +49,11 @@ export default function Chat() {
         </View>
 
         <View style={styles.contentContainer}>
-          {activeTab === "private" ? <PrivateChats /> : <Communities />}
+          {activeTab === "private" ? (
+            <PrivateChats />
+          ) : (
+            <Communities userData={userData} />
+          )}
         </View>
       </ImageBackground>
     </SafeAreaView>
@@ -67,14 +69,14 @@ function PrivateChats() {
   );
 }
 
-function Communities() {
+function Communities({ userData }) {
+  console.log("userData", userData);
   const [groups, setGroups] = useState([]);
   const [userGroups, setUserGroups] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [filteredGroups, setFilteredGroups] = useState([]);
-  const userId = 1; // Replace with actual user ID
+  const userId = userData.id; // Replace with actual user ID
   const router = useRouter();
-  const params = useLocalSearchParams();
 
   useEffect(() => {
     // Fetch all groups
@@ -145,7 +147,10 @@ function Communities() {
             onPress={() => {
               router.push({
                 pathname: "/chatScreen",
-                params: { groupId: item.id },
+                params: {
+                  groupId: item.id,
+                  user: JSON.stringify(userData),
+                },
               });
             }}>
             <View style={styles.groupItem}>

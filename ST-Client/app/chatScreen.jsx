@@ -14,10 +14,11 @@ import { doc, onSnapshot, updateDoc, arrayUnion } from "firebase/firestore";
 import { useLocalSearchParams } from "expo-router";
 
 const ChatScreen = () => {
-  const { groupId } = useLocalSearchParams(); // ✅ Correct way
+  const params = useLocalSearchParams();
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState("");
-
+  const groupId = params.groupId;
+  const user = JSON.parse(params.user);
   useEffect(() => {
     if (!groupId) return;
 
@@ -43,7 +44,8 @@ const ChatScreen = () => {
 
     const message = {
       text: newMessage.trim(),
-      senderId: "1", // 🔁 Replace with actual user ID later
+      senderName: user.username,
+      senderId: user.id,
       timestamp: new Date().toISOString(),
     };
 
@@ -70,7 +72,7 @@ const ChatScreen = () => {
             <Text style={styles.messageText}>{item.text}</Text>
             <View style={styles.messageMeta}>
               <Text style={styles.senderText}>
-                נשלח על ידי: {item.senderId}
+                נשלח על ידי: {item.senderName}
               </Text>
               <Text style={styles.timeText}>
                 {new Date(item.timestamp).toLocaleTimeString("he-IL", {

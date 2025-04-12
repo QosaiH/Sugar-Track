@@ -96,3 +96,6 @@ BEGIN
 	from STusers
 	where email = @email;
 End;
+
+--------------
+DBCC CHECKIDENT ('STusers', RESEED, 5)

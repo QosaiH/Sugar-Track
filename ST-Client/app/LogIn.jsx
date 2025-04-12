@@ -13,6 +13,14 @@ import { Checkbox } from "react-native-paper";
 import React, { useState, useEffect } from "react";
 import { Link, useRouter } from "expo-router"; // Use Link from expo-router for navigation
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import {
+  collection,
+  onSnapshot,
+  updateDoc,
+  doc,
+  arrayUnion,
+} from "firebase/firestore";
+import { db } from "../fireBaseConfig"; // Import Firestore instance
 
 export default function LogIn() {
   const router = useRouter();
@@ -23,7 +31,8 @@ export default function LogIn() {
   const sendData = async () => {
     try {
       const response = await fetch(
-        `https://localhost:7256/api/User/Login/${email}`,
+        // `https://localhost:7256/api/User/Login/${email}`,
+        `https://proj.ruppin.ac.il/igroup15/test2/tar1/api/User/Login/${email}`,
         {
           method: "POST",
           headers: {
@@ -48,9 +57,13 @@ export default function LogIn() {
   };
   const getData = async () => {
     try {
-      const response = await fetch(`https://localhost:7256/api/User/${email}`, {
-        method: "GET",
-      });
+      // const response = await fetch(`https://localhost:7256/api/User/${email}`, {
+      const response = await fetch(
+        `https://proj.ruppin.ac.il/igroup15/test2/tar1/api/User/${email}`,
+        {
+          method: "GET",
+        }
+      );
       const data = await response.json();
       await storeData(data);
     } catch (error) {
@@ -72,11 +85,11 @@ export default function LogIn() {
       <SafeAreaView style={styles.logo}>
         <View style={styles.upperSide}>
           <Image
-            style={{ width: 180, height: 180, marginTop: 20 }}
+            style={{ width: 150, height: 150, marginTop: 5 }}
             source={require("../Images/logo.png")}
           />
           <Image
-            style={{ width: 100, height: 100, marginTop: 20 }}
+            style={{ width: 100, height: 100, marginTop: 5 }}
             source={require("../Images/LogIn.png")}
           />
         </View>
@@ -133,7 +146,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     backgroundColor: "white",
     width: "100%",
-    height: "50%",
+    height: "40%",
   },
   background: {
     height: "100%",
@@ -158,7 +171,7 @@ const styles = StyleSheet.create({
   },
   buttonText: {
     color: "black",
-    fontSize: 24,
+    fontSize: 20,
     textAlign: "center",
   },
   options: {

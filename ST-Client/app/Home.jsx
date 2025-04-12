@@ -3,8 +3,6 @@ import { Text, View, ImageBackground, StyleSheet } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function Home({ userData }) {
-  console.log(userData); // For debugging
-
   return (
     <SafeAreaView style={styles.container}>
       <ImageBackground
@@ -28,6 +26,7 @@ const styles = StyleSheet.create({
   },
   background: {
     flex: 1,
+    height: "100%",
     width: "100%",
     justifyContent: "center",
     alignItems: "center",

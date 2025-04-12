@@ -1,0 +1,3 @@
+﻿<Project>
+  <Import Project="..\build\ST-Server.props" />
+</Project>
