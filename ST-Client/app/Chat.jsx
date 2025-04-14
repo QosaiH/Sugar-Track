@@ -70,7 +70,6 @@ function PrivateChats() {
 }
 
 function Communities({ userData }) {
-  console.log("userData", userData);
   const [groups, setGroups] = useState([]);
   const [userGroups, setUserGroups] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
