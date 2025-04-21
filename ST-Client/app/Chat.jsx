@@ -50,7 +50,7 @@ export default function Chat({ userData }) {
 
         <View style={styles.contentContainer}>
           {activeTab === "private" ? (
-            <PrivateChats />
+            <PrivateChats userData={userData} />
           ) : (
             <Communities userData={userData} />
           )}
@@ -60,11 +60,92 @@ export default function Chat({ userData }) {
   );
 }
 
-function PrivateChats() {
+function PrivateChats({ userData }) {
+  const [privateChats, setPrivateChats] = useState([]);
+  const [users, setUsers] = useState({}); // To store user data by userId
+  const router = useRouter(); // Use router for navigation
+
+  useEffect(() => {
+    // Fetch private chats
+    const unsubscribePrivateChats = onSnapshot(
+      collection(db, "privateChats"),
+      (snapshot) => {
+        const chats = snapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        }));
+
+        // Use a Set to filter out duplicate chats
+        const uniqueChats = Array.from(
+          new Set(chats.map((chat) => chat.id))
+        ).map((id) => chats.find((chat) => chat.id === id));
+
+        setPrivateChats(uniqueChats);
+      }
+    );
+
+    // Fetch users
+    const unsubscribeUsers = onSnapshot(
+      collection(db, "user"), // Assuming you have a users collection
+      (snapshot) => {
+        const usersData = {};
+        snapshot.docs.forEach((doc) => {
+          usersData[doc.id] = doc.data(); // Store user data by userId
+        });
+        setUsers(usersData);
+      }
+    );
+
+    return () => {
+      unsubscribePrivateChats();
+      unsubscribeUsers();
+    };
+  }, []);
+
   return (
     <View>
       <Text style={styles.sectionTitle}>רשימת צ'אטים פרטיים</Text>
-      {/* Display private chats from Firebase */}
+      {privateChats.length === 0 ? (
+        <Text style={styles.noChatsText}>אין צ'אטים פרטיים זמינים</Text>
+      ) : (
+        <FlatList
+          data={privateChats}
+          renderItem={({ item }) => {
+            // Get the other user's ID
+            const otherUserId = item.users.find((id) => id !== userData.id);
+            const otherUser = users[otherUserId]; // Get the other user's data
+
+            return (
+              <TouchableOpacity
+                key={item.id}
+                style={styles.chatItem}
+                onPress={() => {
+                  // Navigate to the private chat screen with chat ID and other user data
+                  router.push({
+                    pathname: "/privateChatScreen",
+                    params: {
+                      sender: JSON.stringify(userData),
+                      receiver: JSON.stringify(otherUser),
+                    },
+                  });
+                }}>
+                {otherUser && (
+                  <>
+                    <Image
+                      source={{
+                        uri: `data:image/png;base64,${otherUser.profilePicture}`,
+                      }} // Assuming profilePicture is a field in user data
+                      style={styles.profileImage}
+                    />
+                    <Text style={styles.chatText}>{otherUser.username}</Text>
+                  </>
+                )}
+              </TouchableOpacity>
+            );
+          }}
+          keyExtractor={(item) => item.id}
+        />
+      )}
     </View>
   );
 }
@@ -74,7 +155,7 @@ function Communities({ userData }) {
   const [userGroups, setUserGroups] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [filteredGroups, setFilteredGroups] = useState([]);
-  const userId = userData.id; // Replace with actual user ID
+  const userId = userData.id;
   const router = useRouter();
 
   useEffect(() => {
@@ -159,7 +240,7 @@ function Communities({ userData }) {
               />
               <Text style={styles.groupName}>{item.name}</Text>
               {!userGroups.some((group) => group.id === item.id) && ( // Check if user is not a member
-                <Button title="Join" onPress={() => joinGroup(item.id)} />
+                <Button title="הצטרף" onPress={() => joinGroup(item.id)} />
               )}
             </View>
           </TouchableOpacity>
@@ -240,5 +321,29 @@ const styles = StyleSheet.create({
     width: 50,
     height: 50,
     borderRadius: 10, // Make the image circular
+  },
+  chatItem: {
+    flexDirection: "row-reverse",
+    gap: 10,
+    alignItems: "center",
+    padding: 10,
+    marginVertical: 5,
+    backgroundColor: "white",
+    borderRadius: 10,
+  },
+  profileImage: {
+    width: 50,
+    height: 50,
+    borderRadius: 25, // Make the image circular
+    marginRight: 10,
+  },
+  chatText: {
+    fontSize: 16,
+    color: "black",
+  },
+  noChatsText: {
+    textAlign: "center",
+    color: "white",
+    fontSize: 16,
   },
 });

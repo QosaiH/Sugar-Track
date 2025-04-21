@@ -1,16 +1,15 @@
 // app/index.js
-import React, { useEffect } from "react";
+import React from "react";
 import Welcome from "./Welcome";
 import BottomNav from "./BottomNav";
-import { doc, setDoc, collection } from "firebase/firestore";
-import { db } from "../fireBaseConfig";
+import { app, getAuth } from "../fireBaseConfig"; // Import your Firebase config
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 export default function App() {
-  return <Welcome />;
   //return <BottomNav />;
-
-  /* {
+  return <Welcome />;
+  /* 
+}
   const jsonData = require("./csvjson.json");
   const uploadToFirestore = async (data) => {
     try {
@@ -34,6 +33,5 @@ export default function App() {
     };
     checkAndUpload();
   }, []);
-}
   */
 }

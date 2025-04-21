@@ -31,7 +31,7 @@ export default function LogIn() {
   const sendData = async () => {
     try {
       const response = await fetch(
-        // `https://localhost:7256/api/User/Login/${email}`,
+        //`https://localhost:7256/api/User/Login/${email}`,
         `https://proj.ruppin.ac.il/igroup15/test2/tar1/api/User/Login/${email}`,
         {
           method: "POST",
@@ -73,10 +73,14 @@ export default function LogIn() {
   };
   const storeData = async (data) => {
     try {
-      await AsyncStorage.setItem("user", JSON.stringify(data)); // Store user data as a string
-      router.replace("/BottomNav");
+      await AsyncStorage.setItem("user", JSON.stringify(data)); // Store user data
+      console.log("User role:", data.role);
+      if (data.role?.toLowerCase() === "admin") {
+        router.replace("./Admin/AdminBottomNav");
+      } else {
+        router.replace("/BottomNav");
+      }
     } catch (e) {
-      // saving error
       console.error(e);
     }
   };
@@ -162,6 +166,7 @@ const styles = StyleSheet.create({
     padding: 10,
     width: 300,
     backgroundColor: "white",
+    textAlign: "right",
   },
   button: {
     backgroundColor: "white",

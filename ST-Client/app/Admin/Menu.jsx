@@ -28,7 +28,7 @@ export default function Menu({ isVisible, onClose }) {
     try {
       await AsyncStorage.removeItem("user"); // Clear session
       onClose(); // Close menu
-      router.replace("/LogIn"); // Navigate to login
+      router.replace("./LogIn"); // Navigate to login
     } catch (error) {
       console.error("Logout error:", error);
     }
@@ -38,7 +38,7 @@ export default function Menu({ isVisible, onClose }) {
     flex: 1,
     width: "100%",
     height: "100%",
-    marginTop: Platform.OS === "web" ? 138 : 130, // Different margin for web and mobile
+    marginTop: Platform.OS === "web" ? 138 : 130,
   };
 
   return (
@@ -51,19 +51,11 @@ export default function Menu({ isVisible, onClose }) {
           <Animated.View
             style={[styles.drawer, { transform: [{ translateX: slideAnim }] }]}>
             <ImageBackground
-              source={require("../Images/Vector.png")}
+              source={require("../../Images/Vector.png")}
               style={backgroundStyle}>
               <Text style={styles.title}>תפריט</Text>
 
-              <TouchableOpacity style={styles.menuItem} onPress={onClose}>
-                <Link href="/ProfileEdit" asChild>
-                  <Text style={styles.menuText}>פרופיל</Text>
-                </Link>
-              </TouchableOpacity>
-
-              <TouchableOpacity style={styles.menuItem} onPress={onClose}>
-                <Text style={styles.menuText}>התראות</Text>
-              </TouchableOpacity>
+            
 
               <TouchableOpacity style={styles.menuItem} onPress={handleLogout}>
                 <Text style={styles.menuText}>יציאה</Text>
