@@ -50,6 +50,11 @@ namespace ST_Server.Models
             UserDBservices dbs = new UserDBservices();
             return dbs.GetUsersList();
         }
+        public static List<Userr> ReadUsers()
+        {
+            UserDBservices dbs = new UserDBservices();
+            return dbs.GetAllUsersList();
+        }
         public static int Insert(Userr userr)
         {
             UserDBservices dbs = new UserDBservices();

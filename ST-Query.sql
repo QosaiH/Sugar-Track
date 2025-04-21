@@ -98,4 +98,4 @@ BEGIN
 End;
 
 --------------
-DBCC CHECKIDENT ('STusers', RESEED, 5)
+DBCC CHECKIDENT ('STusers', RESEED, 7)

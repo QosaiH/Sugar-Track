@@ -16,14 +16,19 @@ namespace ST_Server.Controllers
             return Userr.Read();
         }
 
-        // GET api/<UserController>/5
-       /*
-        [HttpGet("{id}")]
-        public string Get(int id)
+        [HttpGet("admin")]
+        public IEnumerable<Userr> GetUsers()
         {
-            return "value";
+            return Userr.ReadUsers();
         }
-       */
+        // GET api/<UserController>/5
+        /*
+         [HttpGet("{id}")]
+         public string Get(int id)
+         {
+             return "value";
+         }
+        */
         [HttpGet("{email}")]
         public Userr getUserByEmail(string email)
         {

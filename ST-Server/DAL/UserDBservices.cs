@@ -118,6 +118,68 @@ namespace ST_Server.DAL
             }
         }
 
+        public List<Userr> GetAllUsersList()
+        {
+            SqlConnection con;
+            SqlCommand cmd;
+            SqlDataReader reader;
+            List<Userr> users = new List<Userr>();
+
+            try
+            {
+                con = connect("igroup15_test2"); // create the connection
+            }
+            catch (Exception ex)
+            {
+                // log error
+                throw (ex);
+            }
+
+            // Create the command for the stored procedure or SQL query
+            cmd = CreateCommandWithStoredProcedure("STgetUsersList", con, null);
+
+            reader = cmd.ExecuteReader(); // Execute the command and get a data reader
+
+            // Read the data
+            while (reader.Read())
+            {
+                var user = new Userr
+                {
+                    Id = reader.GetInt32(reader.GetOrdinal("id")),
+                    Name = reader.GetString(reader.GetOrdinal("name")),
+                    UserName = reader.GetString(reader.GetOrdinal("username")),
+                    Email = reader.GetString(reader.GetOrdinal("email")),
+                    Password = reader.GetString(reader.GetOrdinal("password")),
+                    ProfilePicture = reader.GetString(reader.GetOrdinal("profilePicture")),
+                    Role = reader.GetString(reader.GetOrdinal("role")),
+                    Coins = reader.GetInt32(reader.GetOrdinal("coins")),
+                    DiabetesType = reader.GetString(reader.GetOrdinal("diabetesType")),
+                    Gender = reader.GetString(reader.GetOrdinal("gender")),
+                    IsActive = reader.GetBoolean(reader.GetOrdinal("isActive"))
+                };
+
+                users.Add(user); // Add the full user to the list
+            }
+
+            try
+            {
+                return users;
+            }
+            catch (Exception ex)
+            {
+                // Write to log
+                throw; // Rethrow the exception
+            }
+            finally
+            {
+                if (con != null)
+                {
+                    // close the db connection
+                    con.Close();
+                }
+            }
+        }
+
         public int InsertUser(Userr userr)
         {
             SqlConnection con;
