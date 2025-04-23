@@ -10,7 +10,7 @@ export default function Forum() {
         source={require("../Images/Vector.png")}
         resizeMode="cover">
         <View>
-          <Text style={styles.color}>פורום</Text>
+          <Text style={styles.color}>  שלום פורום</Text>
         </View>
       </ImageBackground>
     </SafeAreaView>
