@@ -4,18 +4,25 @@ import {
   View,
   ImageBackground,
   StyleSheet,
-  FlatList,
   ScrollView,
   ActivityIndicator,
   Alert,
-  Platform,
+  Modal,
+  TouchableOpacity,
+  CheckBox,
   Button,
+  TextInput,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { BlurView } from "expo-blur";
 
 export default function Users() {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [modalVisible, setModalVisible] = useState(false);
+  const [selectedUser, setSelectedUser] = useState(null);
+  const [expandedUserId, setExpandedUserId] = useState(null);
+  const [searchTerm, setSearchTerm] = useState("");
 
   const getData = async () => {
     try {
@@ -43,6 +50,7 @@ export default function Users() {
           coins: u.coins ?? 0,
           diabetesType: u.diabetesType || "לא זמין",
           isActive: u.isActive !== undefined ? u.isActive : false,
+          image: u.image || "../../Images/Vector.png",
         }));
         setUsers(mappedUsers);
       }
@@ -69,31 +77,25 @@ export default function Users() {
       if (!response.ok) throw new Error("Failed to update status");
 
       Alert.alert("הצלחה", "סטטוס עודכן בהצלחה");
-      getData(); // Refresh the list
+      setModalVisible(false);
+      getData();
     } catch (error) {
       console.error("updateUserStatus error:", error);
       Alert.alert("שגיאה", "נכשל עדכון סטטוס");
     }
   };
 
-  const renderItem = ({ item }) => (
-    <View style={styles.userCard}>
-      <Text style={styles.userText}>שם: {item.name}</Text>
-      <Text style={styles.userText}>אימייל: {item.email}</Text>
-      <Text style={styles.userText}>שם משתמש: {item.userName}</Text>
-      <Text style={styles.userText}>תפקיד: {item.role}</Text>
-      <Text style={styles.userText}>מין: {item.gender}</Text>
-      <Text style={styles.userText}>סוג סוכרת: {item.diabetesType}</Text>
-      <Text style={styles.userText}>מטבעות: {item.coins}</Text>
-      <Text style={styles.userText}>פעיל: {item.isActive ? "כן" : "לא"}</Text>
-      <View style={styles.buttonContainer}>
-        <Button
-          title={item.isActive ? "השבת משתמש" : "הפעל משתמש"}
-          color={item.isActive ? "#FF6B6B" : "#4CAF50"}
-          onPress={() => updateUserStatus(item.id, item.isActive)}
-        />
-      </View>
-    </View>
+  const openStatusModal = (user) => {
+    setSelectedUser(user);
+    setModalVisible(true);
+  };
+
+  const toggleUserDetails = (userId) => {
+    setExpandedUserId((prevId) => (prevId === userId ? null : userId));
+  };
+
+  const filteredUsers = users.filter((user) =>
+    user.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   return (
@@ -101,27 +103,124 @@ export default function Users() {
       <ImageBackground
         style={styles.background}
         source={require("../../Images/Vector.png")}
-        resizeMode="cover">
+        resizeMode="cover"
+      >
+        <TextInput
+          style={styles.searchInput}
+          placeholder="חיפוש משתמשים..."
+          placeholderTextColor="#ccc"
+          value={searchTerm}
+          onChangeText={setSearchTerm}
+        />
+
         <Text style={styles.title}>רשימת משתמשים</Text>
 
         {loading ? (
           <ActivityIndicator size="large" color="#fff" />
-        ) : Platform.OS === "web" ? (
-          <ScrollView
-            contentContainerStyle={styles.list}
-            showsVerticalScrollIndicator={false}>
-            {users.map((u) => renderItem({ item: u }))}
-          </ScrollView>
         ) : (
-          <FlatList
-            data={users}
-            keyExtractor={(item) => item.id.toString()}
-            renderItem={renderItem}
-            style={styles.flatList}
-            contentContainerStyle={styles.list}
-            showsVerticalScrollIndicator={false}
-          />
+          <ScrollView contentContainerStyle={styles.tableContainer}>
+            <View style={styles.stickyHeader}>
+              <BlurView intensity={50} style={styles.tableHeader}>
+                <Text style={styles.tableHeaderText}>פעולות</Text>
+                <Text style={styles.tableHeaderText}>סטטוס</Text>
+                <Text style={styles.tableHeaderText}>שם</Text>
+              </BlurView>
+            </View>
+
+            {filteredUsers.map((user) => (
+              <View key={user.id}>
+                <TouchableOpacity
+                  style={styles.tableRow}
+                  onPress={() => toggleUserDetails(user.id)}
+                >
+                  <View style={styles.tableCell}>
+                    <CheckBox
+                      value={user.isActive}
+                      onValueChange={() => openStatusModal(user)}
+                    />
+                  </View>
+                  <View style={styles.tableCell}>
+                    <Text
+                      style={[
+                        styles.tableCellText,
+                        {
+                          color: user.isActive ? "#4CAF50" : "#FF6B6B",
+                          fontWeight: "bold",
+                        },
+                      ]}
+                    >
+                      {user.isActive ? "פעיל" : "לא פעיל"}
+                    </Text>
+                  </View>
+                  <View style={styles.tableCell}>
+                    <Text style={styles.tableCellText}>{user.name}</Text>
+                  </View>
+                </TouchableOpacity>
+
+                {expandedUserId === user.id && (
+                  <View style={styles.userDetailsContainer}>
+                    <View style={styles.userDetailsTextContainer}>
+                      <Text style={styles.userDetailsText}>
+                        <Text style={styles.detailsLabel}>שם משתמש:</Text>{" "}
+                        {user.userName}
+                      </Text>
+                      <Text style={styles.userDetailsText}>
+                        <Text style={styles.detailsLabel}>אימייל:</Text>{" "}
+                        {user.email}
+                      </Text>
+                      <Text style={styles.userDetailsText}>
+                        <Text style={styles.detailsLabel}>תפקיד:</Text>{" "}
+                        {user.role}
+                      </Text>
+                      <Text style={styles.userDetailsText}>
+                        <Text style={styles.detailsLabel}>מין:</Text>{" "}
+                        {user.gender}
+                      </Text>
+                      <Text style={styles.userDetailsText}>
+                        <Text style={styles.detailsLabel}>סוג סוכרת:</Text>{" "}
+                        {user.diabetesType}
+                      </Text>
+                      <Text style={styles.userDetailsText}>
+                        <Text style={styles.detailsLabel}>כמות מטבעות:</Text>{" "}
+                        {user.coins}
+                      </Text>
+                    </View>
+                  </View>
+                )}
+              </View>
+            ))}
+          </ScrollView>
         )}
+
+        <Modal
+          visible={modalVisible}
+          transparent={true}
+          animationType="fade"
+          onRequestClose={() => setModalVisible(false)}
+        >
+          <View style={styles.modalBackground}>
+            <View style={styles.modalContainer}>
+              <Text style={styles.modalTitle}>
+                האם אתה בטוח לשנות את הסטטוס?
+              </Text>
+              <View style={styles.modalButtons}>
+                <Button
+                  title="בטל"
+                  color="#FF6B6B"
+                  onPress={() => setModalVisible(false)}
+                />
+                <Button
+                  title="אשר"
+                  color="#4CAF50"
+                  onPress={() =>
+                    selectedUser &&
+                    updateUserStatus(selectedUser.id, selectedUser.isActive)
+                  }
+                />
+              </View>
+            </View>
+          </View>
+        </Modal>
       </ImageBackground>
     </SafeAreaView>
   );
@@ -133,39 +232,114 @@ const styles = StyleSheet.create({
     flex: 1,
     width: "100%",
     paddingTop: 40,
-    alignItems: "center",
+   // alignItems: "center",
   },
   title: {
     color: "white",
     fontSize: 26,
     fontWeight: "bold",
     marginBottom: 20,
+    textAlign:"center",
   },
-  list: {
-    paddingHorizontal: 20,
+  searchInput: {
+    height: 40,
+    width: "90%",
+    alignItems:"center",
+    backgroundColor: "white",
+    borderRadius: 8,
+    paddingHorizontal: 10,
+    marginBottom: 15,
+    fontSize: 16,
+  },
+  tableContainer: {
+    width: "100%",
     paddingBottom: 100,
+  },
+  stickyHeader: {
+    position: "sticky",
+    top: 0,
+    zIndex: 1,
+    backgroundColor: "transparent",
+    elevation: 1,
+    width: "100%",
+  },
+  tableHeader: {
+    flexDirection: "row",
+    paddingVertical: 10,
+    width: "100%",
+    backgroundColor: "rgba(105, 98, 98, 0.8)",
+    borderRadius: 8,
+  },
+  tableHeaderText: {
+    flex: 1,
+    color: "white",
+    textAlign: "center",
+    fontWeight: "bold",
+  },
+  tableRow: {
+    flexDirection: "row",
+    borderBottomWidth: 1,
+    borderColor: "#ddd",
+    paddingVertical: 10,
+    paddingHorizontal: 15,
+    width: "100%",
+  },
+  tableCell: {
+    flex: 1,
+    justifyContent: "center",
     alignItems: "center",
   },
-  flatList: { width: "100%" },
-  userCard: {
-    backgroundColor: "rgba(255, 255, 255, 0.9)",
-    borderRadius: 16,
-    padding: 18,
-    marginBottom: 16,
-    width: 320,
+  tableCellText: {
+    fontSize: 16,
+    color: "#333",
+  },
+  userDetailsContainer: {
+    padding: 10,
+    backgroundColor: "transparent",
+    borderRadius: 8,
+    marginVertical: 5,
+    marginHorizontal: 15,
+    borderWidth: 1,
+    borderColor: "#ddd",
+    color:"white",
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
+    shadowOpacity: 0.3,
     shadowRadius: 4,
-    elevation: 5,
   },
-  userText: {
-    color: "#333",
-    fontSize: 16,
-    marginBottom: 4,
-    fontWeight: "500",
+  userDetailsTextContainer: {
+    marginBottom: 10,
   },
-  buttonContainer: {
-    marginTop: 10,
+  userDetailsText: {
+    fontSize: 14,
+    color: "black",
+    marginVertical: 5,
+  },
+  detailsLabel: {
+    fontWeight: "bold",
+    color: "#555",
+  },
+  modalBackground: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
+  },
+  modalContainer: {
+    backgroundColor: "#fff",
+    padding: 20,
+    borderRadius: 8,
+    width: 300,
+    alignItems: "center",
+  },
+  modalTitle: {
+    fontSize: 18,
+    marginBottom: 20,
+    textAlign: "center",
+  },
+  modalButtons: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    width: "100%",
   },
 });
