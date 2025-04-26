@@ -23,6 +23,9 @@ const ProfileEdit = () => {
   const [loading, setLoading] = useState(true);
   const [formData, setFormData] = useState({});
   const [profileImage, setProfileImage] = useState(null);
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [passwordMismatch, setPasswordMismatch] = useState(false);
 
   useEffect(() => {
     const loadUser = async () => {
@@ -63,6 +66,11 @@ const ProfileEdit = () => {
   };
 
   const handleSave = async () => {
+    if (newPassword !== confirmPassword) {
+      setPasswordMismatch(true);
+      return;
+    }
+
     try {
       // Update Firestore document
       const userRef = doc(db, "user", userData.id); // Assuming userData.id is the document ID in Firestore
@@ -70,7 +78,7 @@ const ProfileEdit = () => {
         name: formData.name,
         username: formData.userName,
         email: formData.email,
-        password: formData.password,
+        password: newPassword || formData.password, // Use the new password if provided
         profilePicture: profileImage, // Update the profile picture if changed
       });
 
@@ -109,16 +117,19 @@ const ProfileEdit = () => {
       <ImageBackground
         style={styles.background}
         source={require("../Images/Vector.png")}
-        resizeMode="cover">
+        resizeMode="cover"
+      >
         <TouchableOpacity
           onPress={() => setIsEditing(!isEditing)}
-          style={styles.editIcon}>
-          <Ionicons name="create-outline" size={28} color=" white" />
+          style={styles.editIcon}
+        >
+          <Ionicons name="create-outline" size={28} color="white" />
         </TouchableOpacity>
 
         <TouchableOpacity
           onPress={pickImage}
-          style={styles.profileImageContainer}>
+          style={styles.profileImageContainer}
+        >
           <Image
             source={{
               uri: profileImage,
@@ -128,13 +139,9 @@ const ProfileEdit = () => {
         </TouchableOpacity>
 
         <View style={styles.form}>
-          {[
+          {[ 
             { field: "name", icon: "person-outline", label: "שם מלא" },
-            {
-              field: "userName",
-              icon: "person-circle-outline",
-              label: "שם משתמש",
-            },
+            { field: "userName", icon: "person-circle-outline", label: "שם משתמש" },
             { field: "email", icon: "mail-outline", label: "אימייל" },
             { field: "password", icon: "lock-closed-outline", label: "סיסמה" },
           ].map(({ field, icon, label }) => (
@@ -156,6 +163,49 @@ const ProfileEdit = () => {
               />
             </View>
           ))}
+
+          {/* Show password fields only when editing */}
+          {isEditing && (
+            <>
+              <View style={styles.inputRow}>
+                <Ionicons
+                  name="lock-closed-outline"
+                  size={20}
+                  color="white"
+                  style={styles.inputIcon}
+                />
+                <TextInput
+                  style={styles.input}
+                  value={newPassword}
+                  onChangeText={setNewPassword}
+                  placeholder="סיסמה חדשה"
+                  placeholderTextColor="white"
+                  secureTextEntry
+                />
+              </View>
+
+              <View style={styles.inputRow}>
+                <Ionicons
+                  name="lock-closed-outline"
+                  size={20}
+                  color="white"
+                  style={styles.inputIcon}
+                />
+                <TextInput
+                  style={styles.input}
+                  value={confirmPassword}
+                  onChangeText={setConfirmPassword}
+                  placeholder="אשר סיסמה חדשה"
+                  placeholderTextColor="white"
+                  secureTextEntry
+                />
+              </View>
+
+              {passwordMismatch && (
+                <Text style={styles.errorText}>הסיסמאות לא תואמות</Text>
+              )}
+            </>
+          )}
         </View>
 
         {isEditing && (
@@ -233,5 +283,11 @@ const styles = StyleSheet.create({
   saveText: {
     color: "white",
     fontSize: 18,
+  },
+  errorText: {
+    color: "red",
+    textAlign: "right",
+    fontSize: 14,
+    marginTop: 5,
   },
 });
