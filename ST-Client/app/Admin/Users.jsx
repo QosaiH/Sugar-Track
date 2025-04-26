@@ -107,7 +107,7 @@ export default function Users() {
       >
         <TextInput
           style={styles.searchInput}
-          placeholder="חיפוש משתמשים..."
+          placeholder="...חיפוש משתמשים"
           placeholderTextColor="#ccc"
           value={searchTerm}
           onChangeText={setSearchTerm}
@@ -244,7 +244,8 @@ const styles = StyleSheet.create({
   searchInput: {
     height: 40,
     width: "90%",
-    alignItems:"center",
+    textAlign:"right",
+    alignSelf:"center",
     backgroundColor: "white",
     borderRadius: 8,
     paddingHorizontal: 10,
