@@ -7,6 +7,7 @@ export const createTestData = async () => {
     id: "user1",
     displayName: "משתמש 1",
     email: "user1@example.com",
+  
   });
 
   await setDoc(doc(db, "users", "user2"), {
