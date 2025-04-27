@@ -25,7 +25,7 @@ export default function Home({ userData }) {
       Animated.spring(plusScale, {
         toValue: 1.15,
         useNativeDriver: true,
-      })
+      }),
     ]).start();
   };
 
@@ -40,7 +40,7 @@ export default function Home({ userData }) {
       Animated.spring(plusScale, {
         toValue: 1,
         useNativeDriver: true,
-      })
+      }),
     ]).start();
   };
 
@@ -53,9 +53,9 @@ export default function Home({ userData }) {
       Animated.spring(bellScale, {
         toValue: 1,
         useNativeDriver: true,
-      })
+      }),
     ]).start();
-    
+
     console.log("Bell icon pressed");
   };
 
@@ -64,14 +64,11 @@ export default function Home({ userData }) {
       <ImageBackground
         style={styles.background}
         source={require("../Images/Vector.png")}
-        resizeMode="cover"
-      >
+        resizeMode="cover">
         {/* Larger Bell Icon Button */}
-        <Animated.View style={[styles.bellButton, { transform: [{ scale: bellScale }] }]}>
-          <TouchableOpacity
-            onPress={handleBellPress}
-            activeOpacity={0.7}
-          >
+        <Animated.View
+          style={[styles.bellButton, { transform: [{ scale: bellScale }] }]}>
+          <TouchableOpacity onPress={handleBellPress} activeOpacity={0.7}>
             <Ionicons name="notifications-outline" size={32} color="white" />
             {/* Optional notification badge */}
             <View style={styles.bellBadge} />
@@ -97,12 +94,15 @@ export default function Home({ userData }) {
               onPressIn={handlePressIn}
               onPressOut={handlePressOut}
               onPress={() => console.log("Daily value pressed")}
-              style={styles.addButton}
-            >
+              style={styles.addButton}>
               <Text style={styles.addButtonText}>הזן ערך יומי</Text>
             </TouchableOpacity>
           </Animated.View>
-          <Animated.View style={[styles.plusIconContainer, { transform: [{ scale: plusScale }] }]}>
+          <Animated.View
+            style={[
+              styles.plusIconContainer,
+              { transform: [{ scale: plusScale }] },
+            ]}>
             <View style={styles.plusIconBackground}>
               <Ionicons name="add" size={28} color="#5a67d8" />
             </View>
@@ -128,30 +128,28 @@ const styles = StyleSheet.create({
   },
   background: {
     flex: 1,
-    width:'100%',
-    height:'100%',
+    width: "100%",
+    height: "100%",
     justifyContent: "space-around",
     alignItems: "center",
-    paddingVertical: 25,
-    paddingHorizontal: 20,
   },
   bellButton: {
-    position: 'absolute',
+    position: "absolute",
     top: 15,
     left: 15,
     zIndex: 1,
     padding: 8, // Added padding for better touch area
   },
   bellBadge: {
-    position: 'absolute',
+    position: "absolute",
     right: -2,
     top: -2,
-    backgroundColor: '#FF3B30',
+    backgroundColor: "#FF3B30",
     width: 12,
     height: 12,
     borderRadius: 6,
     borderWidth: 1,
-    borderColor: 'white',
+    borderColor: "white",
   },
   topSection: {
     alignItems: "center",
@@ -177,11 +175,11 @@ const styles = StyleSheet.create({
     textShadowRadius: 2,
   },
   buttonContainer: {
-    position: 'relative',
+    position: "relative",
     paddingBottom: 10,
     marginVertical: 5,
-    width: '100%',
-    alignItems: 'center',
+    width: "100%",
+    alignItems: "center",
   },
   addButton: {
     backgroundColor: "#ffffff",
@@ -193,7 +191,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.5,
     shadowOffset: { width: 0, height: 5 },
     shadowRadius: 10,
-    width: '100%',
+    width: "100%",
     minWidth: 240,
     borderWidth: 1.5,
     borderColor: "rgba(255,255,255,0.9)",
@@ -202,23 +200,23 @@ const styles = StyleSheet.create({
     fontSize: 20,
     color: "#5a67d8",
     fontWeight: "600",
-    textAlign: 'center',
+    textAlign: "center",
     letterSpacing: 0.5,
   },
   plusIconContainer: {
-    position: 'absolute',
+    position: "absolute",
     bottom: -18,
-    alignSelf: 'center',
+    alignSelf: "center",
   },
   plusIconBackground: {
-    backgroundColor: '#ffffff',
+    backgroundColor: "#ffffff",
     width: 40,
     height: 40,
     borderRadius: 20,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
     borderWidth: 2.5,
-    borderColor: '#5a67d8',
+    borderColor: "#5a67d8",
     elevation: 8,
     shadowColor: "rgba(90,103,216,0.4)",
     shadowOpacity: 0.4,
@@ -231,10 +229,10 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     alignItems: "center",
     marginTop: 10,
-    marginBottom:70,
+    marginBottom: 70,
     width: "95%",
     borderWidth: 1.2,
-    borderColor: 'rgba(255,255,255,0.2)',
+    borderColor: "rgba(255,255,255,0.2)",
   },
   quoteText: {
     fontSize: 18,
@@ -249,6 +247,6 @@ const styles = StyleSheet.create({
     color: "rgba(255,255,255,0.9)",
     textAlign: "center",
     fontWeight: "300",
-    fontStyle: 'italic',
+    fontStyle: "italic",
   },
 });

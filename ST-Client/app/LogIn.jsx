@@ -7,19 +7,14 @@ import {
   TouchableOpacity,
   TextInput,
   Alert,
+  ActivityIndicator,
 } from "react-native";
 import { SafeAreaView, SafeAreaProvider } from "react-native-safe-area-context";
 import { Checkbox } from "react-native-paper";
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { Link, useRouter } from "expo-router"; // Use Link from expo-router for navigation
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import {
-  collection,
-  onSnapshot,
-  updateDoc,
-  doc,
-  arrayUnion,
-} from "firebase/firestore";
+import { doc, updateDoc, arrayUnion } from "firebase/firestore";
 import { db } from "../fireBaseConfig"; // Import Firestore instance
 
 export default function LogIn() {
@@ -27,11 +22,13 @@ export default function LogIn() {
   const [checked, setChecked] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false); // Add loading state
 
   const sendData = async () => {
+    if (loading) return; // Prevent multiple submissions
+    setLoading(true); // Start loading
     try {
       const response = await fetch(
-        //`https://localhost:7256/api/User/Login/${email}`,
         `https://proj.ruppin.ac.il/igroup15/test2/tar1/api/User/Login/${email}`,
         {
           method: "POST",
@@ -43,21 +40,22 @@ export default function LogIn() {
       );
       const data = await response.json();
       if (response.ok) {
-        getData(); // Fetch user data after successful login
-        // Move to BottomNav after successful signup
+        await getData(); // Fetch user data after successful login
       } else {
         // Show error message from the backend response
         console.error("Login failed", data);
-        Alert.alert("שגיאה", data.message || "משהו השתבש בהרשמה");
+        Alert.alert("שגיאה", data.message || "משהו השתבש בהתחברות");
       }
     } catch (error) {
       console.error("Error:", error);
       Alert.alert("שגיאה", "בעיה בחיבור לשרת");
+    } finally {
+      setLoading(false); // Stop loading
     }
   };
+
   const getData = async () => {
     try {
-      // const response = await fetch(`https://localhost:7256/api/User/${email}`, {
       const response = await fetch(
         `https://proj.ruppin.ac.il/igroup15/test2/tar1/api/User/${email}`,
         {
@@ -71,6 +69,7 @@ export default function LogIn() {
       Alert.alert("שגיאה", "בעיה בחיבור לשרת");
     }
   };
+
   const storeData = async (data) => {
     try {
       await AsyncStorage.setItem("user", JSON.stringify(data)); // Store user data
@@ -84,6 +83,7 @@ export default function LogIn() {
       console.error(e);
     }
   };
+
   return (
     <SafeAreaProvider>
       <SafeAreaView style={styles.logo}>
@@ -106,6 +106,7 @@ export default function LogIn() {
             placeholder="אימייל"
             value={email}
             onChangeText={setEmail}
+            editable={!loading} // Disable input when loading
           />
           <TextInput
             style={styles.input}
@@ -113,6 +114,7 @@ export default function LogIn() {
             secureTextEntry
             value={password}
             onChangeText={setPassword}
+            editable={!loading} // Disable input when loading
           />
           <View style={styles.rememberMeContainer}>
             <Checkbox
@@ -125,8 +127,16 @@ export default function LogIn() {
             <Text style={styles.color}>זכור אותי</Text>
           </View>
           <View>
-            <TouchableOpacity style={styles.button} onPress={sendData}>
-              <Text style={styles.buttonText}>התחברות</Text>
+            <TouchableOpacity
+              style={styles.button}
+              onPress={sendData}
+              disabled={loading} // Disable button when loading
+            >
+              {loading ? (
+                <ActivityIndicator size="small" color="black" />
+              ) : (
+                <Text style={styles.buttonText}>התחברות</Text>
+              )}
             </TouchableOpacity>
           </View>
           <View style={styles.options}>
@@ -173,6 +183,8 @@ const styles = StyleSheet.create({
     padding: 15,
     borderRadius: 5,
     width: 300,
+    alignItems: "center", // Center content horizontally
+    justifyContent: "center", // Center content vertically
   },
   buttonText: {
     color: "black",
@@ -194,8 +206,5 @@ const styles = StyleSheet.create({
   color: {
     color: "white",
     fontSize: 16,
-  },
-  checkbox: {
-    backgroundColor: "white", // Set the background color of the checkbox
   },
 });

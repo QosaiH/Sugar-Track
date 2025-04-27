@@ -61,7 +61,7 @@ export default function Chat({ userData }) {
 }
 
 function PrivateChats({ userData }) {
-  const [privateChats, setPrivateChats] = useState([]);
+  const [privateChats, setPrivateChats] = useState([]); // Store private chats
   const [users, setUsers] = useState({}); // To store user data by userId
   const router = useRouter(); // Use router for navigation
 
@@ -75,12 +75,35 @@ function PrivateChats({ userData }) {
           ...doc.data(),
         }));
 
-        // Use a Set to filter out duplicate chats
-        const uniqueChats = Array.from(
-          new Set(chats.map((chat) => chat.id))
-        ).map((id) => chats.find((chat) => chat.id === id));
+        // Filter chats to include only those that the current user is a part of
+        const userChats = chats.filter((chat) =>
+          chat.users.includes(userData.id)
+        );
 
-        setPrivateChats(uniqueChats);
+        // Filter unique chats using a Map
+        const uniqueChatsMap = new Map();
+        userChats.forEach((chat) => {
+          // Use chat ID as the key in the Map
+          if (!uniqueChatsMap.has(chat.id)) {
+            uniqueChatsMap.set(chat.id, chat);
+          }
+        });
+
+        // Convert the Map values back to an array
+        const uniqueChats = Array.from(uniqueChatsMap.values());
+
+        // Update state only if there’s a change
+        setPrivateChats((prevChats) => {
+          if (
+            prevChats.length === uniqueChats.length &&
+            prevChats.every((prevChat, index) =>
+              isEqual(prevChat, uniqueChats[index])
+            )
+          ) {
+            return prevChats; // No change, avoid re-render
+          }
+          return uniqueChats;
+        });
       }
     );
 
@@ -100,7 +123,12 @@ function PrivateChats({ userData }) {
       unsubscribePrivateChats();
       unsubscribeUsers();
     };
-  }, []);
+  }, [userData.id]); // Add userData.id as a dependency
+
+  // Helper function to compare objects for equality
+  const isEqual = (obj1, obj2) => {
+    return JSON.stringify(obj1) === JSON.stringify(obj2);
+  };
 
   return (
     <View>
