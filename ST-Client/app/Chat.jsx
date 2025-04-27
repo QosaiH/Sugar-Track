@@ -12,7 +12,7 @@ import {
   Image,
   Platform,
 } from "react-native";
-import { db } from "../fireBaseConfig"; // Import Firestore instance
+import { db } from "../fireBaseConfig";
 import {
   collection,
   onSnapshot,
@@ -21,8 +21,10 @@ import {
   arrayUnion,
 } from "firebase/firestore";
 import { Link, useLocalSearchParams, useRouter } from "expo-router";
+
 export default function Chat({ userData }) {
   const [activeTab, setActiveTab] = useState("private");
+
   return (
     <SafeAreaView style={styles.container}>
       <ImageBackground
@@ -62,12 +64,13 @@ export default function Chat({ userData }) {
 }
 
 function PrivateChats({ userData }) {
-  const [privateChats, setPrivateChats] = useState([]); // Store private chats
-  const [users, setUsers] = useState({}); // To store user data by userId
-  const router = useRouter(); // Use router for navigation
+  const [privateChats, setPrivateChats] = useState([]);
+  const [users, setUsers] = useState({});
+  const [searchQuery, setSearchQuery] = useState("");
+  const [filteredChats, setFilteredChats] = useState([]);
+  const router = useRouter();
 
   useEffect(() => {
-    // Fetch private chats
     const unsubscribePrivateChats = onSnapshot(
       collection(db, "privateChats"),
       (snapshot) => {
@@ -76,24 +79,19 @@ function PrivateChats({ userData }) {
           ...doc.data(),
         }));
 
-        // Filter chats to include only those that the current user is a part of
         const userChats = chats.filter((chat) =>
           chat.users.includes(userData.id)
         );
 
-        // Filter unique chats using a Map
         const uniqueChatsMap = new Map();
         userChats.forEach((chat) => {
-          // Use chat ID as the key in the Map
           if (!uniqueChatsMap.has(chat.id)) {
             uniqueChatsMap.set(chat.id, chat);
           }
         });
 
-        // Convert the Map values back to an array
         const uniqueChats = Array.from(uniqueChatsMap.values());
 
-        // Update state only if there’s a change
         setPrivateChats((prevChats) => {
           if (
             prevChats.length === uniqueChats.length &&
@@ -101,20 +99,19 @@ function PrivateChats({ userData }) {
               isEqual(prevChat, uniqueChats[index])
             )
           ) {
-            return prevChats; // No change, avoid re-render
+            return prevChats;
           }
           return uniqueChats;
         });
       }
     );
 
-    // Fetch users
     const unsubscribeUsers = onSnapshot(
-      collection(db, "user"), // Assuming you have a users collection
+      collection(db, "user"),
       (snapshot) => {
         const usersData = {};
         snapshot.docs.forEach((doc) => {
-          usersData[doc.id] = doc.data(); // Store user data by userId
+          usersData[doc.id] = doc.data();
         });
         setUsers(usersData);
       }
@@ -124,36 +121,56 @@ function PrivateChats({ userData }) {
       unsubscribePrivateChats();
       unsubscribeUsers();
     };
-  }, [userData.id]); // Add userData.id as a dependency
+  }, [userData.id]);
 
-  // Helper function to compare objects for equality
+  useEffect(() => {
+    // Filter chats whenever searchQuery or privateChats change
+    if (searchQuery) {
+      const filtered = privateChats.filter((chat) => {
+        const otherUserId = chat.users.find((id) => id !== userData.id);
+        const otherUser = users[otherUserId];
+        return (
+          otherUser &&
+          otherUser.username
+            .toLowerCase()
+            .includes(searchQuery.toLowerCase())
+        );
+      });
+      setFilteredChats(filtered);
+    } else {
+      setFilteredChats(privateChats);
+    }
+  }, [searchQuery, privateChats, users, userData.id]);
+
   const isEqual = (obj1, obj2) => {
     return JSON.stringify(obj1) === JSON.stringify(obj2);
   };
 
   return (
     <View>
+      <TextInput
+        style={styles.input}
+        value={searchQuery}
+        onChangeText={setSearchQuery}
+        placeholder="...חפש צ'אט פרטי"
+      />
       <Text style={styles.sectionTitle}>רשימת צ'אטים פרטיים</Text>
-      {privateChats.length === 0 ? (
+      {filteredChats.length === 0 ? (
         <Text style={styles.noChatsText}>אין צ'אטים פרטיים זמינים</Text>
       ) : (
         <FlatList
-          data={privateChats}
+          data={filteredChats}
           renderItem={({ item }) => {
-            // Get the other user's ID
             const otherUserId = item.users.find((id) => id !== userData.id);
 
-            // Check if otherUser Id is valid
             if (!otherUserId) {
               console.warn(`No valid other user ID found for chat: ${item.id}`);
-              return null; // Skip rendering this item
+              return null;
             }
 
-            const otherUser = users[otherUserId]; // Get the other user's data
-
-            // Check if otherUser  exists
+            const otherUser = users[otherUserId];
             if (!otherUser) {
-              return null; // Skip rendering this item
+              return null;
             }
 
             return (
@@ -161,7 +178,6 @@ function PrivateChats({ userData }) {
                 key={item.id}
                 style={styles.chatItem}
                 onPress={() => {
-                  // Navigate to the private chat screen with chat ID and other user data
                   router.push({
                     pathname: "/privateChatScreen",
                     params: {
@@ -173,7 +189,7 @@ function PrivateChats({ userData }) {
                 <Image
                   source={{
                     uri: `data:image/png;base64,${otherUser.profilePicture}`,
-                  }} // Assuming profilePicture is a field in user data
+                  }}
                   style={styles.profileImage}
                 />
                 <Text style={styles.chatText}>{otherUser.username}</Text>
@@ -196,7 +212,6 @@ function Communities({ userData }) {
   const router = useRouter();
 
   useEffect(() => {
-    // Fetch all groups
     const unsubscribeAllGroups = onSnapshot(
       collection(db, "community"),
       (querySnapshot) => {
@@ -205,11 +220,10 @@ function Communities({ userData }) {
           ...doc.data(),
         }));
         setGroups(allGroupsData);
-        setFilteredGroups(allGroupsData); // Initialize filtered groups
+        setFilteredGroups(allGroupsData);
       }
     );
 
-    // Fetch user's groups
     const unsubscribeUserGroups = onSnapshot(
       collection(db, "community"),
       (querySnapshot) => {
@@ -218,7 +232,7 @@ function Communities({ userData }) {
             id: doc.id,
             ...doc.data(),
           }))
-          .filter((group) => group.members && group.members.includes(userId)); // Filter groups where user is a member
+          .filter((group) => group.members && group.members.includes(userId));
 
         setUserGroups(userGroupsData);
       }
@@ -272,11 +286,11 @@ function Communities({ userData }) {
             }}>
             <View style={styles.groupItem}>
               <Image
-                source={{ uri: `data:image/png;base64,${item.photo}` }} // Use the base64 string directly
+                source={{ uri: `data:image/png;base64,${item.photo}` }}
                 style={styles.groupImage}
               />
               <Text style={styles.groupName}>{item.name}</Text>
-              {!userGroups.some((group) => group.id === item.id) && ( // Check if user is not a member
+              {!userGroups.some((group) => group.id === item.id) && (
                 <Button title="הצטרף" onPress={() => joinGroup(item.id)} />
               )}
             </View>
@@ -354,13 +368,13 @@ const styles = StyleSheet.create({
     textAlign: "right",
     flex: 1,
     fontSize: 16,
-    marginRight: 10, // Add some space between the text and the image
+    marginRight: 10,
     color: "black",
   },
   groupImage: {
     width: 50,
     height: 50,
-    borderRadius: 10, // Make the image circular
+    borderRadius: 10,
   },
   chatItem: {
     flexDirection: "row-reverse",
@@ -374,7 +388,7 @@ const styles = StyleSheet.create({
   profileImage: {
     width: 50,
     height: 50,
-    borderRadius: 25, // Make the image circular
+    borderRadius: 25,
     marginRight: 10,
   },
   chatText: {
