@@ -7,6 +7,7 @@ import {
   StyleSheet,
   Image,
   Animated,
+  Platform,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -124,7 +125,7 @@ export default function Home({ userData }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#f0f4f7",
+    marginTop: Platform.OS === "ios" ? 0 : 0,
   },
   background: {
     flex: 1,
@@ -132,6 +133,7 @@ const styles = StyleSheet.create({
     height: "100%",
     justifyContent: "space-around",
     alignItems: "center",
+    marginBottom: Platform.OS === "ios" ? -30 : 0,
   },
   bellButton: {
     position: "absolute",

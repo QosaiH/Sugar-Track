@@ -1,5 +1,11 @@
 import React from "react";
-import { Text, View, ImageBackground, StyleSheet } from "react-native";
+import {
+  Text,
+  View,
+  ImageBackground,
+  StyleSheet,
+  Platform,
+} from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function Forum() {
@@ -10,7 +16,7 @@ export default function Forum() {
         source={require("../Images/Vector.png")}
         resizeMode="cover">
         <View>
-          <Text style={styles.color}>  שלום פורום</Text>
+          <Text style={styles.color}> שלום פורום</Text>
         </View>
       </ImageBackground>
     </SafeAreaView>
@@ -20,13 +26,15 @@ export default function Forum() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    alignItems: "center",
+    marginTop: Platform.OS === "ios" ? 0 : 0,
   },
   background: {
     flex: 1,
     width: "100%",
-    justifyContent: "center",
+    height: "100%",
+    justifyContent: "space-around",
     alignItems: "center",
+    marginBottom: Platform.OS === "ios" ? -30 : 0,
   },
   color: {
     color: "white",

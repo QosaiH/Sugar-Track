@@ -10,6 +10,7 @@ import {
   FlatList,
   Button,
   Image,
+  Platform,
 } from "react-native";
 import { db } from "../fireBaseConfig"; // Import Firestore instance
 import {
@@ -290,13 +291,16 @@ function Communities({ userData }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    marginTop: Platform.OS === "ios" ? 0 : 0,
   },
   background: {
     flex: 1,
     width: "100%",
-    paddingTop: 20,
+    height: "100%",
+    marginBottom: Platform.OS === "ios" ? -30 : 0,
   },
   tabContainer: {
+    paddingTop: 30,
     flexDirection: "row",
     justifyContent: "space-around",
     alignSelf: "center",

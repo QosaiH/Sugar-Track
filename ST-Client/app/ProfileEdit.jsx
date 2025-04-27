@@ -9,6 +9,7 @@ import {
   TextInput,
   Alert,
   ActivityIndicator,
+  Platform,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
@@ -23,8 +24,8 @@ const ProfileEdit = () => {
   const [loading, setLoading] = useState(true);
   const [formData, setFormData] = useState({});
   const [profileImage, setProfileImage] = useState(null);
-  const [newPassword, setNewPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [passwordMismatch, setPasswordMismatch] = useState(false);
 
   useEffect(() => {
@@ -117,19 +118,16 @@ const ProfileEdit = () => {
       <ImageBackground
         style={styles.background}
         source={require("../Images/Vector.png")}
-        resizeMode="cover"
-      >
+        resizeMode="cover">
         <TouchableOpacity
           onPress={() => setIsEditing(!isEditing)}
-          style={styles.editIcon}
-        >
+          style={styles.editIcon}>
           <Ionicons name="create-outline" size={28} color="white" />
         </TouchableOpacity>
 
         <TouchableOpacity
           onPress={pickImage}
-          style={styles.profileImageContainer}
-        >
+          style={styles.profileImageContainer}>
           <Image
             source={{
               uri: profileImage,
@@ -139,9 +137,13 @@ const ProfileEdit = () => {
         </TouchableOpacity>
 
         <View style={styles.form}>
-          {[ 
+          {[
             { field: "name", icon: "person-outline", label: "שם מלא" },
-            { field: "userName", icon: "person-circle-outline", label: "שם משתמש" },
+            {
+              field: "userName",
+              icon: "person-circle-outline",
+              label: "שם משתמש",
+            },
             { field: "email", icon: "mail-outline", label: "אימייל" },
             { field: "password", icon: "lock-closed-outline", label: "סיסמה" },
           ].map(({ field, icon, label }) => (
@@ -223,14 +225,15 @@ export default ProfileEdit;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#000",
+    marginTop: Platform.OS === "ios" ? -70 : 0,
   },
   background: {
     flex: 1,
-    height: "100%",
     width: "100%",
-    justifyContent: "center",
+    height: "100%",
+    justifyContent: "space-around",
     alignItems: "center",
+    marginBottom: Platform.OS === "ios" ? -30 : 0,
   },
   editIcon: {
     position: "absolute",
@@ -240,7 +243,7 @@ const styles = StyleSheet.create({
   },
   profileImageContainer: {
     marginTop: 20,
-    marginBottom: 30,
+    marginBottom: -200,
     borderRadius: 75,
     overflow: "hidden",
     borderWidth: 2,

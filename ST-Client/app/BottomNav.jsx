@@ -1,4 +1,4 @@
-import { View, StyleSheet, TouchableOpacity } from "react-native";
+import { View, StyleSheet, TouchableOpacity, Platform } from "react-native";
 import React, { useState, useEffect } from "react";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
@@ -63,6 +63,7 @@ export default function BottomNav() {
             shadowOpacity: 0,
             width: "100%",
             height: 60,
+            marginBottom: Platform.OS === "ios" ? 30 : 0,
           },
           tabBarActiveTintColor: "white",
           tabBarInactiveTintColor: "white",

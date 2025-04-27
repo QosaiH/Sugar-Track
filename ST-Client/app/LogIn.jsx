@@ -8,6 +8,7 @@ import {
   TextInput,
   Alert,
   ActivityIndicator,
+  Platform,
 } from "react-native";
 import { SafeAreaView, SafeAreaProvider } from "react-native-safe-area-context";
 import { Checkbox } from "react-native-paper";
@@ -155,6 +156,8 @@ const styles = StyleSheet.create({
   logo: {
     flex: 1,
     alignItems: "center",
+    height: "100%",
+    marginBottom: Platform.OS === "ios" ? -35 : 0,
   },
   upperSide: {
     alignItems: "center",

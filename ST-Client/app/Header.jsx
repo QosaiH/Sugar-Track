@@ -1,5 +1,5 @@
 import React from "react";
-import { Text, View, Image, StyleSheet } from "react-native";
+import { Text, View, Image, StyleSheet, Platform } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 
@@ -18,13 +18,14 @@ export default function header() {
 
 const styles = StyleSheet.create({
   header: {
-    padding: 10,
     flexDirection: "row",
     justifyContent: "space-between",
     width: "100%",
     height: 75,
     alignItems: "center",
     backgroundColor: "white",
+    marginBottom: Platform.OS === "ios" ? -35 : 0,
+    paddingHorizontal: 10,
   },
   points: {
     color: "black",

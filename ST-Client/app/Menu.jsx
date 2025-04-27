@@ -38,7 +38,11 @@ export default function Menu({ isVisible, onClose }) {
     flex: 1,
     width: "100%",
     height: "100%",
-    marginTop: Platform.OS === "web" ? 138 : 130, // Different margin for web and mobile
+    marginTop: Platform.select({
+      ios: 170, // Margin for iOS
+      web: 138, // Margin for web
+      android: 130, // Margin for Android (or other platforms)
+    }),
   };
 
   return (
