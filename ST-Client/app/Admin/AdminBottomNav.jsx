@@ -11,6 +11,7 @@ import Users from "./Users";
 import AdminChats from "./AdminChats";
 import Menu from "./Menu";
 import Header from "./Header";
+import { ImageBackground } from "react-native-web";
 
 const Tab = createBottomTabNavigator();
 
@@ -49,65 +50,70 @@ export default function AdminBottomNav() {
   return (
     <SafeAreaProvider>
       <Header />
+      <ImageBackground
+        source={require("../../Images/Vector.png")}
+        style={{ flex: 1, width: "100%" }}>
+        <Tab.Navigator
+          initialRouteName="AdminHome"
+          screenOptions={({ route }) => ({
+            tabBarIcon: ({ focused, color, size }) => {
+              let iconName;
 
-      <Tab.Navigator
-        initialRouteName="AdminHome"
-        screenOptions={({ route }) => ({
-          tabBarIcon: ({ focused, color, size }) => {
-            let iconName;
+              switch (route.name) {
+                case "Users":
+                  iconName = focused
+                    ? "account-group"
+                    : "account-group-outline";
+                  break;
+                case "AdminHome":
+                  iconName = focused
+                    ? "view-dashboard"
+                    : "view-dashboard-outline";
+                  break;
+                case "AdminChats":
+                  iconName = focused ? "chat" : "chat-outline";
+                  break;
+                case "Menu":
+                  iconName = "menu";
+                  break;
+              }
 
-            switch (route.name) {
-              case "Users":
-                iconName = focused ? "account-group" : "account-group-outline";
-                break;
-              case "AdminHome":
-                iconName = focused
-                  ? "view-dashboard"
-                  : "view-dashboard-outline";
-                break;
-              case "AdminChats":
-                iconName = focused ? "chat" : "chat-outline";
-                break;
-              case "Menu":
-                iconName = "menu";
-                break;
-            }
-
-            return <Icon name={iconName} size={size} color={color} />;
-          },
-          tabBarStyle: {
-            backgroundColor: "transparent",
-            position: "absolute",
-            borderTopWidth: 0,
-            elevation: 0,
-            shadowOpacity: 0,
-            width: "100%",
-            height: 60,
-          },
-          tabBarActiveTintColor: "white",
-          tabBarInactiveTintColor: "white",
-          headerShown: false,
-        })}>
-        <Tab.Screen name="Users">
-          {() => <Users userData={userData} />}
-        </Tab.Screen>
-        <Tab.Screen name="AdminHome">
-          {() => <AdminHome userData={userData} />}
-        </Tab.Screen>
-        <Tab.Screen name="AdminChats">
-          {() => <AdminChats userData={userData} />}
-        </Tab.Screen>
-        <Tab.Screen
-          name="Menu"
-          component={() => null}
-          listeners={{
-            tabPress: (e) => {
-              e.preventDefault();
-              setDrawerVisible(true);
+              return <Icon name={iconName} size={size} color={color} />;
             },
-          }}
-        />
-      </Tab.Navigator>
+            tabBarStyle: {
+              backgroundColor: "transparent",
+              borderTopWidth: 0,
+              elevation: 0,
+              shadowOpacity: 0,
+              width: "100%",
+              height: 60,
+              zIndex: 1,
+            },
+            tabBarActiveTintColor: "white",
+            tabBarInactiveTintColor: "white",
+            headerShown: false,
+          })}>
+          <Tab.Screen name="Users">
+            {() => <Users userData={userData} />}
+          </Tab.Screen>
+          <Tab.Screen name="AdminHome">
+            {() => <AdminHome userData={userData} />}
+          </Tab.Screen>
+          <Tab.Screen name="AdminChats">
+            {() => <AdminChats userData={userData} />}
+          </Tab.Screen>
+          <Tab.Screen
+            name="Menu"
+            component={() => null}
+            listeners={{
+              tabPress: (e) => {
+                e.preventDefault();
+                setDrawerVisible(true);
+              },
+            }}
+          />
+        </Tab.Navigator>
+      </ImageBackground>
 
       <Menu isVisible={drawerVisible} onClose={() => setDrawerVisible(false)} />
     </SafeAreaProvider>
