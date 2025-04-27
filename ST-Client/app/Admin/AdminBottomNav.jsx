@@ -11,7 +11,7 @@ import Users from "./Users";
 import AdminChats from "./AdminChats";
 import Menu from "./Menu";
 import Header from "./Header";
-import { ImageBackground } from "react-native-web";
+import { ImageBackground } from "react-native";
 
 const Tab = createBottomTabNavigator();
 

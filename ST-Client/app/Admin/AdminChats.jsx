@@ -60,7 +60,8 @@ export default function AdminChats() {
   const performDeleteChat = async () => {
     try {
       const { chatId, type } = chatToDelete;
-      const collectionName = type === "community" ? "community" : "privateChats";
+      const collectionName =
+        type === "community" ? "community" : "privateChats";
       const chatRef = doc(db, collectionName, chatId);
       await deleteDoc(chatRef);
       console.log(`${type} chat deleted successfully!`);
@@ -96,12 +97,18 @@ export default function AdminChats() {
           keyExtractor={(_, index) => index.toString()}
           renderItem={({ item }) => (
             <View style={styles.messageItem}>
-              <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 5 }}>
-                <Text style={styles.messageSender}>{item.sender || "לא ידוע"}:</Text>
+              <View
+                style={{
+                  flexDirection: "row",
+                  alignItems: "center",
+                  marginBottom: 5,
+                }}>
+                <Text style={styles.messageSender}>
+                  {item.senderName || "לא ידוע"}:
+                </Text>
                 <TouchableOpacity
                   style={styles.viewButton}
-                  onPress={() => alert(`צפייה בפרטים של ${item.sender}`)}
-                >
+                  onPress={() => alert(`צפייה בפרטים של ${item.senderName}`)}>
                   <Text style={styles.viewButtonText}>צפה</Text>
                 </TouchableOpacity>
               </View>
@@ -123,20 +130,19 @@ export default function AdminChats() {
           {type === "community" ? "קהילה" : "שיחה"}: {item.name || item.id}
         </Text>
         <Text style={styles.chatMessage}>
-          {item.messages?.[item.messages.length - 1]?.text || "אין הודעות עדיין"}
+          {item.messages?.[item.messages.length - 1]?.text ||
+            "אין הודעות עדיין"}
         </Text>
       </View>
       <View style={styles.actions}>
         <TouchableOpacity
           style={styles.viewChatButton}
-          onPress={() => openModal(item, type)}
-        >
+          onPress={() => openModal(item, type)}>
           <Text style={styles.buttonText}>צפייה</Text>
         </TouchableOpacity>
         <TouchableOpacity
           style={styles.deleteButton}
-          onPress={() => confirmDeleteChat(item.id, type)}
-        >
+          onPress={() => confirmDeleteChat(item.id, type)}>
           <Text style={styles.buttonText}>מחיקה</Text>
         </TouchableOpacity>
       </View>
@@ -148,16 +154,14 @@ export default function AdminChats() {
       <ImageBackground
         style={styles.background}
         source={require("../../Images/Vector.png")}
-        resizeMode="cover"
-      >
+        resizeMode="cover">
         <View style={styles.toggleContainer}>
           <TouchableOpacity
             style={[
               styles.toggleButton,
               showType === "private" && styles.toggleButtonActive,
             ]}
-            onPress={() => setShowType("private")}
-          >
+            onPress={() => setShowType("private")}>
             <Text style={styles.toggleButtonText}>צ'אטים פרטיים </Text>
           </TouchableOpacity>
           <TouchableOpacity
@@ -165,8 +169,7 @@ export default function AdminChats() {
               styles.toggleButton,
               showType === "community" && styles.toggleButtonActive,
             ]}
-            onPress={() => setShowType("community")}
-          >
+            onPress={() => setShowType("community")}>
             <Text style={styles.toggleButtonText}>קהילות</Text>
           </TouchableOpacity>
         </View>
@@ -182,33 +185,37 @@ export default function AdminChats() {
           animationType="slide"
           transparent={true}
           visible={modalVisible}
-          onRequestClose={closeModal}
-        >
-          <View style={styles.modalBackground}>
-            {renderModalContent()}
-          </View>
+          onRequestClose={closeModal}>
+          <View style={styles.modalBackground}>{renderModalContent()}</View>
         </Modal>
 
         <Modal
           animationType="fade"
           transparent={true}
           visible={deleteConfirmVisible}
-          onRequestClose={() => setDeleteConfirmVisible(false)}
-        >
+          onRequestClose={() => setDeleteConfirmVisible(false)}>
           <View style={styles.modalBackground}>
             <View style={styles.modalContent}>
-              <Text style={styles.modalTitle}>האם אתה בטוח שברצונך למחוק את השיחה הזו?</Text>
-              <View style={{ flexDirection: "row", justifyContent: "space-around", marginTop: 20 }}>
+              <Text style={styles.modalTitle}>
+                האם אתה בטוח שברצונך למחוק את השיחה הזו?
+              </Text>
+              <View
+                style={{
+                  flexDirection: "row",
+                  justifyContent: "space-around",
+                  marginTop: 20,
+                }}>
                 <TouchableOpacity
                   style={[styles.viewChatButton, { paddingHorizontal: 20 }]}
-                  onPress={performDeleteChat}
-                >
+                  onPress={performDeleteChat}>
                   <Text style={styles.buttonText}>כן, מחק</Text>
                 </TouchableOpacity>
                 <TouchableOpacity
-                  style={[styles.deleteButton, { backgroundColor: "#999", paddingHorizontal: 20 }]}
-                  onPress={() => setDeleteConfirmVisible(false)}
-                >
+                  style={[
+                    styles.deleteButton,
+                    { backgroundColor: "#999", paddingHorizontal: 20 },
+                  ]}
+                  onPress={() => setDeleteConfirmVisible(false)}>
                   <Text style={styles.buttonText}>ביטול</Text>
                 </TouchableOpacity>
               </View>

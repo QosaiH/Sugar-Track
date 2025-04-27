@@ -9,12 +9,12 @@ import {
   Alert,
   Modal,
   TouchableOpacity,
-  CheckBox,
   Button,
   TextInput,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { BlurView } from "expo-blur";
+import { Checkbox } from "react-native-paper";
 
 export default function Users() {
   const [users, setUsers] = useState([]);
@@ -103,8 +103,7 @@ export default function Users() {
       <ImageBackground
         style={styles.background}
         source={require("../../Images/Vector.png")}
-        resizeMode="cover"
-      >
+        resizeMode="cover">
         <TextInput
           style={styles.searchInput}
           placeholder="...חיפוש משתמשים"
@@ -131,12 +130,13 @@ export default function Users() {
               <View key={user.id}>
                 <TouchableOpacity
                   style={styles.tableRow}
-                  onPress={() => toggleUserDetails(user.id)}
-                >
+                  onPress={() => toggleUserDetails(user.id)}>
                   <View style={styles.tableCell}>
-                    <CheckBox
-                      value={user.isActive}
-                      onValueChange={() => openStatusModal(user)}
+                    <Checkbox
+                      status={user.isActive ? "checked" : "unchecked"}
+                      onPress={() => openStatusModal(user)}
+                      color="white"
+                      uncheckedColor="white"
                     />
                   </View>
                   <View style={styles.tableCell}>
@@ -144,11 +144,11 @@ export default function Users() {
                       style={[
                         styles.tableCellText,
                         {
-                          color: user.isActive ? "#4CAF50" : "#FF6B6B",
+                          color: "white",
                           fontWeight: "bold",
+                          backgroundColor: user.isActive ? "green" : "red",
                         },
-                      ]}
-                    >
+                      ]}>
                       {user.isActive ? "פעיל" : "לא פעיל"}
                     </Text>
                   </View>
@@ -196,8 +196,7 @@ export default function Users() {
           visible={modalVisible}
           transparent={true}
           animationType="fade"
-          onRequestClose={() => setModalVisible(false)}
-        >
+          onRequestClose={() => setModalVisible(false)}>
           <View style={styles.modalBackground}>
             <View style={styles.modalContainer}>
               <Text style={styles.modalTitle}>
@@ -232,20 +231,20 @@ const styles = StyleSheet.create({
     flex: 1,
     width: "100%",
     paddingTop: 40,
-   // alignItems: "center",
+    // alignItems: "center",
   },
   title: {
     color: "white",
     fontSize: 26,
     fontWeight: "bold",
     marginBottom: 20,
-    textAlign:"center",
+    textAlign: "center",
   },
   searchInput: {
     height: 40,
     width: "90%",
-    textAlign:"right",
-    alignSelf:"center",
+    textAlign: "right",
+    alignSelf: "center",
     backgroundColor: "white",
     borderRadius: 8,
     paddingHorizontal: 10,
@@ -268,7 +267,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     paddingVertical: 10,
     width: "100%",
-    backgroundColor: "rgba(105, 98, 98, 0.8)",
+    //backgroundColor: "rgba(105, 98, 98, 0.8)",
     borderRadius: 8,
   },
   tableHeaderText: {
@@ -292,7 +291,8 @@ const styles = StyleSheet.create({
   },
   tableCellText: {
     fontSize: 16,
-    color: "#333",
+    color: "white",
+    textAlign: "center",
   },
   userDetailsContainer: {
     padding: 10,
@@ -302,7 +302,7 @@ const styles = StyleSheet.create({
     marginHorizontal: 15,
     borderWidth: 1,
     borderColor: "#ddd",
-    color:"white",
+    color: "white",
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.3,
@@ -313,12 +313,14 @@ const styles = StyleSheet.create({
   },
   userDetailsText: {
     fontSize: 14,
-    color: "black",
+    color: "white",
     marginVertical: 5,
+    textAlign: "right",
   },
   detailsLabel: {
     fontWeight: "bold",
-    color: "#555",
+    color: "white",
+    textAlign: "right",
   },
   modalBackground: {
     flex: 1,

@@ -7,11 +7,11 @@ import {
   FlatList,
   ActivityIndicator,
   TextInput,
-  TouchableOpacity, // Import TouchableOpacity
+  TouchableOpacity,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { db } from "../../fireBaseConfig";
-import { collection, onSnapshot } from "firebase/firestore";
+import { collection, onSnapshot, getDocs } from "firebase/firestore";
 
 export default function AdminHome() {
   const [reports, setReports] = useState([]);
@@ -19,28 +19,84 @@ export default function AdminHome() {
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [expandedRows, setExpandedRows] = useState({});
+  const [userMap, setUserMap] = useState({});
+  const [communityMap, setCommunityMap] = useState({});
 
   useEffect(() => {
-    const unsubscribe = onSnapshot(collection(db, "reports"), (snapshot) => {
-      const reportList = snapshot.docs.map((doc) => ({
-        id: doc.id,
-        ...doc.data(),
-      }));
-      setReports(reportList);
-      setFilteredReports(reportList);
-      setLoading(false);
-    });
+    // נטען את כל המשתמשים
+    const loadUsers = async () => {
+      try {
+        const querySnapshot = await getDocs(collection(db, "user"));
+        const users = {};
+        querySnapshot.forEach((doc) => {
+          users[doc.id] =
+            doc.data().fullName || doc.data().name || "שם לא ידוע";
+        });
+        setUserMap(users);
+      } catch (error) {
+        console.error("Failed to load users:", error);
+      }
+    };
 
-    return () => unsubscribe();
+    const loadCommunities = async () => {
+      try {
+        const querySnapshot = await getDocs(collection(db, "community"));
+        const communities = {};
+        querySnapshot.forEach((doc) => {
+          communities[doc.id] = doc.data().name || "קהילה לא ידועה";
+        });
+        setCommunityMap(communities);
+      } catch (error) {
+        console.error("Failed to load communities:", error);
+      }
+    };
+
+    // נטען הכל במקביל
+    const loadData = async () => {
+      await Promise.all([loadUsers(), loadCommunities()]);
+
+      const unsubscribe = onSnapshot(collection(db, "reports"), (snapshot) => {
+        const reportList = snapshot.docs.map((docSnap) => {
+          const reportData = docSnap.data();
+          return {
+            id: docSnap.id,
+            ...reportData,
+          };
+        });
+        setReports(reportList);
+        setFilteredReports(reportList);
+        setLoading(false);
+      });
+
+      return unsubscribe;
+    };
+
+    const unsubscribePromise = loadData();
+
+    return () => {
+      unsubscribePromise.then((unsubscribe) => unsubscribe());
+    };
   }, []);
 
   const handleSearch = (text) => {
     setSearchQuery(text);
     const query = text.toLowerCase();
-    const filtered = reports.filter((report) =>
-      (report.communityId || "").toLowerCase().includes(query) ||
-      (report.messageId || "").toLowerCase().includes(query) ||
-      (report.text || "").toLowerCase().includes(query)
+    const filtered = reports.filter(
+      (report) =>
+        // Search by reporter name or ID
+        `${userMap[report.reportedBy]} (${report.reportedBy})`
+          .toLowerCase()
+          .includes(query) ||
+        // Search by community name or ID
+        `${communityMap[report.communityId]} (${report.communityId})`
+          .toLowerCase()
+          .includes(query) ||
+        // Search by sender name or ID
+        `${userMap[report.senderId]} (${report.senderId})`
+          .toLowerCase()
+          .includes(query) ||
+        // Search by message content
+        (report.text || "").toLowerCase().includes(query)
     );
     setFilteredReports(filtered);
   };
@@ -55,24 +111,43 @@ export default function AdminHome() {
   const renderReportItem = ({ item }) => {
     const isExpanded = expandedRows[item.id];
 
+    // Get user and community names/IDs
+    const reporterName = userMap[item.reportedBy] || "לא ידוע";
+    const senderName = userMap[item.senderId] || "לא ידוע";
+    const communityName = communityMap[item.communityId] || "לא ידוע";
+
     return (
       <View style={styles.rowWrapper}>
-        <TouchableOpacity 
-          style={styles.row} 
-          onPress={() => toggleExpand(item.id)} // Change onTouchEnd to onPress
-          activeOpacity={0.7} // Add an active opacity effect when touched
-        >
-          <Text style={styles.cell}>{item.reportedBy}</Text>
-          <Text style={styles.cell}>{item.communityId || "לא זמין"}</Text>
+        <TouchableOpacity
+          style={styles.row}
+          onPress={() => toggleExpand(item.id)}
+          accessibilityLabel={`פרטים נוספים עבור דיווח ${item.id}`}
+          activeOpacity={0.7}>
+          {/* Reporter */}
+          <Text style={styles.cell}>
+            {`${reporterName} (${item.reportedBy})`}
+          </Text>
+          {/* Community */}
+          <Text style={styles.cell}>
+            {`${communityName} (${item.communityId})`}
+          </Text>
+          {/* Expand/Collapse Indicator */}
           <Text style={styles.expandText}>{isExpanded ? "▲" : "▼"}</Text>
         </TouchableOpacity>
         {isExpanded && (
           <View style={styles.dropdown}>
-            <Text style={styles.detailText}>מזהה הודעה: {item.messageId}</Text>
-            <Text style={styles.detailText}>שולח ההודעה: {item.senderId}</Text>
-            <Text style={styles.detailText}>תוכן ההודעה: {item.text}</Text>
+            {/* Sender Details */}
             <Text style={styles.detailText}>
-              זמן הדיווח: {new Date(item.timestamp).toLocaleString()}
+              שולח ההודעה: {`${senderName} (${item.senderId})`}
+            </Text>
+            {/* Message Content */}
+            <Text style={styles.detailText}>תוכן ההודעה: {item.text}</Text>
+            {/* Timestamp */}
+            <Text style={styles.detailText}>
+              זמן הדיווח:{" "}
+              {item.timestamp
+                ? new Date(item.timestamp).toLocaleString()
+                : "אין תאריך"}
             </Text>
           </View>
         )}
@@ -85,27 +160,30 @@ export default function AdminHome() {
       <ImageBackground
         style={styles.background}
         source={require("../../Images/Vector.png")}
-        resizeMode="cover"
-      >
+        resizeMode="cover">
         <Text style={styles.header}>ניהול דיווחים</Text>
 
         <TextInput
           style={styles.searchInput}
-          placeholder="חיפוש לפי מזהה או תוכן"
+          placeholder="חיפוש לפי מזהה, שם או תוכן"
           placeholderTextColor="#aaa"
           value={searchQuery}
           onChangeText={handleSearch}
         />
 
         {loading ? (
-          <ActivityIndicator size="large" color="#fff" style={{ marginTop: 30 }} />
+          <ActivityIndicator
+            size="large"
+            color="#fff"
+            style={{ marginTop: 30 }}
+          />
         ) : filteredReports.length === 0 ? (
           <Text style={styles.noReports}>אין דיווחים התואמים לחיפוש.</Text>
         ) : (
           <>
             <View style={styles.headerRow}>
-              <Text style={styles.headerCell}>מזהה מדווח</Text>
-              <Text style={styles.headerCell}>מזהה קהילה</Text>
+              <Text style={styles.headerCell}>מזהה ושם מדווח</Text>
+              <Text style={styles.headerCell}>מזהה ושם קהילה</Text>
               <Text style={styles.headerCell}>פרטים</Text>
             </View>
             <FlatList
@@ -123,13 +201,11 @@ export default function AdminHome() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1 },
+  container: { flex: 1, width: "100%" },
   background: {
     flex: 1,
     width: "100%",
-    paddingHorizontal: 16,
     paddingTop: 40,
-    backgroundColor: "rgba(0, 0, 0, 0.5)",
   },
   header: {
     fontSize: 24,
@@ -151,6 +227,8 @@ const styles = StyleSheet.create({
     color: "#333",
     borderWidth: 1,
     borderColor: "#ccc",
+    width: "90%",
+    alignSelf: "center",
   },
   listContainer: {
     paddingBottom: 50,
