@@ -23,6 +23,7 @@ export default function Users() {
   const [selectedUser, setSelectedUser] = useState(null);
   const [expandedUserId, setExpandedUserId] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
+  const [filterStatus, setFilterStatus] = useState("all"); // חדש: סינון לפי סטטוס
 
   const getData = async () => {
     try {
@@ -94,16 +95,20 @@ export default function Users() {
     setExpandedUserId((prevId) => (prevId === userId ? null : userId));
   };
 
-  const filteredUsers = users.filter((user) =>
-    user.name.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredUsers = users.filter((user) => {
+    const matchesSearch = user.name.toLowerCase().includes(searchTerm.toLowerCase());
+    if (filterStatus === "all") return matchesSearch;
+    if (filterStatus === "active") return user.isActive && matchesSearch;
+    if (filterStatus === "inactive") return !user.isActive && matchesSearch;
+  });
 
   return (
     <SafeAreaView style={styles.container}>
       <ImageBackground
         style={styles.background}
         source={require("../../Images/Vector.png")}
-        resizeMode="cover">
+        resizeMode="cover"
+      >
         <TextInput
           style={styles.searchInput}
           placeholder="...חיפוש משתמשים"
@@ -111,6 +116,37 @@ export default function Users() {
           value={searchTerm}
           onChangeText={setSearchTerm}
         />
+
+        {/* חדש: כפתורי סינון פעילים */}
+        <View style={styles.filterContainer}>
+          <TouchableOpacity
+            style={[
+              styles.filterButton,
+              filterStatus === "all" && styles.activeFilterButton,
+            ]}
+            onPress={() => setFilterStatus("all")}
+          >
+            <Text style={styles.filterButtonText}>הכל</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[
+              styles.filterButton,
+              filterStatus === "active" && styles.activeFilterButton,
+            ]}
+            onPress={() => setFilterStatus("active")}
+          >
+            <Text style={styles.filterButtonText}>פעילים</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[
+              styles.filterButton,
+              filterStatus === "inactive" && styles.activeFilterButton,
+            ]}
+            onPress={() => setFilterStatus("inactive")}
+          >
+            <Text style={styles.filterButtonText}>לא פעילים</Text>
+          </TouchableOpacity>
+        </View>
 
         <Text style={styles.title}>רשימת משתמשים</Text>
 
@@ -130,7 +166,8 @@ export default function Users() {
               <View key={user.id}>
                 <TouchableOpacity
                   style={styles.tableRow}
-                  onPress={() => toggleUserDetails(user.id)}>
+                  onPress={() => toggleUserDetails(user.id)}
+                >
                   <View style={styles.tableCell}>
                     <Checkbox
                       status={user.isActive ? "checked" : "unchecked"}
@@ -147,8 +184,11 @@ export default function Users() {
                           color: "white",
                           fontWeight: "bold",
                           backgroundColor: user.isActive ? "green" : "red",
+                          borderRadius: 5,
+                          paddingHorizontal: 5,
                         },
-                      ]}>
+                      ]}
+                    >
                       {user.isActive ? "פעיל" : "לא פעיל"}
                     </Text>
                   </View>
@@ -161,28 +201,22 @@ export default function Users() {
                   <View style={styles.userDetailsContainer}>
                     <View style={styles.userDetailsTextContainer}>
                       <Text style={styles.userDetailsText}>
-                        <Text style={styles.detailsLabel}>שם משתמש:</Text>{" "}
-                        {user.userName}
+                        <Text style={styles.detailsLabel}>שם משתמש:</Text> {user.userName}
                       </Text>
                       <Text style={styles.userDetailsText}>
-                        <Text style={styles.detailsLabel}>אימייל:</Text>{" "}
-                        {user.email}
+                        <Text style={styles.detailsLabel}>אימייל:</Text> {user.email}
                       </Text>
                       <Text style={styles.userDetailsText}>
-                        <Text style={styles.detailsLabel}>תפקיד:</Text>{" "}
-                        {user.role}
+                        <Text style={styles.detailsLabel}>תפקיד:</Text> {user.role}
                       </Text>
                       <Text style={styles.userDetailsText}>
-                        <Text style={styles.detailsLabel}>מין:</Text>{" "}
-                        {user.gender}
+                        <Text style={styles.detailsLabel}>מין:</Text> {user.gender}
                       </Text>
                       <Text style={styles.userDetailsText}>
-                        <Text style={styles.detailsLabel}>סוג סוכרת:</Text>{" "}
-                        {user.diabetesType}
+                        <Text style={styles.detailsLabel}>סוג סוכרת:</Text> {user.diabetesType}
                       </Text>
                       <Text style={styles.userDetailsText}>
-                        <Text style={styles.detailsLabel}>כמות מטבעות:</Text>{" "}
-                        {user.coins}
+                        <Text style={styles.detailsLabel}>כמות מטבעות:</Text> {user.coins}
                       </Text>
                     </View>
                   </View>
@@ -196,12 +230,11 @@ export default function Users() {
           visible={modalVisible}
           transparent={true}
           animationType="fade"
-          onRequestClose={() => setModalVisible(false)}>
+          onRequestClose={() => setModalVisible(false)}
+        >
           <View style={styles.modalBackground}>
             <View style={styles.modalContainer}>
-              <Text style={styles.modalTitle}>
-                האם אתה בטוח לשנות את הסטטוס?
-              </Text>
+              <Text style={styles.modalTitle}>האם אתה בטוח לשנות את הסטטוס?</Text>
               <View style={styles.modalButtons}>
                 <Button
                   title="בטל"
@@ -231,7 +264,6 @@ const styles = StyleSheet.create({
     flex: 1,
     width: "100%",
     paddingTop: 40,
-    // alignItems: "center",
   },
   title: {
     color: "white",
@@ -248,8 +280,27 @@ const styles = StyleSheet.create({
     backgroundColor: "white",
     borderRadius: 8,
     paddingHorizontal: 10,
-    marginBottom: 15,
+    marginBottom: 10,
     fontSize: 16,
+  },
+  filterContainer: {
+    flexDirection: "row",
+    justifyContent: "center",
+    marginBottom: 10,
+  },
+  filterButton: {
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    backgroundColor: "gray",
+    borderRadius: 20,
+    marginHorizontal: 5,
+  },
+  activeFilterButton: {
+    backgroundColor: "#4CAF50",
+  },
+  filterButtonText: {
+    color: "white",
+    fontWeight: "bold",
   },
   tableContainer: {
     width: "100%",
@@ -267,7 +318,6 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     paddingVertical: 10,
     width: "100%",
-    //backgroundColor: "rgba(105, 98, 98, 0.8)",
     borderRadius: 8,
   },
   tableHeaderText: {
@@ -302,11 +352,6 @@ const styles = StyleSheet.create({
     marginHorizontal: 15,
     borderWidth: 1,
     borderColor: "#ddd",
-    color: "white",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.3,
-    shadowRadius: 4,
   },
   userDetailsTextContainer: {
     marginBottom: 10,
