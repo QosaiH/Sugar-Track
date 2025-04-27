@@ -141,7 +141,19 @@ function PrivateChats({ userData }) {
           renderItem={({ item }) => {
             // Get the other user's ID
             const otherUserId = item.users.find((id) => id !== userData.id);
+
+            // Check if otherUser Id is valid
+            if (!otherUserId) {
+              console.warn(`No valid other user ID found for chat: ${item.id}`);
+              return null; // Skip rendering this item
+            }
+
             const otherUser = users[otherUserId]; // Get the other user's data
+
+            // Check if otherUser  exists
+            if (!otherUser) {
+              return null; // Skip rendering this item
+            }
 
             return (
               <TouchableOpacity
@@ -157,17 +169,13 @@ function PrivateChats({ userData }) {
                     },
                   });
                 }}>
-                {otherUser && (
-                  <>
-                    <Image
-                      source={{
-                        uri: `data:image/png;base64,${otherUser.profilePicture}`,
-                      }} // Assuming profilePicture is a field in user data
-                      style={styles.profileImage}
-                    />
-                    <Text style={styles.chatText}>{otherUser.username}</Text>
-                  </>
-                )}
+                <Image
+                  source={{
+                    uri: `data:image/png;base64,${otherUser.profilePicture}`,
+                  }} // Assuming profilePicture is a field in user data
+                  style={styles.profileImage}
+                />
+                <Text style={styles.chatText}>{otherUser.username}</Text>
               </TouchableOpacity>
             );
           }}

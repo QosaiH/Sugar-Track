@@ -104,7 +104,7 @@ export default function Home({ userData }) {
               { transform: [{ scale: plusScale }] },
             ]}>
             <View style={styles.plusIconBackground}>
-              <Ionicons name="add" size={28} color="#5a67d8" />
+              <Ionicons name="add" size={28} color="black" />
             </View>
           </Animated.View>
         </View>
@@ -198,7 +198,7 @@ const styles = StyleSheet.create({
   },
   addButtonText: {
     fontSize: 20,
-    color: "#5a67d8",
+    color: "black",
     fontWeight: "600",
     textAlign: "center",
     letterSpacing: 0.5,
@@ -216,7 +216,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     borderWidth: 2.5,
-    borderColor: "#5a67d8",
+    borderColor: "black",
     elevation: 8,
     shadowColor: "rgba(90,103,216,0.4)",
     shadowOpacity: 0.4,
