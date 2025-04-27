@@ -130,7 +130,7 @@ const ProfileEdit = () => {
           style={styles.profileImageContainer}>
           <Image
             source={{
-              uri: profileImage,
+              uri: `data:image/png;base64,${userData?.profilePicture}`,
             }}
             style={styles.profileImage}
           />

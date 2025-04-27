@@ -11,6 +11,7 @@ import {
   Button,
   Image,
   Platform,
+  ActivityIndicator,
 } from "react-native";
 import { db } from "../fireBaseConfig";
 import {
@@ -69,6 +70,7 @@ function PrivateChats({ userData }) {
   const [searchQuery, setSearchQuery] = useState("");
   const [filteredChats, setFilteredChats] = useState([]);
   const router = useRouter();
+  const [loading, setLoading] = useState(true); // NEW
 
   useEffect(() => {
     const unsubscribePrivateChats = onSnapshot(
@@ -103,19 +105,18 @@ function PrivateChats({ userData }) {
           }
           return uniqueChats;
         });
+
+        setLoading(false); // <--- add this here
       }
     );
 
-    const unsubscribeUsers = onSnapshot(
-      collection(db, "user"),
-      (snapshot) => {
-        const usersData = {};
-        snapshot.docs.forEach((doc) => {
-          usersData[doc.id] = doc.data();
-        });
-        setUsers(usersData);
-      }
-    );
+    const unsubscribeUsers = onSnapshot(collection(db, "user"), (snapshot) => {
+      const usersData = {};
+      snapshot.docs.forEach((doc) => {
+        usersData[doc.id] = doc.data();
+      });
+      setUsers(usersData);
+    });
 
     return () => {
       unsubscribePrivateChats();
@@ -131,9 +132,7 @@ function PrivateChats({ userData }) {
         const otherUser = users[otherUserId];
         return (
           otherUser &&
-          otherUser.username
-            .toLowerCase()
-            .includes(searchQuery.toLowerCase())
+          otherUser.username.toLowerCase().includes(searchQuery.toLowerCase())
         );
       });
       setFilteredChats(filtered);
@@ -155,7 +154,10 @@ function PrivateChats({ userData }) {
         placeholder="...חפש צ'אט פרטי"
       />
       <Text style={styles.sectionTitle}>רשימת צ'אטים פרטיים</Text>
-      {filteredChats.length === 0 ? (
+
+      {loading ? ( // ADD THIS
+        <ActivityIndicator size="large" color="black" />
+      ) : filteredChats.length === 0 ? (
         <Text style={styles.noChatsText}>אין צ'אטים פרטיים זמינים</Text>
       ) : (
         <FlatList
@@ -208,6 +210,7 @@ function Communities({ userData }) {
   const [userGroups, setUserGroups] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [filteredGroups, setFilteredGroups] = useState([]);
+  const [loading, setLoading] = useState(true); // Loading state
   const userId = userData.id;
   const router = useRouter();
 
@@ -221,6 +224,7 @@ function Communities({ userData }) {
         }));
         setGroups(allGroupsData);
         setFilteredGroups(allGroupsData);
+        setLoading(false); // Set loading to false after data is fetched
       }
     );
 
@@ -235,6 +239,7 @@ function Communities({ userData }) {
           .filter((group) => group.members && group.members.includes(userId));
 
         setUserGroups(userGroupsData);
+        setLoading(false); // Set loading to false after data is fetched
       }
     );
 
@@ -271,33 +276,37 @@ function Communities({ userData }) {
         onChangeText={handleSearch}
         placeholder="...חפש קהילה"
       />
-      <FlatList
-        data={filteredGroups}
-        renderItem={({ item }) => (
-          <TouchableOpacity
-            onPress={() => {
-              router.push({
-                pathname: "/chatScreen",
-                params: {
-                  groupId: item.id,
-                  user: JSON.stringify(userData),
-                },
-              });
-            }}>
-            <View style={styles.groupItem}>
-              <Image
-                source={{ uri: `data:image/png;base64,${item.photo}` }}
-                style={styles.groupImage}
-              />
-              <Text style={styles.groupName}>{item.name}</Text>
-              {!userGroups.some((group) => group.id === item.id) && (
-                <Button title="הצטרף" onPress={() => joinGroup(item.id)} />
-              )}
-            </View>
-          </TouchableOpacity>
-        )}
-        keyExtractor={(item) => item.id}
-      />
+      {loading ? ( // Show loading indicator while data is loading
+        <ActivityIndicator size="large" color="black" />
+      ) : (
+        <FlatList
+          data={filteredGroups}
+          renderItem={({ item }) => (
+            <TouchableOpacity
+              onPress={() => {
+                router.push({
+                  pathname: "/chatScreen",
+                  params: {
+                    groupId: item.id,
+                    user: JSON.stringify(userData),
+                  },
+                });
+              }}>
+              <View style={styles.groupItem}>
+                <Image
+                  source={{ uri: `data:image/png;base64,${item.photo}` }}
+                  style={styles.groupImage}
+                />
+                <Text style={styles.groupName}>{item.name}</Text>
+                {!userGroups.some((group) => group.id === item.id) && (
+                  <Button title="הצטרף" onPress={() => joinGroup(item.id)} />
+                )}
+              </View>
+            </TouchableOpacity>
+          )}
+          keyExtractor={(item) => item.id}
+        />
+      )}
     </View>
   );
 }
