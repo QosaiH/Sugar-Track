@@ -256,7 +256,7 @@ const styles = StyleSheet.create({
   },
   form: {
     width: "80%",
-    marginTop: 10,
+    marginTop: 120,
   },
   inputRow: {
     flexDirection: "row-reverse",
