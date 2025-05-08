@@ -12,7 +12,7 @@ import {
 } from "react-native";
 import { SafeAreaView, SafeAreaProvider } from "react-native-safe-area-context";
 import { Checkbox } from "react-native-paper";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Link, useRouter } from "expo-router"; // Use Link from expo-router for navigation
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { doc, updateDoc, arrayUnion } from "firebase/firestore";
@@ -24,10 +24,32 @@ export default function LogIn() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false); // Add loading state
+  useEffect(() => {
+    const loadRemembered = async () => {
+      try {
+        const saved = await AsyncStorage.getItem("rememberMe");
+        if (saved) {
+          const { email, password } = JSON.parse(saved);
+          setEmail(email);
+          setPassword(password);
+          setChecked(true);
+        }
+      } catch (e) {
+        console.error("Error loading saved login", e);
+      }
+    };
 
+    loadRemembered();
+  }, []);
   const sendData = async () => {
-    if (loading) return; // Prevent multiple submissions
-    setLoading(true); // Start loading
+    if (loading) return;
+    if (!email || !password) {
+      Alert.alert("שגיאה", "אנא הכנס אימייל וסיסמה");
+      return;
+    }
+
+    setLoading(true);
+
     try {
       const response = await fetch(
         `https://proj.ruppin.ac.il/igroup15/test2/tar1/api/User/Login/${email}`,
@@ -36,22 +58,40 @@ export default function LogIn() {
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify(password),
+          body: JSON.stringify(password), // Send as object
         }
       );
+
       const data = await response.json();
+      console.log("Response data:", data);
+
       if (response.ok) {
-        await getData(); // Fetch user data after successful login
+        if (data === 1) {
+          if (checked) {
+            await AsyncStorage.setItem(
+              "rememberMe",
+              JSON.stringify({ email, password })
+            );
+          }
+          await getData();
+        } else if (data === 0) {
+          Alert.alert("שגיאה", "אימייל או סיסמה שגויים");
+        } else if (data === 2) {
+          Alert.alert(
+            "חשבון לא פעיל",
+            "החשבון שלך אינו פעיל. יש לפנות לתמיכה לשחזור החשבון."
+          );
+        } else {
+          Alert.alert("שגיאה", "משהו השתבש בהתחברות");
+        }
       } else {
-        // Show error message from the backend response
-        console.error("Login failed", data);
-        Alert.alert("שגיאה", data.message || "משהו השתבש בהתחברות");
+        Alert.alert("שגיאה", "בעיה עם הבקשה לשרת");
       }
     } catch (error) {
       console.error("Error:", error);
       Alert.alert("שגיאה", "בעיה בחיבור לשרת");
     } finally {
-      setLoading(false); // Stop loading
+      setLoading(false);
     }
   };
 
@@ -74,7 +114,6 @@ export default function LogIn() {
   const storeData = async (data) => {
     try {
       await AsyncStorage.setItem("user", JSON.stringify(data)); // Store user data
-      console.log("User role:", data.role);
       if (data.role?.toLowerCase() === "admin") {
         router.replace("./Admin/AdminBottomNav");
       } else {
@@ -90,7 +129,7 @@ export default function LogIn() {
       <SafeAreaView style={styles.logo}>
         <View style={styles.upperSide}>
           <Image
-            style={{ width: 150, height: 150, marginTop: 5 }}
+            style={{ width: 120, height: 120, marginTop: 5 }}
             source={require("../Images/logo.png")}
           />
           <Image
@@ -166,7 +205,7 @@ const styles = StyleSheet.create({
     height: "40%",
   },
   background: {
-    height: "100%",
+    height: "125%",
     width: "100%",
     flex: 1,
     alignItems: "center",
