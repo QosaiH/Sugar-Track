@@ -99,3 +99,50 @@ End;
 
 --------------
 DBCC CHECKIDENT ('STusers', RESEED, 7)
+--------------------------------
+
+CREATE TABLE [dbo].[STGlucoseLog](
+	[LogId] [int] IDENTITY(1,1) NOT NULL,
+	[UserID] [int] NULL,
+	[LogType] [nvarchar](70) NOT NULL,
+	[LogDate] [datetime] NOT NULL,
+	[LogStatus] [nvarchar](70) NOT NULL,
+PRIMARY KEY CLUSTERED 
+(
+	[LogId] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+
+-------------------------------------
+CREATE PROCEDURE [dbo].[STInsertGlucoseLog]
+    @UserID INT,
+    @LogType NVARCHAR(70),
+    @LogDate DATETIME,
+    @LogStatus NVARCHAR(50)
+AS
+BEGIN
+    INSERT INTO STGlucoseLog (UserID, LogType, LogDate, LogStatus)
+    VALUES (@UserID, @LogType, @LogDate, @LogStatus);
+END
+GO
+------------------------------------------------
+
+CREATE PROCEDURE [dbo].[STGetGlucoseLogList]
+AS
+BEGIN
+    SELECT 
+        LogId,
+        UserID,
+        LogType,
+        LogDate,
+        LogStatus
+    FROM 
+        STGlucoseLog
+    ORDER BY 
+        LogDate DESC;
+END
+GO
+
+
+--------------------------------------------------
