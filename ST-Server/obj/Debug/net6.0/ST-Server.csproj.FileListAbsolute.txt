@@ -75,3 +75,36 @@ C:\Users\QosaiH\Desktop\Sugar-Track\ST-Server\obj\Debug\net6.0\refint\ST-Server.
 C:\Users\QosaiH\Desktop\Sugar-Track\ST-Server\obj\Debug\net6.0\ST-Server.pdb
 C:\Users\QosaiH\Desktop\Sugar-Track\ST-Server\obj\Debug\net6.0\ST-Server.genruntimeconfig.cache
 C:\Users\QosaiH\Desktop\Sugar-Track\ST-Server\obj\Debug\net6.0\ref\ST-Server.dll
+C:\Users\10\OneDrive - Ruppin Students and Teachers\שולחן העבודה\SugarTrack1\Sugar-Track\ST-Server\obj\Debug\net6.0\ST-Server.csproj.AssemblyReference.cache
+C:\Users\10\OneDrive - Ruppin Students and Teachers\שולחן העבודה\SugarTrack1\Sugar-Track\ST-Server\obj\Debug\net6.0\ST-Server.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\10\OneDrive - Ruppin Students and Teachers\שולחן העבודה\SugarTrack1\Sugar-Track\ST-Server\obj\Debug\net6.0\ST-Server.AssemblyInfoInputs.cache
+C:\Users\10\OneDrive - Ruppin Students and Teachers\שולחן העבודה\SugarTrack1\Sugar-Track\ST-Server\obj\Debug\net6.0\ST-Server.AssemblyInfo.cs
+C:\Users\10\OneDrive - Ruppin Students and Teachers\שולחן העבודה\SugarTrack1\Sugar-Track\ST-Server\obj\Debug\net6.0\ST-Server.csproj.CoreCompileInputs.cache
+C:\Users\10\OneDrive - Ruppin Students and Teachers\שולחן העבודה\SugarTrack1\Sugar-Track\ST-Server\obj\Debug\net6.0\ST-Server.MvcApplicationPartsAssemblyInfo.cs
+C:\Users\10\OneDrive - Ruppin Students and Teachers\שולחן העבודה\SugarTrack1\Sugar-Track\ST-Server\obj\Debug\net6.0\ST-Server.MvcApplicationPartsAssemblyInfo.cache
+C:\Users\10\OneDrive - Ruppin Students and Teachers\שולחן העבודה\SugarTrack1\Sugar-Track\ST-Server\obj\Debug\net6.0\ST-Server.dll
+C:\Users\10\OneDrive - Ruppin Students and Teachers\שולחן העבודה\SugarTrack1\Sugar-Track\ST-Server\obj\Debug\net6.0\refint\ST-Server.dll
+C:\Users\10\OneDrive - Ruppin Students and Teachers\שולחן העבודה\SugarTrack1\Sugar-Track\ST-Server\obj\Debug\net6.0\ST-Server.pdb
+C:\Users\10\OneDrive - Ruppin Students and Teachers\שולחן העבודה\SugarTrack1\Sugar-Track\ST-Server\bin\Debug\net6.0\appsettings.Development.json
+C:\Users\10\OneDrive - Ruppin Students and Teachers\שולחן העבודה\SugarTrack1\Sugar-Track\ST-Server\bin\Debug\net6.0\appsettings.json
+C:\Users\10\OneDrive - Ruppin Students and Teachers\שולחן העבודה\SugarTrack1\Sugar-Track\ST-Server\bin\Debug\net6.0\ST-Server.exe
+C:\Users\10\OneDrive - Ruppin Students and Teachers\שולחן העבודה\SugarTrack1\Sugar-Track\ST-Server\bin\Debug\net6.0\ST-Server.deps.json
+C:\Users\10\OneDrive - Ruppin Students and Teachers\שולחן העבודה\SugarTrack1\Sugar-Track\ST-Server\bin\Debug\net6.0\ST-Server.runtimeconfig.json
+C:\Users\10\OneDrive - Ruppin Students and Teachers\שולחן העבודה\SugarTrack1\Sugar-Track\ST-Server\bin\Debug\net6.0\ST-Server.dll
+C:\Users\10\OneDrive - Ruppin Students and Teachers\שולחן העבודה\SugarTrack1\Sugar-Track\ST-Server\bin\Debug\net6.0\ST-Server.pdb
+C:\Users\10\OneDrive - Ruppin Students and Teachers\שולחן העבודה\SugarTrack1\Sugar-Track\ST-Server\bin\Debug\net6.0\Microsoft.OpenApi.dll
+C:\Users\10\OneDrive - Ruppin Students and Teachers\שולחן העבודה\SugarTrack1\Sugar-Track\ST-Server\bin\Debug\net6.0\Swashbuckle.AspNetCore.Swagger.dll
+C:\Users\10\OneDrive - Ruppin Students and Teachers\שולחן העבודה\SugarTrack1\Sugar-Track\ST-Server\bin\Debug\net6.0\Swashbuckle.AspNetCore.SwaggerGen.dll
+C:\Users\10\OneDrive - Ruppin Students and Teachers\שולחן העבודה\SugarTrack1\Sugar-Track\ST-Server\bin\Debug\net6.0\Swashbuckle.AspNetCore.SwaggerUI.dll
+C:\Users\10\OneDrive - Ruppin Students and Teachers\שולחן העבודה\SugarTrack1\Sugar-Track\ST-Server\bin\Debug\net6.0\System.Data.SqlClient.dll
+C:\Users\10\OneDrive - Ruppin Students and Teachers\שולחן העבודה\SugarTrack1\Sugar-Track\ST-Server\bin\Debug\net6.0\runtimes\win-arm64\native\sni.dll
+C:\Users\10\OneDrive - Ruppin Students and Teachers\שולחן העבודה\SugarTrack1\Sugar-Track\ST-Server\bin\Debug\net6.0\runtimes\win-x64\native\sni.dll
+C:\Users\10\OneDrive - Ruppin Students and Teachers\שולחן העבודה\SugarTrack1\Sugar-Track\ST-Server\bin\Debug\net6.0\runtimes\win-x86\native\sni.dll
+C:\Users\10\OneDrive - Ruppin Students and Teachers\שולחן העבודה\SugarTrack1\Sugar-Track\ST-Server\bin\Debug\net6.0\runtimes\unix\lib\net6.0\System.Data.SqlClient.dll
+C:\Users\10\OneDrive - Ruppin Students and Teachers\שולחן העבודה\SugarTrack1\Sugar-Track\ST-Server\bin\Debug\net6.0\runtimes\win\lib\net6.0\System.Data.SqlClient.dll
+C:\Users\10\OneDrive - Ruppin Students and Teachers\שולחן העבודה\SugarTrack1\Sugar-Track\ST-Server\obj\Debug\net6.0\staticwebassets.build.json
+C:\Users\10\OneDrive - Ruppin Students and Teachers\שולחן העבודה\SugarTrack1\Sugar-Track\ST-Server\obj\Debug\net6.0\staticwebassets.development.json
+C:\Users\10\OneDrive - Ruppin Students and Teachers\שולחן העבודה\SugarTrack1\Sugar-Track\ST-Server\obj\Debug\net6.0\scopedcss\bundle\ST-Server.styles.css
+C:\Users\10\OneDrive - Ruppin Students and Teachers\שולחן העבודה\SugarTrack1\Sugar-Track\ST-Server\obj\Debug\net6.0\ST-Server.csproj.CopyComplete
+C:\Users\10\OneDrive - Ruppin Students and Teachers\שולחן העבודה\SugarTrack1\Sugar-Track\ST-Server\obj\Debug\net6.0\ST-Server.genruntimeconfig.cache
+C:\Users\10\OneDrive - Ruppin Students and Teachers\שולחן העבודה\SugarTrack1\Sugar-Track\ST-Server\obj\Debug\net6.0\ref\ST-Server.dll
