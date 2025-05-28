@@ -50,13 +50,17 @@ export default function Forum({ userData }) {
   const [userVotes, setUserVotes] = useState({}); // { postId: "liked" | "disliked" }
   useEffect(() => {
     const unsubscribe = onSnapshot(collection(db, "forumItems"), (snapshot) => {
-      const updatedItems = snapshot.docs.map((doc) => ({
-        id: doc.id,
-        ...doc.data(),
-      }));
+      const updatedItems = snapshot.docs.map((doc) => {
+        const data = doc.data();
+        const vote = data.votes?.[currentUser.id] || null;
+        return {
+          id: doc.id,
+          ...data,
+          userVote: vote,
+        };
+      });
 
-      let sortedItems = [...updatedItems];
-
+      const sortedItems = [...updatedItems];
       if (sortOption === "popular") {
         sortedItems.sort(
           (a, b) => b.likes + b.comments.length - (a.likes + a.comments.length)
@@ -68,8 +72,8 @@ export default function Forum({ userData }) {
       setItems(sortedItems);
     });
 
-    return () => unsubscribe(); // Cleanup listener
-  }, [sortOption]);
+    return () => unsubscribe();
+  }, [sortOption, currentUser.id]);
 
   // Handle sort change
   const handleSortChange = (option) => {
@@ -119,56 +123,96 @@ export default function Forum({ userData }) {
       comments: arrayUnion(newComment),
     });
   };
+  useEffect(() => {
+    const initialVotes = {};
+    items.forEach((item) => {
+      if (item.userVote) {
+        initialVotes[item.id] = item.userVote;
+      }
+    });
+    setUserVotes(initialVotes);
+  }, [items]);
+
   const handleLike = async (item) => {
     const itemRef = doc(db, "forumItems", item.id);
-
     const currentVote = userVotes[item.id];
 
-    if (currentVote === "liked") return; // Already liked
+    if (currentVote === "liked") {
+      // Remove like
+      await updateDoc(itemRef, {
+        likes: item.likes - 1,
+        votes: {
+          ...item.votes,
+          [currentUser.id]: null, // remove vote
+        },
+      });
+      setUserVotes((prev) => {
+        const newVotes = { ...prev };
+        delete newVotes[item.id];
+        return newVotes;
+      });
+      return;
+    }
 
-    let updateData = {};
+    let updateData = {
+      likes: item.likes + 1,
+      votes: {
+        ...(item.votes || {}),
+        [currentUser.id]: "liked",
+      },
+    };
 
     if (currentVote === "disliked") {
-      // Switch from dislike to like
-      updateData = {
-        likes: item.likes + 1,
-        dislikes: item.dislikes - 1,
-      };
-    } else {
-      // First like
-      updateData = {
-        likes: item.likes + 1,
-      };
+      updateData.dislikes = item.dislikes - 1;
     }
 
     await updateDoc(itemRef, updateData);
-    setUserVotes((prev) => ({ ...prev, [item.id]: "liked" }));
+
+    setUserVotes((prev) => ({
+      ...prev,
+      [item.id]: "liked",
+    }));
   };
 
   const handleDislike = async (item) => {
     const itemRef = doc(db, "forumItems", item.id);
-
     const currentVote = userVotes[item.id];
 
-    if (currentVote === "disliked") return; // Already disliked
+    if (currentVote === "disliked") {
+      // Remove dislike
+      await updateDoc(itemRef, {
+        dislikes: item.dislikes - 1,
+        votes: {
+          ...item.votes,
+          [currentUser.id]: null,
+        },
+      });
+      setUserVotes((prev) => {
+        const newVotes = { ...prev };
+        delete newVotes[item.id];
+        return newVotes;
+      });
+      return;
+    }
 
-    let updateData = {};
+    let updateData = {
+      dislikes: item.dislikes + 1,
+      votes: {
+        ...(item.votes || {}),
+        [currentUser.id]: "disliked",
+      },
+    };
 
     if (currentVote === "liked") {
-      // Switch from like to dislike
-      updateData = {
-        dislikes: item.dislikes + 1,
-        likes: item.likes - 1,
-      };
-    } else {
-      // First dislike
-      updateData = {
-        dislikes: item.dislikes + 1,
-      };
+      updateData.likes = item.likes - 1;
     }
 
     await updateDoc(itemRef, updateData);
-    setUserVotes((prev) => ({ ...prev, [item.id]: "disliked" }));
+
+    setUserVotes((prev) => ({
+      ...prev,
+      [item.id]: "disliked",
+    }));
   };
   return (
     <SafeAreaView style={styles.container}>
@@ -297,13 +341,23 @@ export default function Forum({ userData }) {
                         color: "white",
                         fontWeight: "bold",
                         textAlign: "right",
-                        flexDirection: "row-reverse",
+                        flexDirection: "row",
                         alignItems: "center",
                         justifyContent: "center",
+                        marginBottom: 5,
                       }}>
-                      {new Date(item.createdAt.seconds * 1000).toLocaleString()}
-                      {"  "}•{"  "}
-                      {item.author}
+                      {(() => {
+                        const isHebrew = /[\u0590-\u05FF]/.test(item.author);
+                        const dateStr = new Date(
+                          item.createdAt.seconds * 1000
+                        ).toLocaleString();
+
+                        if (isHebrew) {
+                          return `${item.author}  •  ${dateStr}`;
+                        } else {
+                          return `${dateStr}  •  ${item.author}`;
+                        }
+                      })()}
                     </Text>
 
                     <Text style={styles.listDescription}>
@@ -469,7 +523,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: "white",
     borderRadius: 10,
-    marginBottom: 10,
+    marginBottom: 5,
     padding: 10,
     textAlign: "right",
     width: "100%",
@@ -483,7 +537,7 @@ const styles = StyleSheet.create({
   listTitle: {
     color: "white",
     fontSize: 18,
-    alignSelf: "flex-end",
+    alignSelf: "center",
     flex: 1,
     marginRight: 10,
     textAlign: "right",
@@ -495,17 +549,19 @@ const styles = StyleSheet.create({
     marginRight: 10,
   },
   expandedContent: {
-    marginTop: 10,
     justifyContent: "center",
     flexDirection: "column",
     alignItems: "center",
     width: "100%",
     padding: 10,
+    flexWrap: "wrap",
+    flexDirection: "row-reverse",
+    marginBottom: 40,
   },
   listDescription: {
     color: "white",
     fontSize: 14,
-    marginTop: 5,
+    marginTop: 10,
     textAlign: "right",
     width: "100%",
   },
