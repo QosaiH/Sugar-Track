@@ -157,49 +157,67 @@ function PrivateChats({ userData }) {
 
       {loading ? ( // ADD THIS
         <ActivityIndicator size="large" color="black" />
-      ) : filteredChats.length === 0 ? (
-        <Text style={styles.noChatsText}>אין צ'אטים פרטיים זמינים</Text>
       ) : (
-        <FlatList
-          data={filteredChats}
-          renderItem={({ item }) => {
-            const otherUserId = item.users.find((id) => id !== userData.id);
+        <>
+          <TouchableOpacity
+            style={styles.chatItem}
+            onPress={() => {
+              router.push({
+                pathname: "/mySugar",
+                params: {
+                  sender: JSON.stringify(userData),
+                },
+              });
+            }}>
+            <Image
+              source={require("../Images/logo.png")}
+              style={styles.BotProfileImage}
+            />
+            <Text style={styles.chatText}>My Sugar Bot</Text>
+          </TouchableOpacity>
+          <FlatList
+            data={filteredChats}
+            renderItem={({ item }) => {
+              const otherUserId = item.users.find((id) => id !== userData.id);
 
-            if (!otherUserId) {
-              console.warn(`No valid other user ID found for chat: ${item.id}`);
-              return null;
-            }
+              if (!otherUserId) {
+                console.warn(
+                  `No valid other user ID found for chat: ${item.id}`
+                );
+                return null;
+              }
 
-            const otherUser = users[otherUserId];
-            if (!otherUser) {
-              return null;
-            }
+              const otherUser = users[otherUserId];
+              if (!otherUser) {
+                return null;
+              }
 
-            return (
-              <TouchableOpacity
-                key={item.id}
-                style={styles.chatItem}
-                onPress={() => {
-                  router.push({
-                    pathname: "/privateChatScreen",
-                    params: {
-                      sender: JSON.stringify(userData),
-                      receiver: JSON.stringify(otherUser),
-                    },
-                  });
-                }}>
-                <Image
-                  source={{
-                    uri: `data:image/png;base64,${otherUser.profilePicture}`,
-                  }}
-                  style={styles.profileImage}
-                />
-                <Text style={styles.chatText}>{otherUser.username}</Text>
-              </TouchableOpacity>
-            );
-          }}
-          keyExtractor={(item) => item.id}
-        />
+              return (
+                <TouchableOpacity
+                  key={item.id}
+                  style={styles.chatItem}
+                  onPress={() => {
+                    router.push({
+                      pathname: "/privateChatScreen",
+                      params: {
+                        sender: JSON.stringify(userData),
+                        receiver: JSON.stringify(otherUser),
+                      },
+                    });
+                  }}>
+                  <Image
+                    source={{
+                      uri: `data:image/png;base64,${otherUser.profilePicture}`,
+                    }}
+                    style={styles.profileImage}
+                  />
+                  <Text style={styles.chatText}>{otherUser.username}</Text>
+                </TouchableOpacity>
+              );
+            }}
+            keyExtractor={(item) => item.id}
+          />
+        </>
       )}
     </View>
   );
@@ -398,6 +416,12 @@ const styles = StyleSheet.create({
     width: 50,
     height: 50,
     borderRadius: 25,
+    marginRight: 10,
+  },
+  BotProfileImage: {
+    width: 77,
+    height: 77,
+    borderRadius: 10,
     marginRight: 10,
   },
   chatText: {
