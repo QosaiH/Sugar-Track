@@ -80,5 +80,11 @@ namespace ST_Server.Models
             UserDBservices dbs = new UserDBservices();
             return dbs.getUserByEmail(email);
         }
+        public static int UpdateCoins(int userId, int coins)
+        {
+            UserDBservices dbs = new UserDBservices();
+            return dbs.UpdateUsersCoins(userId, coins);
+        }
+
     }
 }

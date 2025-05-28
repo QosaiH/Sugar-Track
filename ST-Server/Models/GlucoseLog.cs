@@ -10,6 +10,7 @@ namespace ST_Server.Models
     {
         // Auto-implemented properties are preferred for clarity and brevity
         public int LogID { get; set; }
+        public int LogValue { get; set; }
         public string LogType { get; set; }
         public string LogStatus { get; set; }
         public DateTime LogDate { get; set; }
@@ -19,13 +20,14 @@ namespace ST_Server.Models
         public GlucoseLog() { }
 
         // Constructor with parameters
-        public GlucoseLog(int logID, string logType, string logStatus, DateTime logDate, int userID)
+        public GlucoseLog(int logID,  string logType, string logStatus, DateTime logDate, int userID, int logValue)
         {
             LogID = logID;
             LogType = logType;
             LogStatus = logStatus;
             LogDate = logDate;
             UserID = userID;
+            LogValue = logValue;
         }
 
         // Read method to get a list of logs

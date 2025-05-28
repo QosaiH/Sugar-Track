@@ -74,6 +74,7 @@ namespace ST_Server.DAL
                     GlucoseLog log = new GlucoseLog
                     {
                         LogID = reader.GetInt32(reader.GetOrdinal("LogId")),
+                        LogValue = reader.GetInt32(reader.GetOrdinal("LogValue")),
                         LogStatus = reader.GetString(reader.GetOrdinal("LogStatus")),
                         LogType = reader.GetString(reader.GetOrdinal("LogType")),
                         LogDate = reader.GetDateTime(reader.GetOrdinal("LogDate")),
@@ -105,6 +106,7 @@ namespace ST_Server.DAL
                 var paramDic = new Dictionary<string, object>
                 {
                     { "@UserId", glucoseLog.UserID },
+                    { "@LogValue",glucoseLog.LogValue },
                     { "@LogStatus", glucoseLog.LogStatus },
                     { "@LogType", glucoseLog.LogType },
                     { "@LogDate", glucoseLog.LogDate }
@@ -143,6 +145,7 @@ namespace ST_Server.DAL
                     GlucoseLog glucoseLog = new GlucoseLog
                     {
                         LogID = reader.GetInt32(reader.GetOrdinal("LogId")),
+                        LogValue = reader.GetInt32(reader.GetOrdinal("LogValue")),
                         LogStatus = reader.GetString(reader.GetOrdinal("LogStatus")),
                         LogType = reader.GetString(reader.GetOrdinal("LogType")),
                         LogDate = reader.GetDateTime(reader.GetOrdinal("LogDate")),

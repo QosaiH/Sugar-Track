@@ -11,6 +11,7 @@ import {
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { router } from "expo-router"; // ✅ Import router
 
 export default function Home({ userData }) {
   const scaleValue = new Animated.Value(1);
@@ -60,18 +61,26 @@ export default function Home({ userData }) {
     console.log("Bell icon pressed");
   };
 
+  const handleLogPress = () => {
+    router.push({
+      pathname: "/GlucoseLog", // ✅ Route to GlucoseLog.jsx
+      params: { user: JSON.stringify(userData) }, // ✅ Pass userData
+    });
+  };
+
   return (
     <SafeAreaView style={styles.container}>
       <ImageBackground
         style={styles.background}
         source={require("../Images/Vector.png")}
-        resizeMode="cover">
-        {/* Larger Bell Icon Button */}
+        resizeMode="cover"
+      >
+        {/* Bell Icon */}
         <Animated.View
-          style={[styles.bellButton, { transform: [{ scale: bellScale }] }]}>
+          style={[styles.bellButton, { transform: [{ scale: bellScale }] }]}
+        >
           <TouchableOpacity onPress={handleBellPress} activeOpacity={0.7}>
             <Ionicons name="notifications-outline" size={32} color="white" />
-            {/* Optional notification badge */}
             <View style={styles.bellBadge} />
           </TouchableOpacity>
         </Animated.View>
@@ -84,33 +93,33 @@ export default function Home({ userData }) {
               uri: `data:image/png;base64,${userData?.profilePicture}`,
             }}
           />
+
           <Text style={styles.greetingText}>שלום {userData?.name}!</Text>
         </View>
 
-        {/* Main Action Button */}
+        {/* Main Button */}
         <View style={styles.buttonContainer}>
           <Animated.View style={{ transform: [{ scale: scaleValue }] }}>
             <TouchableOpacity
               activeOpacity={0.94}
               onPressIn={handlePressIn}
               onPressOut={handlePressOut}
-              onPress={() => console.log("Daily value pressed")}
-              style={styles.addButton}>
+              onPress={handleLogPress} // ✅ Hooked up
+              style={styles.addButton}
+            >
               <Text style={styles.addButtonText}>הזן ערך יומי</Text>
             </TouchableOpacity>
           </Animated.View>
           <Animated.View
-            style={[
-              styles.plusIconContainer,
-              { transform: [{ scale: plusScale }] },
-            ]}>
+            style={[styles.plusIconContainer, { transform: [{ scale: plusScale }] }]}
+          >
             <View style={styles.plusIconBackground}>
               <Ionicons name="add" size={28} color="black" />
             </View>
           </Animated.View>
         </View>
 
-        {/* Quote Section */}
+        {/* Quote */}
         <View style={styles.quoteContainer}>
           <Text style={styles.quoteText}>
             "הדרך הטובה ביותר לחזות את העתיד היא להמציא אותו."
@@ -140,7 +149,7 @@ const styles = StyleSheet.create({
     top: 15,
     left: 15,
     zIndex: 1,
-    padding: 8, // Added padding for better touch area
+    padding: 8,
   },
   bellBadge: {
     position: "absolute",

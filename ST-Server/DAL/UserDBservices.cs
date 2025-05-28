@@ -342,9 +342,9 @@ namespace ST_Server.DAL
             paramDic.Add("@email", userr.Email);
             paramDic.Add("@password", userr.Password);
             paramDic.Add("@profilePicture", userr.ProfilePicture);
-            paramDic.Add("@userid", userr.Id);
+            paramDic.Add("@userid", userr.Id);           
 
-            cmd = CreateCommandWithStoredProcedureGeneral("STUpdateUserInfo ", con, paramDic);
+            cmd = CreateCommandWithStoredProcedureGeneral("STUpdateUserInfo", con, paramDic);
 
             try
             {
@@ -366,6 +366,9 @@ namespace ST_Server.DAL
                 }
             }
         }
+
+
+
         public Userr getUserByEmail(string email)
         {
             SqlConnection con;
@@ -413,6 +416,49 @@ namespace ST_Server.DAL
                 // Write to log
                 throw; // Rethrow the exception
             }
+            finally
+            {
+                if (con != null)
+                {
+                    // close the db connection
+                    con.Close();
+                }
+            }
+        }
+
+        public int UpdateUsersCoins(int id, int coins)
+        {
+
+            SqlConnection con;
+            SqlCommand cmd;
+
+            try
+            {
+                con = connect("igroup15_test2"); // create the connection
+            }
+            catch (Exception ex)
+            {
+                // write to log
+                throw (ex);
+            }
+
+            Dictionary<string, object> paramDic = new Dictionary<string, object>();
+            paramDic.Add("@Coins", coins);
+            paramDic.Add("@userID", id);
+
+            cmd = CreateCommandWithStoredProcedureGeneral("STEditUserCoins", con, paramDic);
+
+            try
+            {
+                int numEffected = cmd.ExecuteNonQuery(); // execute the command
+                return numEffected;
+            }
+            catch (Exception ex)
+            {
+                // write to log
+                throw (ex);
+            }
+
             finally
             {
                 if (con != null)

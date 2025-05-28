@@ -66,5 +66,12 @@ namespace ST_Server.Controllers
         public void Delete(int id)
         {
         }
+
+        [HttpPut("coins/{id}")]
+        public int UpdateCoins(int id, int coins)
+        {
+            return Userr.UpdateCoins(id, coins);
+        }
+
     }
 }
