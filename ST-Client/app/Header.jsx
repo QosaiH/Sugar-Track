@@ -2,30 +2,32 @@ import React, { useState, useEffect } from "react";
 import { Text, View, Image, StyleSheet, Platform } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
-import AsyncStorage from "@react-native-async-storage/async-storage"; // יבוא AsyncStorage
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
-export default function header() {
-    const [coins, setCoins] = useState(""); // משתנה לשם המשתמש
+export default function Header() {
+  const [coins, setCoins] = useState(0);
 
   useEffect(() => {
-    const GetCoins = async () => {
+    const getCoins = async () => {
       try {
-        const data = await AsyncStorage.getItem("user"); // שליפת נתוני המשתמש מ-AsyncStorage
-        if (data !== null) {
-          const user = JSON.parse(data); // המרת הנתונים לאובייקט
-          setCoins(user.coins); // עדכון שם המשתמש
+        const data = await AsyncStorage.getItem("user");
+        if (data) {
+          const user = JSON.parse(data);
+          setCoins(user?.coins ?? 0); // fallback to 0 if coins undefined
         }
       } catch (e) {
-        console.error("שגיאה בשליפת נתוני המשתמש:", e);
+        console.error("Error retrieving user data:", e);
       }
     };
-    GetCoins();
+    getCoins();
   }, []);
+
   return (
     <SafeAreaView>
       <View style={styles.header}>
         <Text style={styles.points}>
-          {coins}<Icon name="star-outline" size={20} color="blue" />
+          {coins}{" "}
+          <Icon name="star-outline" size={20} color="blue" />
         </Text>
         <Image style={styles.logo} source={require("../Images/logo.png")} />
       </View>
@@ -47,6 +49,7 @@ const styles = StyleSheet.create({
   points: {
     color: "black",
     fontSize: 18,
+    flexShrink: 1, // prevent overflow if number gets large
   },
   logo: {
     marginTop: 2,

@@ -108,14 +108,14 @@ export default function Home({ userData }) {
               style={styles.addButton}
             >
               <Text style={styles.addButtonText}>הזן ערך יומי</Text>
-            </TouchableOpacity>
-          </Animated.View>
           <Animated.View
             style={[styles.plusIconContainer, { transform: [{ scale: plusScale }] }]}
           >
             <View style={styles.plusIconBackground}>
               <Ionicons name="add" size={28} color="black" />
             </View>
+          </Animated.View>
+            </TouchableOpacity>
           </Animated.View>
         </View>
 
@@ -194,7 +194,7 @@ const styles = StyleSheet.create({
   },
   addButton: {
     backgroundColor: "#ffffff",
-    paddingVertical: 20,
+    paddingVertical: 25,
     paddingHorizontal: 45,
     borderRadius: 18,
     elevation: 10,
@@ -218,6 +218,7 @@ const styles = StyleSheet.create({
     position: "absolute",
     bottom: -18,
     alignSelf: "center",
+    marginTop:5,
   },
   plusIconBackground: {
     backgroundColor: "#ffffff",

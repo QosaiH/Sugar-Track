@@ -21,7 +21,14 @@ const LOG_TYPES = [
 
 export default function GlucoseLog() {
   const { user } = useLocalSearchParams();
-  const userData = JSON.parse(user);
+
+  let userData = {};
+  try {
+    userData = user ? JSON.parse(user) : {};
+  } catch {
+    userData = {};
+  }
+
   const [value, setValue] = useState("");
   const [logType, setLogType] = useState("בצום");
   const [modalVisible, setModalVisible] = useState(false);
@@ -56,16 +63,58 @@ export default function GlucoseLog() {
     }
   };
 
+  const getCoinChangeByStatus = (status) => {
+    switch (status) {
+      case "סביר":
+        return 10;
+      case "נמוך":
+      case "נמוך מאוד":
+        return 5;
+      case "גבוה":
+        return -5;
+      case "גבוה מאוד":
+        return -10;
+      default:
+        return 0;
+    }
+  };
+
+  const updateUserCoins = async (newCoinValue) => {
+    try {
+      const response = await fetch(
+        `https://proj.ruppin.ac.il/igroup15/test2/tar1/api/User/coins/${userData.id}?coins=${newCoinValue}`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ coins: newCoinValue }),
+        }
+      );
+
+      if (!response.ok) {
+        console.error("Failed to update coins");
+      }
+    } catch (error) {
+      console.error("Coin update error:", error);
+    }
+  };
+
   const handleSubmit = async () => {
-    if (!value) {
-      Alert.alert("שגיאה", "אנא הזן ערך גלוקוז");
+    const trimmedValue = value.trim();
+
+    if (!trimmedValue || isNaN(trimmedValue)) {
+      Alert.alert("שגיאה", "אנא הזן ערך גלוקוז חוקי (מספר)");
       return;
     }
 
-    const logStatus = determineLogStatus(value, logType);
+    const logStatus = determineLogStatus(trimmedValue, logType);
+    const coinChange = getCoinChangeByStatus(logStatus);
+    const newCoinValue = (userData.coins || 0) + coinChange;
+
     const log = {
       userId: userData?.id,
-      logValue: parseFloat(value),
+      logValue: parseFloat(trimmedValue),
       logType,
       logStatus,
       logDate: new Date().toISOString(),
@@ -84,7 +133,15 @@ export default function GlucoseLog() {
       );
 
       if (response.ok) {
-        setStatusMessage(`נרשם ערך: ${value} מ"ג/ד"ל\nסטטוס: ${logStatus}`);
+        // Update user coins
+        await updateUserCoins(newCoinValue);
+
+        // Update local userData coins
+        userData.coins = newCoinValue;
+
+        setStatusMessage(
+          `נרשם ערך: ${trimmedValue} מ"ג/ד"ל\nסטטוס: ${logStatus}\nמטבעות: ${coinChange > 0 ? "+" : ""}${coinChange}`
+        );
         setModalVisible(true);
         setValue("");
       } else {
@@ -131,10 +188,20 @@ export default function GlucoseLog() {
                 style={styles.radioContainer}
                 onPress={() => setLogType(type.value)}
               >
-                <View style={[styles.radioOuter, selected && styles.radioOuterSelected]}>
+                <View
+                  style={[
+                    styles.radioOuter,
+                    selected && styles.radioOuterSelected,
+                  ]}
+                >
                   {selected && <View style={styles.radioInner} />}
                 </View>
-                <Text style={[styles.radioLabel, selected && styles.radioLabelSelected]}>
+                <Text
+                  style={[
+                    styles.radioLabel,
+                    selected && styles.radioLabelSelected,
+                  ]}
+                >
                   {type.label}
                 </Text>
               </TouchableOpacity>
@@ -152,7 +219,7 @@ export default function GlucoseLog() {
           visible={modalVisible}
           onRequestClose={() => {
             setModalVisible(false);
-            router.push("/Home");
+            router.push("/BottomNav");
           }}
         >
           <View style={styles.modalOverlay}>
@@ -232,8 +299,6 @@ const styles = StyleSheet.create({
   radioGroup: {
     marginTop: 20,
     marginBottom: 30,
-    flexDirection: "column",
-    gap: 12,
   },
   radioContainer: {
     flexDirection: "row-reverse",
@@ -252,13 +317,13 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   radioOuterSelected: {
-    borderColor: "white",
+    borderColor: "#4A90E2",
   },
   radioInner: {
     width: 12,
     height: 12,
     borderRadius: 6,
-    backgroundColor: "black",
+    backgroundColor: "#4A90E2",
   },
   radioLabel: {
     fontSize: 16,
@@ -268,7 +333,7 @@ const styles = StyleSheet.create({
     writingDirection: "rtl",
   },
   radioLabelSelected: {
-    color: "white",
+    color: "#4A90E2",
   },
   button: {
     backgroundColor: "#4A90E2",
@@ -284,43 +349,40 @@ const styles = StyleSheet.create({
   },
   modalOverlay: {
     flex: 1,
-    backgroundColor: "rgba(0,0,0,0.6)",
     justifyContent: "center",
-    alignItems: "center",
+    backgroundColor: "rgba(0,0,0,0.5)",
+    padding: 20,
   },
   modalContent: {
     backgroundColor: "white",
-    padding: 24,
-    borderRadius: 16,
-    width: "80%",
+    padding: 30,
+    borderRadius: 18,
     alignItems: "center",
-  },
-  modalText: {
-    fontSize: 18,
-    fontWeight: "600",
-    textAlign: "center",
-    color: "#333",
-    marginBottom: 20,
-    writingDirection: "rtl",
-  },
-  modalButton: {
-    backgroundColor: "#4A90E2",
-    paddingVertical: 12,
-    paddingHorizontal: 32,
-    borderRadius: 10,
-  },
-  modalButtonText: {
-    color: "white",
-    fontWeight: "700",
-    fontSize: 18,
   },
   modalClose: {
     position: "absolute",
     top: 10,
-    left: 10,
+    right: 10,
   },
   modalCloseText: {
+    fontSize: 24,
+    fontWeight: "700",
+  },
+  modalText: {
     fontSize: 18,
-    color: "#999",
+    fontWeight: "600",
+    marginBottom: 30,
+    textAlign: "center",
+  },
+  modalButton: {
+    backgroundColor: "#4A90E2",
+    paddingVertical: 12,
+    paddingHorizontal: 40,
+    borderRadius: 12,
+  },
+  modalButtonText: {
+    color: "white",
+    fontSize: 18,
+    fontWeight: "600",
   },
 });
