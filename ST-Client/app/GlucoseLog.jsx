@@ -317,13 +317,13 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   radioOuterSelected: {
-    borderColor: "#4A90E2",
+    borderColor: "white",
   },
   radioInner: {
     width: 12,
     height: 12,
     borderRadius: 6,
-    backgroundColor: "#4A90E2",
+    backgroundColor: "black",
   },
   radioLabel: {
     fontSize: 16,
@@ -333,16 +333,16 @@ const styles = StyleSheet.create({
     writingDirection: "rtl",
   },
   radioLabelSelected: {
-    color: "#4A90E2",
+    color: "white",
   },
   button: {
-    backgroundColor: "#4A90E2",
+    backgroundColor: "white",
     paddingVertical: 20,
     borderRadius: 12,
     marginTop: 30,
   },
   buttonText: {
-    color: "white",
+    color: "black",
     textAlign: "center",
     fontSize: 20,
     fontWeight: "700",
