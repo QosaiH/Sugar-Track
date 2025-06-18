@@ -42,6 +42,7 @@
     "expo-system-ui": "~4.0.7",
     "expo-web-browser": "~14.0.2",
     "firebase": "^11.6.0",
+    "mathjs": "^14.5.2",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-native": "0.73.7",
