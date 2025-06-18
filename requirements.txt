@@ -1,3 +1,4 @@
 flask
-requests
+transformers
+torch==2.0.0  # גרסה פחות דורשת
 gunicorn

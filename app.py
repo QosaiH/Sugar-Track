@@ -1,24 +1,41 @@
 from flask import Flask, request, jsonify
-import requests
+from transformers import AutoTokenizer, AutoModelForSequenceClassification
+import torch
 
 app = Flask(__name__)
 
-# HuggingFace API URL
-API_URL = "https://api-inference.huggingface.co/models/avichr/heBERT_sentiment_analysis" 
-API_TOKEN = "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"  # תחליף בהמשך
+# טעינת המודל והטוקניזר
+model_name = "avichr/heBERT_sentiment_analysis"
 
-headers = {"Authorization": "Bearer {API_TOKEN}"}
+try:
+    tokenizer = AutoTokenizer.from_pretrained(model_name, trust_remote_code=True)
+    model = AutoModelForSequenceClassification.from_pretrained(model_name, trust_remote_code=True)
+except Exception as e:
+    print("Error loading model:", str(e))
+    tokenizer = None
+    model = None
 
 def analyze_sentiment(text):
-    response = requests.post(API_URL, headers=headers, json={"inputs": text})
-    if response.status_code != 200:
-        return {"error": "Model server error", "code": response.status_code}
-    
-    result = response.json()
+    if not tokenizer or not model:
+        return {"error": "Model not loaded"}
+
+    inputs = tokenizer(text, return_tensors="pt", truncation=True, padding=True).to('cpu')
+    with torch.no_grad():
+        outputs = model(**inputs)
+
+    probs = torch.nn.functional.softmax(outputs.logits, dim=1)
+    pred = torch.argmax(probs).item()
+
+    sentiment = {
+        0: "negative",
+        1: "neutral",
+        2: "positive"
+    }
+
     return {
         "text": text,
-        "sentiment": result[0][0]['label'] if len(result) > 0 else None,
-        "confidence": result[0][0]['score'] if len(result) > 0 else None
+        "sentiment": sentiment[pred],
+        "confidence": probs[0][pred].item()
     }
 
 @app.route('/analyze', methods=['POST'])
@@ -27,7 +44,7 @@ def analyze():
     text = data.get('text', '')
     if not text:
         return jsonify({"error": "Missing 'text' field"}), 400
-    
+
     result = analyze_sentiment(text)
     return jsonify(result)
 
