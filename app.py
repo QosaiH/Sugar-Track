@@ -1,29 +1,35 @@
 from flask import Flask, request, jsonify
-from flask_cors import CORS
-from transformers import pipeline
+import requests
 
 app = Flask(__name__)
-CORS(app)  # ← מאפשר בקשות מכל מקור
 
-sentiment_pipeline = pipeline(
-    "sentiment-analysis",
-    model="avichr/heBERT_sentiment_analysis",
-    tokenizer="avichr/heBERT_sentiment_analysis",
-    return_all_scores=True
-)
+# HuggingFace API URL
+API_URL = "https://api-inference.huggingface.co/models/avichr/heBERT_sentiment_analysis" 
+API_TOKEN = "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"  # תחליף בהמשך
 
-@app.route("/sentiment", methods=["POST"])
-def analyze_sentiment():
+headers = {"Authorization": "Bearer {API_TOKEN}"}
+
+def analyze_sentiment(text):
+    response = requests.post(API_URL, headers=headers, json={"inputs": text})
+    if response.status_code != 200:
+        return {"error": "Model server error", "code": response.status_code}
+    
+    result = response.json()
+    return {
+        "text": text,
+        "sentiment": result[0][0]['label'] if len(result) > 0 else None,
+        "confidence": result[0][0]['score'] if len(result) > 0 else None
+    }
+
+@app.route('/analyze', methods=['POST'])
+def analyze():
     data = request.get_json()
-    text = data.get("text", "")
+    text = data.get('text', '')
     if not text:
-        return jsonify({"error": "No text provided"}), 400
+        return jsonify({"error": "Missing 'text' field"}), 400
+    
+    result = analyze_sentiment(text)
+    return jsonify(result)
 
-    try:
-        result = sentiment_pipeline(text)
-        return jsonify(result[0])
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
-
-if __name__ == "__main__":
-    app.run()
+if __name__ == '__main__':
+    app.run(debug=True)
