@@ -70,17 +70,14 @@ export default function PrivateChatScreen() {
 
   const analyzeSentiment = async (text) => {
     try {
-      const response = await fetch(
-        "https://api-inference.huggingface.co/models/avichr/heBERT_sentiment_analysis",
-        {
-          method: "POST",
-          headers: {
-            Authorization: "Bearer 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",
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ inputs: text }),
-        }
-      );
+      const response = await fetch("https://sugar-track.onrender.com", {
+        method: "POST",
+        headers: {
+          Authorization: "Bearer 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",
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ inputs: text }),
+      });
 
       const result = await response.json();
       if (!Array.isArray(result) || result.length === 0) return null;
