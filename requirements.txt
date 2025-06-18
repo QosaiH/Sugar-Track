@@ -1,4 +1,4 @@
-flask
+torch==2.7.1
 transformers
-torch==2.0.0  # גרסה פחות דורשת
+flask
 gunicorn
