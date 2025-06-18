@@ -21,6 +21,8 @@ import {
   updateDoc,
   onSnapshot,
   arrayUnion,
+  addDoc,
+  collection,
 } from "firebase/firestore";
 import { AntDesign } from "@expo/vector-icons";
 
@@ -66,9 +68,37 @@ export default function PrivateChatScreen() {
     initializeChat();
   }, [user.id, otherUser.id]);
 
+  const analyzeSentiment = async (text) => {
+    try {
+      const response = await fetch(
+        "https://api-inference.huggingface.co/models/avichr/heBERT_sentiment_analysis",
+        {
+          method: "POST",
+          headers: {
+            Authorization: "Bearer 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",
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ inputs: text }),
+        }
+      );
+
+      const result = await response.json();
+      if (!Array.isArray(result) || result.length === 0) return null;
+
+      const { label, score } = result[0];
+      return label === "NEGATIVE" && score > 0.85;
+    } catch (err) {
+      console.error("Sentiment analysis error:", err);
+      return null;
+    }
+  };
+
   const sendMessage = async () => {
     if (!newMessage.trim()) return;
-
+    const isNegative = await analyzeSentiment(newMessage.trim());
+    if (isNegative) {
+      sendAlertToServer(user.id, newMessage.trim());
+    }
     const sortedIds = [user.id, otherUser.id].sort();
     const generatedChatId = `${sortedIds[0]}_${sortedIds[1]}`;
     const chatRef = doc(db, "privateChats", generatedChatId);
@@ -91,6 +121,14 @@ export default function PrivateChatScreen() {
     }
   };
 
+  const sendAlertToServer = async (userId, text) => {
+    await addDoc(collection(db, "alerts"), {
+      userId,
+      text,
+      timestamp: new Date(),
+      severity: "danger",
+    });
+  };
   return (
     <>
       <View style={styles.header}>
