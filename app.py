@@ -1,9 +1,10 @@
 from flask import Flask, request, jsonify
+from flask_cors import CORS
 from transformers import pipeline
 
 app = Flask(__name__)
+CORS(app)  # ← מאפשר בקשות מכל מקור
 
-# Load the sentiment analysis model
 sentiment_pipeline = pipeline(
     "sentiment-analysis",
     model="avichr/heBERT_sentiment_analysis",
@@ -20,7 +21,7 @@ def analyze_sentiment():
 
     try:
         result = sentiment_pipeline(text)
-        return jsonify(result[0])  # Return list of label-score dicts
+        return jsonify(result[0])
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
