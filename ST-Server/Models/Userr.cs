@@ -85,6 +85,12 @@ namespace ST_Server.Models
             UserDBservices dbs = new UserDBservices();
             return dbs.UpdateUsersCoins(userId, coins);
         }
+        public static int UpdateUserRole(int id, string role)
+        {
+            UserDBservices dbs = new UserDBservices();
+            return dbs.UpdateUsersRole(id, role);
+        }
+
 
     }
 }

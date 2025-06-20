@@ -72,6 +72,52 @@ namespace ST_Server.Controllers
         {
             return Userr.UpdateCoins(id, coins);
         }
+        [HttpPut("role/{id}")]
+        public int UpdateRole(int id, string role)
+        {
+            return Userr.UpdateUserRole(id, role);
+        }
+
+        [HttpPost("admin/promote")]
+        public IActionResult PromoteTopUsers()
+        {
+            try
+            {
+                List<Userr> users = Userr.ReadUsers();
+
+                if (users.Count == 0)
+                    return NotFound("No users found.");
+
+                int topCount = (int)Math.Ceiling(users.Count * 0.1); // 10% מהמשתמשים
+
+                // מיון לפי מטבעות
+                var topUsers = users.OrderByDescending(u => u.Coins).Take(topCount).ToList();
+
+                foreach (var user in users)
+                {
+                    // מאפסים מטבעות
+                    Userr.UpdateCoins(user.Id, 0);
+
+                    // אם היה מוביל מחזירים לרגיל
+                    if (user.Role == "משתמש מוביל")
+                    {
+                        Userr.UpdateUserRole(user.Id, "משתמש רגיל");
+                    }
+                }
+
+                // קידום מובילים חדשים
+                foreach (var topUser in topUsers)
+                {
+                    Userr.UpdateUserRole(topUser.Id, "משתמש מוביל");
+                }
+
+                return Ok("Top users promoted successfully.");
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Internal server error: {ex.Message}");
+            }
+        }
 
     }
 }

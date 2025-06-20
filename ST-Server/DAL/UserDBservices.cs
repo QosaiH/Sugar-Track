@@ -426,6 +426,8 @@ namespace ST_Server.DAL
             }
         }
 
+
+
         public int UpdateUsersCoins(int id, int coins)
         {
 
@@ -447,6 +449,49 @@ namespace ST_Server.DAL
             paramDic.Add("@userID", id);
 
             cmd = CreateCommandWithStoredProcedureGeneral("STEditUserCoins", con, paramDic);
+
+            try
+            {
+                int numEffected = cmd.ExecuteNonQuery(); // execute the command
+                return numEffected;
+            }
+            catch (Exception ex)
+            {
+                // write to log
+                throw (ex);
+            }
+
+            finally
+            {
+                if (con != null)
+                {
+                    // close the db connection
+                    con.Close();
+                }
+            }
+        }
+
+        public int UpdateUsersRole(int id, string role)
+        {
+
+            SqlConnection con;
+            SqlCommand cmd;
+
+            try
+            {
+                con = connect("igroup15_test2"); // create the connection
+            }
+            catch (Exception ex)
+            {
+                // write to log
+                throw (ex);
+            }
+
+            Dictionary<string, object> paramDic = new Dictionary<string, object>();
+            paramDic.Add("@Role", role);
+            paramDic.Add("@userID", id);
+
+            cmd = CreateCommandWithStoredProcedureGeneral("STUpdateUserRole", con, paramDic);
 
             try
             {

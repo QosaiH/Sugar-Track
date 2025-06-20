@@ -21,6 +21,8 @@ import {
   updateDoc,
   onSnapshot,
   arrayUnion,
+  addDoc,
+  collection,
 } from "firebase/firestore";
 import { AntDesign } from "@expo/vector-icons";
 
@@ -66,9 +68,32 @@ export default function PrivateChatScreen() {
     initializeChat();
   }, [user.id, otherUser.id]);
 
+  const analyzeSentiment = async (text) => {
+    try {
+      const response = await fetch(
+        "https://sugar-track.onrender.com/sentiment",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ text }),
+        }
+      );
+
+      const result = await response.json();
+      const negative = result.find((item) => item.label === "NEGATIVE");
+      return negative?.score > 0.85;
+    } catch (error) {
+      console.error("Error analyzing sentiment:", error);
+      return false; // ברירת מחדל אם יש תקלה
+    }
+  };
+
   const sendMessage = async () => {
     if (!newMessage.trim()) return;
-
+    const isNegative = await analyzeSentiment(newMessage.trim());
+    if (isNegative) {
+      sendAlertToServer(user.id, newMessage.trim());
+    }
     const sortedIds = [user.id, otherUser.id].sort();
     const generatedChatId = `${sortedIds[0]}_${sortedIds[1]}`;
     const chatRef = doc(db, "privateChats", generatedChatId);
@@ -91,6 +116,14 @@ export default function PrivateChatScreen() {
     }
   };
 
+  const sendAlertToServer = async (userId, text) => {
+    await addDoc(collection(db, "alerts"), {
+      userId,
+      text,
+      timestamp: new Date(),
+      severity: "danger",
+    });
+  };
   return (
     <>
       <View style={styles.header}>

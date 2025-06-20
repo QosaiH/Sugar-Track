@@ -15,14 +15,14 @@ const Tab = createBottomTabNavigator();
 
 export default function BottomNav() {
   const [drawerVisible, setDrawerVisible] = useState(false);
-  const [userData, setUserData] = useState(null); // State to hold user data
+  const [userData, setUserData] = useState(null);
 
   useEffect(() => {
     const getData = async () => {
       try {
-        const data = await AsyncStorage.getItem("user"); // Retrieve user data
+        const data = await AsyncStorage.getItem("user");
         if (data !== null) {
-          setUserData(JSON.parse(data)); // Parse and set user data
+          setUserData(JSON.parse(data));
         } else {
           console.log("No user data found");
         }
@@ -30,8 +30,35 @@ export default function BottomNav() {
         console.error("Error retrieving user data:", e);
       }
     };
+
+    const checkAndPromoteTopUsers = async () => {
+      const today = new Date();
+      const currentDate = today.toISOString().split("T")[0]; // Format: "YYYY-MM-DD"
+
+      if (today.getDate() === 1) {
+        try {
+          const lastRun = await AsyncStorage.getItem("lastPromotionRun");
+
+          if (lastRun !== currentDate) {
+            const res = await fetch("https://proj.ruppin.ac.il/igroup15/test2/tar1/api/User/admin/promote", {
+              method: "POST",
+            });
+
+            const text = await res.text();
+            console.log("Promotion response:", text);
+
+            await AsyncStorage.setItem("lastPromotionRun", currentDate);
+          }
+        } catch (e) {
+          console.error("Error promoting top users:", e);
+        }
+      }
+    };
+
     getData();
+    checkAndPromoteTopUsers();
   }, []);
+
   return (
     <SafeAreaProvider>
       <Header />
@@ -68,7 +95,8 @@ export default function BottomNav() {
           tabBarActiveTintColor: "white",
           tabBarInactiveTintColor: "white",
           headerShown: false,
-        })}>
+        })}
+      >
         <Tab.Screen name="צ'אט">
           {() => <Chat userData={userData} />}
         </Tab.Screen>
@@ -82,19 +110,20 @@ export default function BottomNav() {
           {() => <Statics userData={userData} />}
         </Tab.Screen>
 
-        {/* Fake screen for "תפריט" that triggers the modal */}
+        {/* Fake screen for menu modal */}
         <Tab.Screen
           name="תפריט"
           component={() => null}
           listeners={{
             tabPress: (e) => {
-              e.preventDefault(); // Stop navigation
-              setDrawerVisible(true); // Open modal
+              e.preventDefault(); // Prevent default navigation
+              setDrawerVisible(true); // Open custom modal
             },
-          }}></Tab.Screen>
+          }}
+        />
       </Tab.Navigator>
 
-      {/* Custom Modal */}
+      {/* Menu Modal */}
       <Menu isVisible={drawerVisible} onClose={() => setDrawerVisible(false)} />
     </SafeAreaProvider>
   );
