@@ -70,14 +70,11 @@ export default function PrivateChatScreen() {
 
   const analyzeSentiment = async (text) => {
     try {
-      const response = await fetch(
-        "https://sugar-track.onrender.com/sentiment",
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ text }),
-        }
-      );
+      const response = await fetch("https://sugar-track-1.onrender.com", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ text }),
+      });
 
       const result = await response.json();
       const negative = result.find((item) => item.label === "NEGATIVE");

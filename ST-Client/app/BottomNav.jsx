@@ -1,4 +1,10 @@
-import { View, StyleSheet, TouchableOpacity, Platform } from "react-native";
+import {
+  View,
+  StyleSheet,
+  TouchableOpacity,
+  Platform,
+  ImageBackground,
+} from "react-native";
 import React, { useState, useEffect } from "react";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
@@ -40,9 +46,12 @@ export default function BottomNav() {
           const lastRun = await AsyncStorage.getItem("lastPromotionRun");
 
           if (lastRun !== currentDate) {
-            const res = await fetch("https://proj.ruppin.ac.il/igroup15/test2/tar1/api/User/admin/promote", {
-              method: "POST",
-            });
+            const res = await fetch(
+              "https://proj.ruppin.ac.il/igroup15/test2/tar1/api/User/admin/promote",
+              {
+                method: "POST",
+              }
+            );
 
             const text = await res.text();
             console.log("Promotion response:", text);
@@ -62,69 +71,74 @@ export default function BottomNav() {
   return (
     <SafeAreaProvider>
       <Header />
-      <Tab.Navigator
-        initialRouteName="דף הבית"
-        screenOptions={({ route }) => ({
-          tabBarIcon: ({ focused, color, size }) => {
-            let iconName;
+      <ImageBackground
+        source={require("../Images/Vector.png")}
+        style={{ flex: 1, width: "100%" }}>
+        <Tab.Navigator
+          initialRouteName="דף הבית"
+          screenOptions={({ route }) => ({
+            tabBarIcon: ({ focused, color, size }) => {
+              let iconName;
 
-            if (route.name === "דף הבית") {
-              iconName = focused ? "home" : "home-outline";
-            } else if (route.name === "צ'אט") {
-              iconName = focused ? "chat" : "chat-outline";
-            } else if (route.name === "פורום") {
-              iconName = focused ? "forum" : "forum-outline";
-            } else if (route.name === "סטטיסטיקה") {
-              iconName = focused ? "chart-box" : "chart-box-outline";
-            } else if (route.name === "תפריט") {
-              iconName = focused ? "menu" : "menu";
-            }
+              if (route.name === "דף הבית") {
+                iconName = focused ? "home" : "home-outline";
+              } else if (route.name === "צ'אט") {
+                iconName = focused ? "chat" : "chat-outline";
+              } else if (route.name === "פורום") {
+                iconName = focused ? "forum" : "forum-outline";
+              } else if (route.name === "סטטיסטיקה") {
+                iconName = focused ? "chart-box" : "chart-box-outline";
+              } else if (route.name === "תפריט") {
+                iconName = focused ? "menu" : "menu";
+              }
 
-            return <Icon name={iconName} size={size} color={color} />;
-          },
-          tabBarStyle: {
-            backgroundColor: "transparent",
-            position: "absolute",
-            borderTopWidth: 0,
-            elevation: 0,
-            shadowOpacity: 0,
-            width: "100%",
-            height: 60,
-            marginBottom: Platform.OS === "ios" ? 30 : 0,
-          },
-          tabBarActiveTintColor: "white",
-          tabBarInactiveTintColor: "white",
-          headerShown: false,
-        })}
-      >
-        <Tab.Screen name="צ'אט">
-          {() => <Chat userData={userData} />}
-        </Tab.Screen>
-        <Tab.Screen name="פורום">
-          {() => <Forum userData={userData} />}
-        </Tab.Screen>
-        <Tab.Screen name="דף הבית">
-          {() => <HomePage userData={userData} />}
-        </Tab.Screen>
-        <Tab.Screen name="סטטיסטיקה">
-          {() => <Statics userData={userData} />}
-        </Tab.Screen>
-
-        {/* Fake screen for menu modal */}
-        <Tab.Screen
-          name="תפריט"
-          component={() => null}
-          listeners={{
-            tabPress: (e) => {
-              e.preventDefault(); // Prevent default navigation
-              setDrawerVisible(true); // Open custom modal
+              return <Icon name={iconName} size={size} color={color} />;
             },
-          }}
-        />
-      </Tab.Navigator>
+            tabBarStyle: {
+              backgroundColor: "transparent",
+              borderTopWidth: 0,
+              elevation: 0,
+              shadowOpacity: 0,
+              width: "100%",
+              height: 60,
+              //marginBottom: Platform.OS === "ios" ? 30 : 0,
+              zIndex: 1000,
+            },
+            tabBarActiveTintColor: "white",
+            tabBarInactiveTintColor: "white",
+            headerShown: false,
+          })}>
+          <Tab.Screen name="צ'אט">
+            {() => <Chat userData={userData} />}
+          </Tab.Screen>
+          <Tab.Screen name="פורום">
+            {() => <Forum userData={userData} />}
+          </Tab.Screen>
+          <Tab.Screen name="דף הבית">
+            {() => <HomePage userData={userData} />}
+          </Tab.Screen>
+          <Tab.Screen name="סטטיסטיקה">
+            {() => <Statics userData={userData} />}
+          </Tab.Screen>
 
-      {/* Menu Modal */}
-      <Menu isVisible={drawerVisible} onClose={() => setDrawerVisible(false)} />
+          {/* Fake screen for menu modal */}
+          <Tab.Screen
+            name="תפריט"
+            component={() => null}
+            listeners={{
+              tabPress: (e) => {
+                e.preventDefault(); // Prevent default navigation
+                setDrawerVisible(true); // Open custom modal
+              },
+            }}
+          />
+        </Tab.Navigator>
+        {/* Menu Modal */}
+        <Menu
+          isVisible={drawerVisible}
+          onClose={() => setDrawerVisible(false)}
+        />
+      </ImageBackground>
     </SafeAreaProvider>
   );
 }

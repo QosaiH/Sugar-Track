@@ -37,7 +37,7 @@ export default function mySugar() {
   const [loading, setLoading] = useState(false);
 
   const ai = new GoogleGenAI({ apiKey: API_KEY });
-  const model = "gemini-1.5-flash-001";
+  const model = "gemini-2.5-flash";
 
   useEffect(() => {
     const initializeChat = async () => {

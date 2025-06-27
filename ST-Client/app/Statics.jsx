@@ -10,7 +10,8 @@ import {
 } from "react-native";
 import { LineChart } from "react-native-chart-kit";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { mean, std } from "mathjs";
+//import { mean, std } from "mathjs";
+import { mean, standardDeviation } from "simple-statistics";
 
 const screenWidth = Dimensions.get("window").width;
 
@@ -30,8 +31,18 @@ const chartConfig = {
 
 const hebrewDays = ["א'", "ב'", "ג'", "ד'", "ה'", "ו'", "ש'"];
 const hebrewMonths = [
-  "ינו", "פבר", "מרץ", "אפר", "מאי", "יונ",
-  "יול", "אוג", "ספט", "אוק", "נוב", "דצמ",
+  "ינו",
+  "פבר",
+  "מרץ",
+  "אפר",
+  "מאי",
+  "יונ",
+  "יול",
+  "אוג",
+  "ספט",
+  "אוק",
+  "נוב",
+  "דצמ",
 ];
 
 const Statics = () => {
@@ -101,7 +112,9 @@ const Statics = () => {
 
   const generateValues = (filtered) => {
     if (selectedTab === "שנתי") {
-      const monthly = Array(12).fill().map(() => []);
+      const monthly = Array(12)
+        .fill()
+        .map(() => []);
       filtered.forEach((log) => {
         const date = new Date(log.logDate);
         monthly[date.getMonth()].push(log.logValue);
@@ -110,7 +123,9 @@ const Statics = () => {
     }
 
     if (selectedTab === "שבועי") {
-      const daily = Array(7).fill().map(() => []);
+      const daily = Array(7)
+        .fill()
+        .map(() => []);
       const now = new Date();
       filtered.forEach((log) => {
         const date = new Date(log.logDate);
@@ -147,14 +162,17 @@ const Statics = () => {
         let filtered = filterData(data);
 
         filtered.sort(
-          (a, b) => new Date(a.logDate).getTime() - new Date(b.logDate).getTime()
+          (a, b) =>
+            new Date(a.logDate).getTime() - new Date(b.logDate).getTime()
         );
 
         const values = generateValues(filtered);
         const labels = generateLabels(filtered);
 
         setAverage(values.length ? mean(values).toFixed(1) : null);
-        setStdDeviation(values.length ? std(values).toFixed(1) : null);
+        setStdDeviation(
+          values.length ? standardDeviation(values).toFixed(1) : null
+        );
 
         if (values.length >= 2) {
           const diff = values[values.length - 1] - values[values.length - 2];
@@ -174,7 +192,9 @@ const Statics = () => {
                   const date = new Date(log.logDate);
                   setLogDetails({
                     value: log.logValue,
-                    date: `${date.getDate()}/${date.getMonth() + 1}/${date.getFullYear()}`,
+                    date: `${date.getDate()}/${
+                      date.getMonth() + 1
+                    }/${date.getFullYear()}`,
                     type: log.logType,
                     status: log.logStatus,
                   });
@@ -197,15 +217,13 @@ const Statics = () => {
     <ImageBackground
       source={require("../Images/Vector.png")}
       style={styles.background}
-      resizeMode="cover"
-    >
+      resizeMode="cover">
       <TouchableOpacity
         onPress={() => {
           setShowChart(!showChart);
           setLogDetails(null);
         }}
-        style={styles.iconToggle}
-      >
+        style={styles.iconToggle}>
         <Text style={styles.iconText}>{showChart ? "📃" : "📈"}</Text>
       </TouchableOpacity>
 
@@ -220,14 +238,12 @@ const Statics = () => {
               onPress={() => {
                 setSelectedTab(tab);
                 setLogDetails(null);
-              }}
-            >
+              }}>
               <Text
                 style={[
                   styles.tabText,
                   selectedTab === tab && styles.activeTabText,
-                ]}
-              >
+                ]}>
                 {tab}
               </Text>
             </TouchableOpacity>
@@ -263,9 +279,12 @@ const Statics = () => {
                   return (
                     <View key={index} style={styles.logItem}>
                       <Text style={styles.logText}>
-                        תאריך: {date.getDate()}/{date.getMonth() + 1}/{date.getFullYear()}
+                        תאריך: {date.getDate()}/{date.getMonth() + 1}/
+                        {date.getFullYear()}
                       </Text>
-                      <Text style={styles.logText}>ערך: {log.logValue} mg/dL</Text>
+                      <Text style={styles.logText}>
+                        ערך: {log.logValue} mg/dL
+                      </Text>
                       <Text style={styles.logText}>סוג: {log.logType}</Text>
                       <Text style={styles.logText}>מצב: {log.logStatus}</Text>
                     </View>
@@ -277,8 +296,12 @@ const Statics = () => {
             {logDetails && showChart && (
               <View style={styles.tooltip}>
                 <Text style={styles.tooltipText}>תאריך: {logDetails.date}</Text>
-                <Text style={styles.tooltipText}>ערך: {logDetails.value} mg/dL</Text>
-                <Text style={styles.tooltipText}>סוג מדידה: {logDetails.type}</Text>
+                <Text style={styles.tooltipText}>
+                  ערך: {logDetails.value} mg/dL
+                </Text>
+                <Text style={styles.tooltipText}>
+                  סוג מדידה: {logDetails.type}
+                </Text>
                 <Text style={styles.tooltipText}>מצב: {logDetails.status}</Text>
               </View>
             )}
