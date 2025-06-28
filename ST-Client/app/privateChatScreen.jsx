@@ -25,6 +25,8 @@ import {
   collection,
 } from "firebase/firestore";
 import { AntDesign } from "@expo/vector-icons";
+import { GoogleGenAI } from "@google/genai";
+const API_KEY = "AIzaSyAonlahcFhubsUWuy1dRrsWcD9ERZBhPDY";
 
 export default function PrivateChatScreen() {
   const params = useLocalSearchParams();
@@ -34,7 +36,9 @@ export default function PrivateChatScreen() {
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState("");
   const [chatId, setChatId] = useState("");
-
+  const ai = new GoogleGenAI({ apiKey: API_KEY });
+  const model = "gemini-2.5-flash";
+  let botResponseText = "";
   useEffect(() => {
     const initializeChat = async () => {
       const sortedIds = [user.id, otherUser.id].sort();
@@ -70,27 +74,29 @@ export default function PrivateChatScreen() {
 
   const analyzeSentiment = async (text) => {
     try {
-      const response = await fetch("https://sugar-track-1.onrender.com", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ text }),
+      const prompt = `
+האם אתה מזהה בהודעה זו תסמינים של מצב רוח שלילי, מצוקה רגשית, או רמזים לאובדנות? אם כן, ציין מה אתה מזה
+ענה במבנה הבא:
+1.  כן/לא
+2. אילו רגשות או תסמנים אתה מזהה?
+
+ההודעה: "${text}"
+`;
+      const response = await ai.models.generateContent({
+        model: model,
+        contents: [{ text: prompt }],
       });
 
-      const result = await response.json();
-      const negative = result.find((item) => item.label === "NEGATIVE");
-      return negative?.score > 0.85;
+      botResponseText = response.text;
+      console.log("Bot response:", botResponseText);
+      return botResponseText.toLowerCase().includes("כן");
     } catch (error) {
       console.error("Error analyzing sentiment:", error);
-      return false; // ברירת מחדל אם יש תקלה
+      return false; // Default if there's an error
     }
   };
-
   const sendMessage = async () => {
     if (!newMessage.trim()) return;
-    const isNegative = await analyzeSentiment(newMessage.trim());
-    if (isNegative) {
-      sendAlertToServer(user.id, newMessage.trim());
-    }
     const sortedIds = [user.id, otherUser.id].sort();
     const generatedChatId = `${sortedIds[0]}_${sortedIds[1]}`;
     const chatRef = doc(db, "privateChats", generatedChatId);
@@ -106,7 +112,14 @@ export default function PrivateChatScreen() {
       await updateDoc(chatRef, {
         messages: arrayUnion(message),
       });
+      const messageToAnalyze = newMessage.trim();
       setNewMessage("");
+      setTimeout(async () => {
+        const isNegative = await analyzeSentiment(messageToAnalyze.trim());
+        if (isNegative) {
+          sendAlertToServer(user.id, newMessage.trim());
+        }
+      }, 0); // Run after the message is sent, non-blocking
     } catch (error) {
       console.error("Error sending message:", error);
       Alert.alert("שגיאה", "שליחת ההודעה נכשלה, נסה שוב.");
@@ -118,7 +131,7 @@ export default function PrivateChatScreen() {
       userId,
       text,
       timestamp: new Date(),
-      severity: "danger",
+      analyzedSentiment: botResponseText,
     });
   };
   return (

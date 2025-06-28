@@ -24,7 +24,10 @@ import {
   addDoc,
 } from "firebase/firestore";
 import { useLocalSearchParams, useRouter } from "expo-router";
+
 import { AntDesign } from "@expo/vector-icons";
+import { GoogleGenAI } from "@google/genai";
+const API_KEY = "AIzaSyAonlahcFhubsUWuy1dRrsWcD9ERZBhPDY";
 
 export default function chatScreen() {
   const params = useLocalSearchParams();
@@ -41,6 +44,10 @@ export default function chatScreen() {
   const [showReportModal, setShowReportModal] = useState(false);
   const [reportDescription, setReportDescription] = useState("");
   const [selectedMessage, setSelectedMessage] = useState(null);
+  const ai = new GoogleGenAI({ apiKey: API_KEY });
+  const model = "gemini-2.5-flash";
+  let botResponseText = "";
+
   useEffect(() => {
     const unsubscribe = onSnapshot(
       doc(db, "community", groupId),
@@ -80,6 +87,30 @@ export default function chatScreen() {
     return () => unsubscribe();
   }, [groupId]);
 
+  const analyzeSentiment = async (text) => {
+    try {
+      const prompt = `
+האם אתה מזהה בהודעה זו תסמינים של מצב רוח שלילי, מצוקה רגשית, או רמזים לאובדנות? אם כן, ציין מה אתה מזה
+ענה במבנה הבא:
+1.  כן/לא
+2. אילו רגשות או תסמנים אתה מזהה?
+
+ההודעה: "${text}"
+`;
+      const response = await ai.models.generateContent({
+        model: model,
+        contents: [{ text: prompt }],
+      });
+
+      botResponseText = response.text;
+      console.log("Bot response:", botResponseText);
+      return botResponseText.toLowerCase().includes("כן");
+    } catch (error) {
+      console.error("Error analyzing sentiment:", error);
+      return false; // Default if there's an error
+    }
+  };
+
   const sendMessage = async () => {
     if (!newMessage.trim() || !groupId) return;
     const newId = doc(collection(db, "community", groupId, "messages")).id;
@@ -96,7 +127,14 @@ export default function chatScreen() {
       await updateDoc(groupRef, {
         messages: arrayUnion(message),
       });
+      const messageToAnalyze = newMessage.trim();
       setNewMessage("");
+      setTimeout(async () => {
+        const isNegative = await analyzeSentiment(messageToAnalyze.trim());
+        if (isNegative) {
+          sendAlertToServer(user.id, newMessage.trim());
+        }
+      }, 0); // Run after the message is sent, non-blocking
     } catch (error) {
       console.error("Failed to send message:", error, message);
     }
@@ -123,6 +161,14 @@ export default function chatScreen() {
       console.error("Error reporting message:", error);
       alert("נכשל בשליחת הדיווח.");
     }
+  };
+  const sendAlertToServer = async (userId, text) => {
+    await addDoc(collection(db, "alerts"), {
+      userId,
+      text,
+      timestamp: new Date(),
+      analyzedSentiment: botResponseText,
+    });
   };
   return (
     <>
