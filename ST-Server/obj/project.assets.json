@@ -598,19 +598,19 @@
     ]
   },
   "packageFolders": {
-    "C:\\Users\\10\\.nuget\\packages\\": {}
+    "C:\\Users\\QosaiH\\.nuget\\packages\\": {}
   },
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\10\\OneDrive - Ruppin Students and Teachers\\שולחן העבודה\\SugarTrack1\\Sugar-Track\\ST-Server\\ST-Server.csproj",
+      "projectUniqueName": "C:\\Users\\QosaiH\\Desktop\\Sugar-Track\\ST-Server\\ST-Server.csproj",
       "projectName": "ST-Server",
-      "projectPath": "C:\\Users\\10\\OneDrive - Ruppin Students and Teachers\\שולחן העבודה\\SugarTrack1\\Sugar-Track\\ST-Server\\ST-Server.csproj",
-      "packagesPath": "C:\\Users\\10\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\10\\OneDrive - Ruppin Students and Teachers\\שולחן העבודה\\SugarTrack1\\Sugar-Track\\ST-Server\\obj\\",
+      "projectPath": "C:\\Users\\QosaiH\\Desktop\\Sugar-Track\\ST-Server\\ST-Server.csproj",
+      "packagesPath": "C:\\Users\\QosaiH\\.nuget\\packages\\",
+      "outputPath": "C:\\Users\\QosaiH\\Desktop\\Sugar-Track\\ST-Server\\obj\\",
       "projectStyle": "PackageReference",
       "configFilePaths": [
-        "C:\\Users\\10\\AppData\\Roaming\\NuGet\\NuGet.Config",
+        "C:\\Users\\QosaiH\\AppData\\Roaming\\NuGet\\NuGet.Config",
         "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
       ],
       "originalTargetFrameworks": [
@@ -630,6 +630,11 @@
         "warnAsError": [
           "NU1605"
         ]
+      },
+      "restoreAuditProperties": {
+        "enableAudit": "true",
+        "auditLevel": "low",
+        "auditMode": "direct"
       }
     },
     "frameworks": {
@@ -664,7 +669,7 @@
             "privateAssets": "all"
           }
         },
-        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\6.0.402\\RuntimeIdentifierGraph.json"
+        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\8.0.202\\RuntimeIdentifierGraph.json"
       }
     }
   }

@@ -183,7 +183,9 @@ export default function LogIn() {
             <Link href="/SignUp">
               <Text style={styles.color}>צור משתמש</Text>
             </Link>
-            <Text style={styles.color}>שכחתי סיסמא</Text>
+            <Link href="/ForgotPassword">
+              <Text style={styles.color}>שכחתי סיסמא</Text>
+            </Link>
           </View>
         </ImageBackground>
       </SafeAreaView>
