@@ -166,7 +166,7 @@ export default function chatScreen() {
     await addDoc(collection(db, "alerts"), {
       userId,
       text,
-      timestamp: new Date(),
+      timestamp: new Date().toISOString(),
       analyzedSentiment: botResponseText,
     });
   };

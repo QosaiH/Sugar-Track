@@ -14,6 +14,43 @@ import { db } from "../../fireBaseConfig";
 import { collection, onSnapshot, getDocs } from "firebase/firestore";
 
 export default function AdminHome() {
+  const [activeTab, setActiveTab] = useState("alerts");
+
+  return (
+    <SafeAreaView style={styles.container}>
+      <ImageBackground
+        style={styles.background}
+        source={require("../../Images/Vector.png")}
+        resizeMode="cover">
+        <View style={styles.tabContainer}>
+          <TouchableOpacity
+            style={[
+              styles.tabButton,
+              activeTab === "alerts" && styles.activeTab,
+            ]}
+            onPress={() => setActiveTab("alerts")}>
+            <Text style={styles.tabText}>התראות חריגות</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={[
+              styles.tabButton,
+              activeTab === "reports" && styles.activeTab,
+            ]}
+            onPress={() => setActiveTab("reports")}>
+            <Text style={styles.tabText}>דיווחים</Text>
+          </TouchableOpacity>
+        </View>
+
+        <View style={styles.contentContainer}>
+          {activeTab === "alerts" ? <Alerts /> : <Reports />}
+        </View>
+      </ImageBackground>
+    </SafeAreaView>
+  );
+}
+
+export function Reports() {
   const [reports, setReports] = useState([]);
   const [filteredReports, setFilteredReports] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -199,13 +236,191 @@ export default function AdminHome() {
     </SafeAreaView>
   );
 }
+export function Alerts() {
+  const [reports, setReports] = useState([]);
+  const [filteredReports, setFilteredReports] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [expandedRows, setExpandedRows] = useState({});
+  const [userMap, setUserMap] = useState({});
+  const [communityMap, setCommunityMap] = useState({});
 
+  useEffect(() => {
+    // נטען את כל המשתמשים
+    const loadUsers = async () => {
+      try {
+        const querySnapshot = await getDocs(collection(db, "user"));
+        const users = {};
+        querySnapshot.forEach((doc) => {
+          users[doc.id] =
+            doc.data().fullName || doc.data().name || "שם לא ידוע";
+        });
+        setUserMap(users);
+      } catch (error) {
+        console.error("Failed to load users:", error);
+      }
+    };
+
+    // נטען הכל במקביל
+    const loadData = async () => {
+      await Promise.all([loadUsers()]);
+
+      const unsubscribe = onSnapshot(collection(db, "alerts"), (snapshot) => {
+        const reportList = snapshot.docs.map((docSnap) => {
+          const reportData = docSnap.data();
+          return {
+            id: docSnap.id,
+            ...reportData,
+          };
+        });
+        setReports(reportList);
+        setFilteredReports(reportList);
+        setLoading(false);
+      });
+
+      return unsubscribe;
+    };
+
+    const unsubscribePromise = loadData();
+
+    return () => {
+      unsubscribePromise.then((unsubscribe) => unsubscribe());
+    };
+  }, []);
+
+  const handleSearch = (text) => {
+    setSearchQuery(text);
+    const query = text.toLowerCase();
+    const filtered = reports.filter((report) =>
+      // Search by reporter name or ID
+      `${userMap[report.userID]} (${report.userID})`
+        .toLowerCase()
+        .includes(query)
+    );
+    setFilteredReports(filtered);
+  };
+
+  const toggleExpand = (id) => {
+    setExpandedRows((prev) => ({
+      ...prev,
+      [id]: !prev[id],
+    }));
+  };
+
+  const renderReportItem = ({ item }) => {
+    const isExpanded = expandedRows[item.id];
+
+    // Get user and community names/IDs
+    const senderName = userMap[item.userId] || "לא ידוע";
+    const AlertFor = userMap[item.analyzedSentiment] || "לא ידוע";
+    console.log(item);
+    return (
+      <View style={styles.rowWrapper}>
+        <TouchableOpacity
+          style={styles.row}
+          onPress={() => toggleExpand(item.id)}
+          accessibilityLabel={`פרטים נוספים עבור דיווח ${item.id}`}
+          activeOpacity={0.7}>
+          {/* sender */}
+          <Text style={styles.cell}>{`${senderName} (${item.userId})`}</Text>
+          {/* Expand/Collapse Indicator */}
+          <Text style={styles.expandText}>{isExpanded ? "▲" : "▼"}</Text>
+        </TouchableOpacity>
+        {isExpanded && (
+          <View style={styles.dropdown}>
+            {/* Sender Details */}
+            <Text style={styles.detailText}>
+              שולח ההודעה: {`${senderName} (${item.userId})`}
+            </Text>
+            {/* Message Content */}
+            <Text style={styles.detailText}>תוכן ההודעה: {item.text}</Text>
+            {/* Alert For */}
+            <Text style={styles.detailText}>
+              התראה עבור: {item.analyzedSentiment.substring(9).trim()}
+            </Text>
+            {/* Timestamp */}
+            <Text style={styles.detailText}>
+              זמן הדיווח:{" "}
+              {item.timestamp
+                ? new Date(item.timestamp).toLocaleString()
+                : "אין תאריך"}
+            </Text>
+          </View>
+        )}
+      </View>
+    );
+  };
+
+  return (
+    <SafeAreaView style={styles.container}>
+      <ImageBackground
+        style={styles.background}
+        source={require("../../Images/Vector.png")}
+        resizeMode="cover">
+        <Text style={styles.header}>ניהול התראות חריגות</Text>
+
+        <TextInput
+          style={styles.searchInput}
+          placeholder="חיפוש לפי מזהה, שם או תוכן"
+          placeholderTextColor="#aaa"
+          value={searchQuery}
+          onChangeText={handleSearch}
+        />
+
+        {loading ? (
+          <ActivityIndicator
+            size="large"
+            color="#fff"
+            style={{ marginTop: 30 }}
+          />
+        ) : filteredReports.length === 0 ? (
+          <Text style={styles.noReports}>אין דיווחים התואמים לחיפוש.</Text>
+        ) : (
+          <>
+            <View style={styles.headerRow}>
+              <Text style={styles.headerCell}>מזהה ושם משתמש</Text>
+              <Text style={styles.headerCell}>פרטים</Text>
+            </View>
+            <FlatList
+              data={filteredReports}
+              renderItem={renderReportItem}
+              keyExtractor={(item) => item.id}
+              contentContainerStyle={styles.listContainer}
+              showsVerticalScrollIndicator={false}
+            />
+          </>
+        )}
+      </ImageBackground>
+    </SafeAreaView>
+  );
+}
 const styles = StyleSheet.create({
   container: { flex: 1, width: "100%" },
   background: {
     flex: 1,
     width: "100%",
     paddingTop: 40,
+  },
+  tabContainer: {
+    paddingTop: 30,
+    flexDirection: "row",
+    justifyContent: "space-around",
+    alignSelf: "center",
+    gap: 20,
+  },
+  tabButton: {
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 20,
+    backgroundColor: "rgba(255,255,255,0.2)",
+  },
+  activeTab: {
+    backgroundColor: "rgba(0,0,0,0.3)",
+  },
+  tabText: {
+    color: "white",
+    fontSize: 24,
+    fontWeight: "bold",
   },
   header: {
     fontSize: 24,
