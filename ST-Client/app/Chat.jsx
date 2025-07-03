@@ -21,7 +21,7 @@ import {
   doc,
   arrayUnion,
 } from "firebase/firestore";
-import { Link, useLocalSearchParams, useRouter } from "expo-router";
+import { useRouter } from "expo-router";
 
 export default function Chat({ userData }) {
   const [activeTab, setActiveTab] = useState("private");
@@ -31,14 +31,16 @@ export default function Chat({ userData }) {
       <ImageBackground
         style={styles.background}
         source={require("../Images/Vector.png")}
-        resizeMode="cover">
+        resizeMode="cover"
+      >
         <View style={styles.tabContainer}>
           <TouchableOpacity
             style={[
               styles.tabButton,
               activeTab === "private" && styles.activeTab,
             ]}
-            onPress={() => setActiveTab("private")}>
+            onPress={() => setActiveTab("private")}
+          >
             <Text style={styles.tabText}>צ'אט פרטי</Text>
           </TouchableOpacity>
 
@@ -47,7 +49,8 @@ export default function Chat({ userData }) {
               styles.tabButton,
               activeTab === "communities" && styles.activeTab,
             ]}
-            onPress={() => setActiveTab("communities")}>
+            onPress={() => setActiveTab("communities")}
+          >
             <Text style={styles.tabText}>קהילות</Text>
           </TouchableOpacity>
         </View>
@@ -70,7 +73,7 @@ function PrivateChats({ userData }) {
   const [searchQuery, setSearchQuery] = useState("");
   const [filteredChats, setFilteredChats] = useState([]);
   const router = useRouter();
-  const [loading, setLoading] = useState(true); // NEW
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const unsubscribePrivateChats = onSnapshot(
@@ -80,33 +83,16 @@ function PrivateChats({ userData }) {
           id: doc.id,
           ...doc.data(),
         }));
-
         const userChats = chats.filter((chat) =>
           chat.users.includes(userData.id)
         );
 
-        const uniqueChatsMap = new Map();
-        userChats.forEach((chat) => {
-          if (!uniqueChatsMap.has(chat.id)) {
-            uniqueChatsMap.set(chat.id, chat);
-          }
-        });
+        const uniqueChats = [
+          ...new Map(userChats.map((c) => [c.id, c])).values(),
+        ];
 
-        const uniqueChats = Array.from(uniqueChatsMap.values());
-
-        setPrivateChats((prevChats) => {
-          if (
-            prevChats.length === uniqueChats.length &&
-            prevChats.every((prevChat, index) =>
-              isEqual(prevChat, uniqueChats[index])
-            )
-          ) {
-            return prevChats;
-          }
-          return uniqueChats;
-        });
-
-        setLoading(false); // <--- add this here
+        setPrivateChats(uniqueChats);
+        setLoading(false);
       }
     );
 
@@ -125,14 +111,13 @@ function PrivateChats({ userData }) {
   }, [userData.id]);
 
   useEffect(() => {
-    // Filter chats whenever searchQuery or privateChats change
     if (searchQuery) {
       const filtered = privateChats.filter((chat) => {
-        const otherUserId = chat.users.find((id) => id !== userData.id);
-        const otherUser = users[otherUserId];
+        const otherId = chat.users.find((id) => id !== userData.id);
+        const other = users[otherId];
         return (
-          otherUser &&
-          otherUser.username.toLowerCase().includes(searchQuery.toLowerCase())
+          other &&
+          other.username.toLowerCase().includes(searchQuery.toLowerCase())
         );
       });
       setFilteredChats(filtered);
@@ -140,10 +125,6 @@ function PrivateChats({ userData }) {
       setFilteredChats(privateChats);
     }
   }, [searchQuery, privateChats, users, userData.id]);
-
-  const isEqual = (obj1, obj2) => {
-    return JSON.stringify(obj1) === JSON.stringify(obj2);
-  };
 
   return (
     <View>
@@ -155,7 +136,7 @@ function PrivateChats({ userData }) {
       />
       <Text style={styles.sectionTitle}>רשימת צ'אטים פרטיים</Text>
 
-      {loading ? ( // ADD THIS
+      {loading ? (
         <ActivityIndicator size="large" color="black" />
       ) : (
         <>
@@ -168,50 +149,43 @@ function PrivateChats({ userData }) {
                   sender: JSON.stringify(userData),
                 },
               });
-            }}>
+            }}
+          >
             <Image
               source={require("../Images/logo.png")}
               style={styles.BotProfileImage}
             />
             <Text style={styles.chatText}>My Sugar Bot</Text>
           </TouchableOpacity>
+
           <FlatList
             data={filteredChats}
             renderItem={({ item }) => {
-              const otherUserId = item.users.find((id) => id !== userData.id);
-
-              if (!otherUserId) {
-                console.warn(
-                  `No valid other user ID found for chat: ${item.id}`
-                );
-                return null;
-              }
-
-              const otherUser = users[otherUserId];
-              if (!otherUser) {
-                return null;
-              }
+              const otherId = item.users.find((id) => id !== userData.id);
+              const other = users[otherId];
+              if (!other) return null;
 
               return (
                 <TouchableOpacity
                   key={item.id}
                   style={styles.chatItem}
-                  onPress={() => {
+                  onPress={() =>
                     router.push({
                       pathname: "/privateChatScreen",
                       params: {
                         sender: JSON.stringify(userData),
-                        receiver: JSON.stringify(otherUser),
+                        receiver: JSON.stringify(other),
                       },
-                    });
-                  }}>
+                    })
+                  }
+                >
                   <Image
                     source={{
-                      uri: `data:image/png;base64,${otherUser.profilePicture}`,
+                      uri: `data:image/png;base64,${other.profilePicture}`,
                     }}
                     style={styles.profileImage}
                   />
-                  <Text style={styles.chatText}>{otherUser.username}</Text>
+                  <Text style={styles.chatText}>{other.username}</Text>
                 </TouchableOpacity>
               );
             }}
@@ -228,42 +202,38 @@ function Communities({ userData }) {
   const [userGroups, setUserGroups] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [filteredGroups, setFilteredGroups] = useState([]);
-  const [loading, setLoading] = useState(true); // Loading state
+  const [loading, setLoading] = useState(true);
   const userId = userData.id;
   const router = useRouter();
 
+  const showCreateButton = userData?.role === "משתמש מוביל";
+
   useEffect(() => {
-    const unsubscribeAllGroups = onSnapshot(
-      collection(db, "community"),
-      (querySnapshot) => {
-        const allGroupsData = querySnapshot.docs.map((doc) => ({
+    const unsubscribeAll = onSnapshot(collection(db, "community"), (snap) => {
+      const allGroups = snap.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
+      setGroups(allGroups);
+      setFilteredGroups(allGroups);
+      setLoading(false);
+    });
+
+    const unsubscribeUser = onSnapshot(collection(db, "community"), (snap) => {
+      const myGroups = snap.docs
+        .map((doc) => ({
           id: doc.id,
           ...doc.data(),
-        }));
-        setGroups(allGroupsData);
-        setFilteredGroups(allGroupsData);
-        setLoading(false); // Set loading to false after data is fetched
-      }
-    );
+        }))
+        .filter((group) => group.members?.includes(userId));
 
-    const unsubscribeUserGroups = onSnapshot(
-      collection(db, "community"),
-      (querySnapshot) => {
-        const userGroupsData = querySnapshot.docs
-          .map((doc) => ({
-            id: doc.id,
-            ...doc.data(),
-          }))
-          .filter((group) => group.members && group.members.includes(userId));
-
-        setUserGroups(userGroupsData);
-        setLoading(false); // Set loading to false after data is fetched
-      }
-    );
+      setUserGroups(myGroups);
+      setLoading(false);
+    });
 
     return () => {
-      unsubscribeAllGroups();
-      unsubscribeUserGroups();
+      unsubscribeAll();
+      unsubscribeUser();
     };
   }, []);
 
@@ -287,36 +257,38 @@ function Communities({ userData }) {
   };
 
   return (
-    <View>
+    <View style={{ flex: 1 }}>
       <TextInput
         style={styles.input}
         value={searchQuery}
         onChangeText={handleSearch}
         placeholder="...חפש קהילה"
       />
-      {loading ? ( // Show loading indicator while data is loading
+
+      {loading ? (
         <ActivityIndicator size="large" color="black" />
       ) : (
         <FlatList
           data={filteredGroups}
           renderItem={({ item }) => (
             <TouchableOpacity
-              onPress={() => {
+              onPress={() =>
                 router.push({
                   pathname: "/chatScreen",
                   params: {
                     groupId: item.id,
                     user: JSON.stringify(userData),
                   },
-                });
-              }}>
+                })
+              }
+            >
               <View style={styles.groupItem}>
                 <Image
                   source={{ uri: `data:image/png;base64,${item.photo}` }}
                   style={styles.groupImage}
                 />
                 <Text style={styles.groupName}>{item.name}</Text>
-                {!userGroups.some((group) => group.id === item.id) && (
+                {!userGroups.some((g) => g.id === item.id) && (
                   <Button title="הצטרף" onPress={() => joinGroup(item.id)} />
                 )}
               </View>
@@ -324,6 +296,21 @@ function Communities({ userData }) {
           )}
           keyExtractor={(item) => item.id}
         />
+      )}
+
+      {/* כפתור צף ליצירת קהילה */}
+      {showCreateButton && (
+        <TouchableOpacity
+          style={styles.floatingButton}
+          onPress={() =>
+            router.push({
+              pathname: "/CreateCommunity",
+              params: { user: JSON.stringify(userData) },
+            })
+          }
+        >
+          <Text style={styles.floatingButtonText}>יצירת קהילה +</Text>
+        </TouchableOpacity>
       )}
     </View>
   );
@@ -353,6 +340,9 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     backgroundColor: "rgba(255,255,255,0.2)",
   },
+  button:{
+    borderRadius:20,
+  },
   activeTab: {
     backgroundColor: "rgba(0,0,0,0.3)",
   },
@@ -364,12 +354,6 @@ const styles = StyleSheet.create({
   contentContainer: {
     flex: 1,
     padding: 20,
-  },
-  sectionTitle: {
-    textAlign: "right",
-    color: "white",
-    fontSize: 18,
-    marginBottom: 10,
   },
   input: {
     height: 40,
@@ -428,9 +412,34 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: "black",
   },
-  noChatsText: {
-    textAlign: "center",
+  sectionTitle: {
+    textAlign: "right",
     color: "white",
-    fontSize: 16,
+    fontSize: 18,
+    marginBottom: 10,
   },
+
+  floatingButton: {
+  position: "absolute",
+  bottom: 30,
+  left: 20,
+  paddingHorizontal: 20,
+  height: 60,
+  borderRadius: 30,
+  backgroundColor: "white",
+  justifyContent: "center",
+  alignItems: "center",
+  shadowColor: "#000",
+  shadowOffset: { width: 0, height: 2 },
+  shadowOpacity: 0.3,
+  shadowRadius: 4,
+  elevation: 5,
+  zIndex: 10,
+},
+floatingButtonText: {
+  color: "#000",
+  fontSize: 16,
+  fontWeight: "bold",
+},
+
 });

@@ -11,12 +11,12 @@ import {
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { router } from "expo-router"; // ✅ Import router
+import { router } from "expo-router";
 
 export default function Home({ userData }) {
-  const scaleValue = new Animated.Value(1);
-  const plusScale = new Animated.Value(1);
-  const bellScale = new Animated.Value(1);
+  const scaleValue = React.useRef(new Animated.Value(1)).current;
+  const plusScale = React.useRef(new Animated.Value(1)).current;
+  const bellScale = React.useRef(new Animated.Value(1)).current;
 
   const handlePressIn = () => {
     Animated.parallel([
@@ -63,8 +63,8 @@ export default function Home({ userData }) {
 
   const handleLogPress = () => {
     router.push({
-      pathname: "/GlucoseLog", // ✅ Route to GlucoseLog.jsx
-      params: { user: JSON.stringify(userData) }, // ✅ Pass userData
+      pathname: "/GlucoseLog",
+      params: { user: JSON.stringify(userData) },
     });
   };
 
@@ -87,14 +87,28 @@ export default function Home({ userData }) {
 
         {/* Profile Section */}
         <View style={styles.topSection}>
-          <Image
-            style={styles.profileImage}
-            source={{
-              uri: `data:image/png;base64,${userData?.profilePicture}`,
-            }}
-          />
+        <Image
+  style={styles.profileImage}
+  source={
+    userData?.profilePicture
+      ? userData.profilePicture.startsWith("data:image")
+        ? { uri: userData.profilePicture } // כבר Base64 עם prefix מתאים
+        : userData.profilePicture.length > 100 // ניחוש אם זה Base64 בלי prefix
+        ? { uri: `data:image/png;base64,${userData.profilePicture}` }
+        : { uri: userData.profilePicture } // כנראה URL תקין
+      : require("../Images/placeholder.png") // תמונת ברירת מחדל אם אין תמונה
+  }
+/>
+
 
           <Text style={styles.greetingText}>שלום {userData?.name}!</Text>
+
+          {/* ברכה למשתמש מוביל */}
+          {userData?.role === "משתמש מוביל" && (
+            <Text style={styles.leaderGreeting}>
+      כל הכבוד על ההתקדמות! 👏{'\n'} עכשיו אתה/את חלק מהמשתמשים המובילים שלנו
+            </Text>
+          )}
         </View>
 
         {/* Main Button */}
@@ -104,17 +118,17 @@ export default function Home({ userData }) {
               activeOpacity={0.94}
               onPressIn={handlePressIn}
               onPressOut={handlePressOut}
-              onPress={handleLogPress} // ✅ Hooked up
+              onPress={handleLogPress}
               style={styles.addButton}
             >
               <Text style={styles.addButtonText}>הזן ערך יומי</Text>
-          <Animated.View
-            style={[styles.plusIconContainer, { transform: [{ scale: plusScale }] }]}
-          >
-            <View style={styles.plusIconBackground}>
-              <Ionicons name="add" size={28} color="black" />
-            </View>
-          </Animated.View>
+              <Animated.View
+                style={[styles.plusIconContainer, { transform: [{ scale: plusScale }] }]}
+              >
+                <View style={styles.plusIconBackground}>
+                  <Ionicons name="add" size={28} color="black" />
+                </View>
+              </Animated.View>
             </TouchableOpacity>
           </Animated.View>
         </View>
@@ -177,13 +191,35 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   greetingText: {
-    fontSize: 24,
+    fontSize: 28,
     paddingTop: 20,
     fontWeight: "700",
     color: "white",
     textShadowColor: "rgba(0,0,0,0.2)",
     textShadowOffset: { width: 0, height: 1 },
     textShadowRadius: 2,
+  },
+leaderGreeting: {
+  marginTop: 10,
+  fontSize: 15,
+  fontWeight: "700",
+  color: "white", // זהב בוהק
+  textAlign: "center",
+  //textShadowColor: "rgba(255, 255, 255, 0.8)", // צל צהוב-זהוב עדין
+ // textShadowOffset: { width: 0, height: 0 },
+  textShadowRadius: 2,
+  paddingHorizontal: 15,
+ // lineHeight: 24,
+  //  backgroundColor: "rgba(255,255,255,0.15)",
+ // borderRadius: 12,
+  //borderWidth: 1.2,
+   // borderColor: "rgba(255,255,255,0.2)",
+ // shadowColor: "white",
+ // shadowOpacity: 0.4,
+ // shadowOffset: { width: 0, height: 1 },
+  //shadowRadius: 1,
+  elevation: 6,
+
   },
   buttonContainer: {
     position: "relative",
@@ -218,7 +254,7 @@ const styles = StyleSheet.create({
     position: "absolute",
     bottom: -18,
     alignSelf: "center",
-    marginTop:5,
+    marginTop: 5,
   },
   plusIconBackground: {
     backgroundColor: "#ffffff",

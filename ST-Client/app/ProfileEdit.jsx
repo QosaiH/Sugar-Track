@@ -15,8 +15,6 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as ImagePicker from "expo-image-picker";
-import { db } from "../fireBaseConfig"; // Import Firestore instance
-import { doc, updateDoc } from "firebase/firestore"; // Import Firestore functions
 
 const ProfileEdit = () => {
   const [userData, setUserData] = useState(null);
@@ -35,6 +33,7 @@ const ProfileEdit = () => {
         const userObj = JSON.parse(userString);
 
         if (userObj?.email) {
+          // משיכת הנתונים מהשרת לפי האימייל
           const response = await fetch(
             `https://proj.ruppin.ac.il/igroup15/test2/tar1/api/User/${userObj.email}`
           );
@@ -66,42 +65,65 @@ const ProfileEdit = () => {
     setFormData((prev) => ({ ...prev, [key]: value }));
   };
 
-  const handleSave = async () => {
-    if (newPassword !== confirmPassword) {
-      setPasswordMismatch(true);
-      return;
-    }
-
-    try {
-      // Update Firestore document
-      const userRef = doc(db, "user", userData.id); // Assuming userData.id is the document ID in Firestore
-      await updateDoc(userRef, {
-        name: formData.name,
-        username: formData.userName,
-        email: formData.email,
-        password: newPassword || formData.password, // Use the new password if provided
-        profilePicture: profileImage, // Update the profile picture if changed
-      });
-
-      Alert.alert("הצלחה", "הפרופיל עודכן בהצלחה");
-      setIsEditing(false);
-    } catch (error) {
-      console.error("Update error:", error);
-      Alert.alert("שגיאה", "שגיאה במהלך העדכון");
-    }
-  };
-
   const pickImage = async () => {
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
       allowsEditing: true,
       quality: 1,
+      base64: true, 
     });
 
     if (!result.canceled) {
-      const uri = result.assets[0].uri;
-      setProfileImage(uri);
-      handleChange("profilePicture", uri);
+      const base64img = result.assets[0].base64;
+      setProfileImage(base64img);
+      handleChange("profilePicture", base64img);
+    }
+  };
+
+  const handleSave = async () => {
+    if (newPassword !== confirmPassword) {
+      setPasswordMismatch(true);
+      return;
+    }
+    setPasswordMismatch(false);
+    setLoading(true);
+
+    try {
+      const updatedUser = {
+        id: userData.id,
+        name: formData.name,
+        username: formData.userName,
+        email: formData.email,
+        password: newPassword || formData.password,
+        profilePicture: profileImage,
+      };
+
+      const response = await fetch(
+        `https://proj.ruppin.ac.il/igroup15/test2/tar1/api/User/${userData.id}`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(updatedUser),
+        }
+      );
+
+      if (response.ok) {
+        Alert.alert("הצלחה", "הפרופיל עודכן בהצלחה");
+        setIsEditing(false);
+        setUserData(updatedUser);
+        await AsyncStorage.setItem("user", JSON.stringify(updatedUser));
+      } else {
+        const errorData = await response.json();
+        console.error("Update failed:", errorData);
+        Alert.alert("שגיאה", "העדכון נכשל");
+      }
+    } catch (error) {
+      console.error("Error updating user:", error);
+      Alert.alert("שגיאה", "קרתה שגיאה בעדכון הפרופיל");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -118,32 +140,30 @@ const ProfileEdit = () => {
       <ImageBackground
         style={styles.background}
         source={require("../Images/Vector.png")}
-        resizeMode="cover">
+        resizeMode="cover"
+      >
         <TouchableOpacity
           onPress={() => setIsEditing(!isEditing)}
-          style={styles.editIcon}>
+          style={styles.editIcon}
+        >
           <Ionicons name="create-outline" size={28} color="white" />
         </TouchableOpacity>
 
-        <TouchableOpacity
-          onPress={pickImage}
-          style={styles.profileImageContainer}>
-          <Image
-            source={{
-              uri: `data:image/png;base64,${userData?.profilePicture}`,
-            }}
-            style={styles.profileImage}
-          />
+        <TouchableOpacity onPress={pickImage} style={styles.profileImageContainer}>
+          {profileImage ? (
+            <Image
+              source={{ uri: `data:image/png;base64,${profileImage}` }}
+              style={styles.profileImage}
+            />
+          ) : (
+            <View style={[styles.profileImage, {backgroundColor: "#ccc"}]} />
+          )}
         </TouchableOpacity>
 
         <View style={styles.form}>
           {[
             { field: "name", icon: "person-outline", label: "שם מלא" },
-            {
-              field: "userName",
-              icon: "person-circle-outline",
-              label: "שם משתמש",
-            },
+            { field: "userName", icon: "person-circle-outline", label: "שם משתמש" },
             { field: "email", icon: "mail-outline", label: "אימייל" },
             { field: "password", icon: "lock-closed-outline", label: "סיסמה" },
           ].map(({ field, icon, label }) => (
@@ -162,11 +182,11 @@ const ProfileEdit = () => {
                 placeholder={label}
                 placeholderTextColor="white"
                 secureTextEntry={field === "password"}
+                autoCapitalize="none"
               />
             </View>
           ))}
 
-          {/* Show password fields only when editing */}
           {isEditing && (
             <>
               <View style={styles.inputRow}>
@@ -183,6 +203,7 @@ const ProfileEdit = () => {
                   placeholder="סיסמה חדשה"
                   placeholderTextColor="white"
                   secureTextEntry
+                  autoCapitalize="none"
                 />
               </View>
 
@@ -200,6 +221,7 @@ const ProfileEdit = () => {
                   placeholder="אשר סיסמה חדשה"
                   placeholderTextColor="white"
                   secureTextEntry
+                  autoCapitalize="none"
                 />
               </View>
 
@@ -212,15 +234,17 @@ const ProfileEdit = () => {
 
         {isEditing && (
           <TouchableOpacity style={styles.saveButton} onPress={handleSave}>
-            <Text style={styles.saveText}>שמור</Text>
+            {loading ? (
+              <ActivityIndicator color="white" />
+            ) : (
+              <Text style={styles.saveText}>שמור</Text>
+            )}
           </TouchableOpacity>
         )}
       </ImageBackground>
     </SafeAreaView>
   );
 };
-
-export default ProfileEdit;
 
 const styles = StyleSheet.create({
   container: {
@@ -294,3 +318,5 @@ const styles = StyleSheet.create({
     marginTop: 5,
   },
 });
+
+export default ProfileEdit;

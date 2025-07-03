@@ -10,7 +10,6 @@ import {
 } from "react-native";
 import { LineChart } from "react-native-chart-kit";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-//import { mean, std } from "mathjs";
 import { mean, standardDeviation } from "simple-statistics";
 
 const screenWidth = Dimensions.get("window").width;
@@ -58,6 +57,7 @@ const Statics = () => {
   const [logs, setLogs] = useState([]);
   const [showChart, setShowChart] = useState(true);
 
+  // פונקציות לעיבוד נתונים לפי טאב נבחר:
   const filterData = (data) => {
     const now = new Date();
     return data.filter((log) => {
@@ -80,38 +80,10 @@ const Statics = () => {
     });
   };
 
-  const generateLabels = (filtered) => {
+  // מחזירה אובייקט עם תוויות וערכים בלבד של הימים/חודשים שיש להם נתונים
+  const generateDataWithLabels = (filtered) => {
     if (selectedTab === "שנתי") {
-      return hebrewMonths;
-    }
-
-    if (selectedTab === "שבועי") {
-      const now = new Date();
-      const labels = [];
-      for (let i = 6; i >= 0; i--) {
-        const day = new Date(now);
-        day.setDate(day.getDate() - i);
-        labels.push(hebrewDays[day.getDay()]);
-      }
-      return labels;
-    }
-
-    if (selectedTab === "חודשי") {
-      const grouped = {};
-      filtered.forEach((log) => {
-        const date = new Date(log.logDate);
-        const day = date.getDate();
-        if (!grouped[day]) grouped[day] = [];
-        grouped[day].push(log.logValue);
-      });
-      return Object.keys(grouped).map((d) => d);
-    }
-
-    return [];
-  };
-
-  const generateValues = (filtered) => {
-    if (selectedTab === "שנתי") {
+      // 12 חודשים, ממוצע חודשי
       const monthly = Array(12)
         .fill()
         .map(() => []);
@@ -119,10 +91,21 @@ const Statics = () => {
         const date = new Date(log.logDate);
         monthly[date.getMonth()].push(log.logValue);
       });
-      return monthly.map((m) => (m.length ? mean(m) : 0));
+      const labels = [];
+      const values = [];
+
+      monthly.forEach((monthData, idx) => {
+        if (monthData.length > 0) {
+          labels.push(hebrewMonths[idx]);
+          values.push(mean(monthData));
+        }
+      });
+
+      return { labels, values };
     }
 
     if (selectedTab === "שבועי") {
+      // 7 ימים, ממוצע יומי
       const daily = Array(7)
         .fill()
         .map(() => []);
@@ -134,10 +117,25 @@ const Statics = () => {
           daily[6 - diff].push(log.logValue);
         }
       });
-      return daily.map((d) => (d.length ? mean(d) : 0));
+
+      const labels = [];
+      const values = [];
+
+      daily.forEach((dayData, idx) => {
+        if (dayData.length > 0) {
+          // יום בהתאמה מ-hebrewDays לפי אינדקס
+          const nowDayIndex = new Date().getDay();
+          // חשב את היום בעברית, עם סידור לפי המערך - אפשרות 1: פשוט השתמש ב-hebrewDays בסדר
+          labels.push(hebrewDays[(nowDayIndex - (6 - idx) + 7) % 7]);
+          values.push(mean(dayData));
+        }
+      });
+
+      return { labels, values };
     }
 
     if (selectedTab === "חודשי") {
+      // ממוצע יומי בחודש נוכחי, רק ימים שיש להם מדידות
       const grouped = {};
       filtered.forEach((log) => {
         const date = new Date(log.logDate);
@@ -145,10 +143,14 @@ const Statics = () => {
         if (!grouped[day]) grouped[day] = [];
         grouped[day].push(log.logValue);
       });
-      return Object.values(grouped).map((group) => mean(group));
+
+      const labels = Object.keys(grouped);
+      const values = labels.map((day) => mean(grouped[day]));
+
+      return { labels, values };
     }
 
-    return [];
+    return { labels: [], values: [] };
   };
 
   useEffect(() => {
@@ -166,16 +168,20 @@ const Statics = () => {
             new Date(a.logDate).getTime() - new Date(b.logDate).getTime()
         );
 
-        const values = generateValues(filtered);
-        const labels = generateLabels(filtered);
+        const { labels, values } = generateDataWithLabels(filtered);
 
-        setAverage(values.length ? mean(values).toFixed(1) : null);
-        setStdDeviation(
-          values.length ? standardDeviation(values).toFixed(1) : null
+        // פילטר להסרת ערכים לא חוקיים (כגון 0 או null) לפני חישוב ממוצע וסטיית תקן
+        const filteredValues = values.filter(
+          (v) => v !== 0 && v !== null && v !== undefined
         );
 
-        if (values.length >= 2) {
-          const diff = values[values.length - 1] - values[values.length - 2];
+        setAverage(filteredValues.length ? mean(filteredValues).toFixed(1) : null);
+        setStdDeviation(
+          filteredValues.length ? standardDeviation(filteredValues).toFixed(1) : null
+        );
+
+        if (filteredValues.length >= 2) {
+          const diff = filteredValues[filteredValues.length - 1] - filteredValues[filteredValues.length - 2];
           setTrend(diff > 0 ? "עלייה" : diff < 0 ? "ירידה" : "יציב");
         } else {
           setTrend(null);
@@ -192,9 +198,7 @@ const Statics = () => {
                   const date = new Date(log.logDate);
                   setLogDetails({
                     value: log.logValue,
-                    date: `${date.getDate()}/${
-                      date.getMonth() + 1
-                    }/${date.getFullYear()}`,
+                    date: `${date.getDate()}/${date.getMonth() + 1}/${date.getFullYear()}`,
                     type: log.logType,
                     status: log.logStatus,
                   });
@@ -217,13 +221,15 @@ const Statics = () => {
     <ImageBackground
       source={require("../Images/Vector.png")}
       style={styles.background}
-      resizeMode="cover">
+      resizeMode="cover"
+    >
       <TouchableOpacity
         onPress={() => {
           setShowChart(!showChart);
           setLogDetails(null);
         }}
-        style={styles.iconToggle}>
+        style={styles.iconToggle}
+      >
         <Text style={styles.iconText}>{showChart ? "📃" : "📈"}</Text>
       </TouchableOpacity>
 
@@ -238,12 +244,14 @@ const Statics = () => {
               onPress={() => {
                 setSelectedTab(tab);
                 setLogDetails(null);
-              }}>
+              }}
+            >
               <Text
                 style={[
                   styles.tabText,
                   selectedTab === tab && styles.activeTabText,
-                ]}>
+                ]}
+              >
                 {tab}
               </Text>
             </TouchableOpacity>
@@ -279,12 +287,9 @@ const Statics = () => {
                   return (
                     <View key={index} style={styles.logItem}>
                       <Text style={styles.logText}>
-                        תאריך: {date.getDate()}/{date.getMonth() + 1}/
-                        {date.getFullYear()}
+                        תאריך: {date.getDate()}/{date.getMonth() + 1}/{date.getFullYear()}
                       </Text>
-                      <Text style={styles.logText}>
-                        ערך: {log.logValue} mg/dL
-                      </Text>
+                      <Text style={styles.logText}>ערך: {log.logValue} mg/dL</Text>
                       <Text style={styles.logText}>סוג: {log.logType}</Text>
                       <Text style={styles.logText}>מצב: {log.logStatus}</Text>
                     </View>
@@ -296,12 +301,8 @@ const Statics = () => {
             {logDetails && showChart && (
               <View style={styles.tooltip}>
                 <Text style={styles.tooltipText}>תאריך: {logDetails.date}</Text>
-                <Text style={styles.tooltipText}>
-                  ערך: {logDetails.value} mg/dL
-                </Text>
-                <Text style={styles.tooltipText}>
-                  סוג מדידה: {logDetails.type}
-                </Text>
+                <Text style={styles.tooltipText}>ערך: {logDetails.value} mg/dL</Text>
+                <Text style={styles.tooltipText}>סוג מדידה: {logDetails.type}</Text>
                 <Text style={styles.tooltipText}>מצב: {logDetails.status}</Text>
               </View>
             )}

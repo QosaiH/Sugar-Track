@@ -16,7 +16,7 @@ import { useLocalSearchParams, useRouter } from "expo-router";
 const LOG_TYPES = [
   { label: "בצום", value: "בצום" },
   { label: "אחרי אוכל", value: "אחרי אוכל" },
-  { label: "אחרי אוכל לפני 4שעות", value: "אחרי אוכל לפני 4שעות" },
+  { label: "אחרי אוכל לפני 4 שעות", value: "אחרי אוכל לפני 4 שעות" },
 ];
 
 export default function GlucoseLog() {
@@ -35,6 +35,7 @@ export default function GlucoseLog() {
   const [statusMessage, setStatusMessage] = useState("");
   const router = useRouter();
 
+  // פונקציה לקביעת סטטוס לפי הערך והסוג
   const determineLogStatus = (val, type) => {
     const num = parseFloat(val);
     if (isNaN(num)) return "לא חוקי";
@@ -52,7 +53,7 @@ export default function GlucoseLog() {
         if (num <= 140) return "סביר";
         if (num <= 180) return "גבוה";
         return "גבוה מאוד";
-      case "אחרי אוכל לפני 4שעות":
+      case "אחרי אוכל לפני 4 שעות":
         if (num < 80) return "נמוך מאוד";
         if (num < 90) return "נמוך";
         if (num <= 120) return "סביר";
@@ -63,22 +64,42 @@ export default function GlucoseLog() {
     }
   };
 
+  // מטבעות לפי סטטוס (תמיד חיובי, פחות למצב לא טוב)
   const getCoinChangeByStatus = (status) => {
     switch (status) {
       case "סביר":
         return 10;
       case "נמוך":
       case "נמוך מאוד":
-        return 5;
+        return 6;
       case "גבוה":
-        return -5;
+        return 4;
       case "גבוה מאוד":
-        return -10;
+        return 2;
       default:
-        return 0;
+        return 5;
     }
   };
 
+  // הודעות חמות ומזמינות לפי סטטוס
+  const getStatusMessageByLogStatus = (logStatus, coinChange, logValue) => {
+    switch (logStatus) {
+      case "סביר":
+        return `כל הכבוד! ערך הסוכר שלך הוא ${logValue} מ\"ג/ד\"ל.\nקיבלת ${coinChange} מטבעות. המשך לשמור על אורח חיים בריא! ✨`;
+      case "נמוך":
+        return `הערך שלך ${logValue} מ\"ג/ד\"ל מעט נמוך. קיבלת ${coinChange} מטבעות על המעקב! זכר/י לשמור על תזונה מתאימה ושתייה מספקת. 💪`;
+      case "נמוך מאוד":
+        return `הערך שלך ${logValue} מ\"ג/ד\"ל נמוך מאוד. קיבלת ${coinChange} מטבעות על המודעות והמעקב. אנא שים/י לב ואל תהסס/י לפנות לרופא במידת הצורך. ❤️`;
+      case "גבוה":
+        return `הערך שלך ${logValue} מ\"ג/ד\"ל גבוה מעט, קיבלת ${coinChange} מטבעות. נסה/י להקפיד על פעילות גופנית ותזונה מאוזנת. אנחנו איתך! 🌟`;
+      case "גבוה מאוד":
+        return `הערך שלך ${logValue} מ\"ג/ד\"ל גבוה מאוד. קיבלת ${coinChange} מטבעות על תשומת הלב! שמור/י על עצמך ואל תתבייש/י לפנות לייעוץ מקצועי. 💙`;
+      default:
+        return `קיבלת ${coinChange} מטבעות. תודה שהזנת את הערך, אנחנו כאן בשבילך! 😊`;
+    }
+  };
+
+  // עדכון מטבעות בשרת
   const updateUserCoins = async (newCoinValue) => {
     try {
       const response = await fetch(
@@ -133,14 +154,15 @@ export default function GlucoseLog() {
       );
 
       if (response.ok) {
-        // Update user coins
+        // עדכון המטבעות בשרת
         await updateUserCoins(newCoinValue);
 
-        // Update local userData coins
+        // עדכון המטבעות בנתוני המשתמש המקומיים
         userData.coins = newCoinValue;
 
+        // הצגת הודעה עם טון חם ומזמין
         setStatusMessage(
-          `נרשם ערך: ${trimmedValue} מ"ג/ד"ל\nסטטוס: ${logStatus}\nמטבעות: ${coinChange > 0 ? "+" : ""}${coinChange}`
+          getStatusMessageByLogStatus(logStatus, coinChange, trimmedValue)
         );
         setModalVisible(true);
         setValue("");
@@ -197,10 +219,7 @@ export default function GlucoseLog() {
                   {selected && <View style={styles.radioInner} />}
                 </View>
                 <Text
-                  style={[
-                    styles.radioLabel,
-                    selected && styles.radioLabelSelected,
-                  ]}
+                  style={[styles.radioLabel, selected && styles.radioLabelSelected]}
                 >
                   {type.label}
                 </Text>
