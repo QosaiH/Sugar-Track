@@ -183,7 +183,10 @@ export function Reports() {
             <Text style={styles.detailText}>
               זמן הדיווח:{" "}
               {item.timestamp
-                ? new Date(item.timestamp).toLocaleString()
+                ? (typeof item.timestamp.toDate === "function"
+                    ? item.timestamp.toDate()
+                    : new Date(item.timestamp)
+                  ).toLocaleString()
                 : "אין תאריך"}
             </Text>
           </View>
@@ -339,10 +342,14 @@ export function Alerts() {
               התראה עבור: {item.analyzedSentiment.substring(9).trim()}
             </Text>
             {/* Timestamp */}
+
             <Text style={styles.detailText}>
               זמן הדיווח:{" "}
               {item.timestamp
-                ? new Date(item.timestamp).toLocaleString()
+                ? (typeof item.timestamp.toDate === "function"
+                    ? item.timestamp.toDate()
+                    : new Date(item.timestamp)
+                  ).toLocaleString()
                 : "אין תאריך"}
             </Text>
           </View>
@@ -399,7 +406,6 @@ const styles = StyleSheet.create({
   background: {
     flex: 1,
     width: "100%",
-    paddingTop: 40,
   },
   tabContainer: {
     paddingTop: 30,
@@ -444,9 +450,13 @@ const styles = StyleSheet.create({
     borderColor: "#ccc",
     width: "90%",
     alignSelf: "center",
+    height: 50,
   },
   listContainer: {
-    paddingBottom: 50,
+    width: "100%",
+    paddingBottom: 20,
+    paddingHorizontal: 8,
+    backgroundColor: "transparent",
   },
   rowWrapper: {
     marginBottom: 12,
@@ -462,6 +472,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     paddingVertical: 10,
     paddingHorizontal: 10,
+    width: "100%",
   },
   cell: {
     flex: 1,
@@ -481,12 +492,13 @@ const styles = StyleSheet.create({
     backgroundColor: "transparent",
     borderTopWidth: 1,
     borderTopColor: "#ccc",
+    marginBottom: 50,
   },
   detailText: {
     fontSize: 14,
     color: "#fff",
-    marginBottom: 4,
     textAlign: "right",
+    marginBottom: 5,
   },
   noReports: {
     fontSize: 18,
@@ -498,7 +510,7 @@ const styles = StyleSheet.create({
   headerRow: {
     flexDirection: "row-reverse",
     justifyContent: "space-between",
-    marginBottom: 12,
+    marginTop: 12,
     paddingVertical: 8,
     backgroundColor: "transparent",
     borderRadius: 8,

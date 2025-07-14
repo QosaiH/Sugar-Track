@@ -73,12 +73,10 @@ export default function Home({ userData }) {
       <ImageBackground
         style={styles.background}
         source={require("../Images/Vector.png")}
-        resizeMode="cover"
-      >
+        resizeMode="cover">
         {/* Bell Icon */}
         <Animated.View
-          style={[styles.bellButton, { transform: [{ scale: bellScale }] }]}
-        >
+          style={[styles.bellButton, { transform: [{ scale: bellScale }] }]}>
           <TouchableOpacity onPress={handleBellPress} activeOpacity={0.7}>
             <Ionicons name="notifications-outline" size={32} color="white" />
             <View style={styles.bellBadge} />
@@ -87,26 +85,28 @@ export default function Home({ userData }) {
 
         {/* Profile Section */}
         <View style={styles.topSection}>
-        <Image
-  style={styles.profileImage}
-  source={
-    userData?.profilePicture
-      ? userData.profilePicture.startsWith("data:image")
-        ? { uri: userData.profilePicture } // כבר Base64 עם prefix מתאים
-        : userData.profilePicture.length > 100 // ניחוש אם זה Base64 בלי prefix
-        ? { uri: `data:image/png;base64,${userData.profilePicture}` }
-        : { uri: userData.profilePicture } // כנראה URL תקין
-      : require("../Images/placeholder.png") // תמונת ברירת מחדל אם אין תמונה
-  }
-/>
+          <Image
+            style={styles.profileImage}
+            source={
+              userData?.profilePicture
+                ? userData.profilePicture.startsWith("data:image")
+                  ? { uri: userData.profilePicture } // כבר Base64 עם prefix מתאים
+                  : userData.profilePicture.length > 100 // ניחוש אם זה Base64 בלי prefix
+                  ? { uri: `data:image/png;base64,${userData.profilePicture}` }
+                  : { uri: userData.profilePicture } // כנראה URL תקין
+                : require("../Images/placeholder.png") // תמונת ברירת מחדל אם אין תמונה
+            }
+          />
 
-
-          <Text style={styles.greetingText}>שלום {userData?.name}!</Text>
+          <Text style={styles.greetingText}>
+            שלום {userData?.name || userData?.Name}!
+          </Text>
 
           {/* ברכה למשתמש מוביל */}
           {userData?.role === "משתמש מוביל" && (
             <Text style={styles.leaderGreeting}>
-      כל הכבוד על ההתקדמות! 👏{'\n'} עכשיו אתה/את חלק מהמשתמשים המובילים שלנו
+              כל הכבוד על ההתקדמות! 👏{"\n"} עכשיו אתה/את חלק מהמשתמשים המובילים
+              שלנו
             </Text>
           )}
         </View>
@@ -119,12 +119,13 @@ export default function Home({ userData }) {
               onPressIn={handlePressIn}
               onPressOut={handlePressOut}
               onPress={handleLogPress}
-              style={styles.addButton}
-            >
+              style={styles.addButton}>
               <Text style={styles.addButtonText}>הזן ערך יומי</Text>
               <Animated.View
-                style={[styles.plusIconContainer, { transform: [{ scale: plusScale }] }]}
-              >
+                style={[
+                  styles.plusIconContainer,
+                  { transform: [{ scale: plusScale }] },
+                ]}>
                 <View style={styles.plusIconBackground}>
                   <Ionicons name="add" size={28} color="black" />
                 </View>
@@ -199,27 +200,26 @@ const styles = StyleSheet.create({
     textShadowOffset: { width: 0, height: 1 },
     textShadowRadius: 2,
   },
-leaderGreeting: {
-  marginTop: 10,
-  fontSize: 15,
-  fontWeight: "700",
-  color: "white", // זהב בוהק
-  textAlign: "center",
-  //textShadowColor: "rgba(255, 255, 255, 0.8)", // צל צהוב-זהוב עדין
- // textShadowOffset: { width: 0, height: 0 },
-  textShadowRadius: 2,
-  paddingHorizontal: 15,
- // lineHeight: 24,
-  //  backgroundColor: "rgba(255,255,255,0.15)",
- // borderRadius: 12,
-  //borderWidth: 1.2,
-   // borderColor: "rgba(255,255,255,0.2)",
- // shadowColor: "white",
- // shadowOpacity: 0.4,
- // shadowOffset: { width: 0, height: 1 },
-  //shadowRadius: 1,
-  elevation: 6,
-
+  leaderGreeting: {
+    marginTop: 10,
+    fontSize: 15,
+    fontWeight: "700",
+    color: "white", // זהב בוהק
+    textAlign: "center",
+    //textShadowColor: "rgba(255, 255, 255, 0.8)", // צל צהוב-זהוב עדין
+    // textShadowOffset: { width: 0, height: 0 },
+    textShadowRadius: 2,
+    paddingHorizontal: 15,
+    // lineHeight: 24,
+    //  backgroundColor: "rgba(255,255,255,0.15)",
+    // borderRadius: 12,
+    //borderWidth: 1.2,
+    // borderColor: "rgba(255,255,255,0.2)",
+    // shadowColor: "white",
+    // shadowOpacity: 0.4,
+    // shadowOffset: { width: 0, height: 1 },
+    //shadowRadius: 1,
+    elevation: 6,
   },
   buttonContainer: {
     position: "relative",

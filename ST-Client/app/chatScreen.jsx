@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from "react";
 import {
   View,
@@ -29,7 +28,7 @@ import { GoogleGenAI } from "@google/genai";
 
 const API_KEY = "AIzaSyAonlahcFhubsUWuy1dRrsWcD9ERZBhPDY";
 
-export default function chatScreen() {
+export default function ChatScreen() {
   const params = useLocalSearchParams();
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState("");
@@ -38,55 +37,138 @@ export default function chatScreen() {
   const [users, setUsers] = useState({});
   const [community, setCommunity] = useState({});
   const router = useRouter();
-  const [showCommunityDetails, setShowCommunityDetails] = useState(false);
-
+  const [showMembers, setShowMembers] = useState(false);
+  const [selectedUser, setSelectedUser] = useState(null);
+  const [showUserOptionsModal, setShowUserOptionsModal] = useState(false);
+  const [showReportModal, setShowReportModal] = useState(false);
+  const [reportDescription, setReportDescription] = useState("");
+  const [selectedMessage, setSelectedMessage] = useState(null);
   const ai = new GoogleGenAI({ apiKey: API_KEY });
   const model = "gemini-2.5-flash";
+  let botResponseText = "";
 
   useEffect(() => {
     const unsubscribe = onSnapshot(
       doc(db, "community", groupId),
       async (docSnap) => {
         if (!docSnap.exists()) return;
+
         const data = docSnap.data();
         setCommunity(data);
+
         if (data?.messages) {
-          const sorted = [...data.messages].sort(
+          const sortedMessages = [...data.messages].sort(
             (a, b) => new Date(a.timestamp) - new Date(b.timestamp)
           );
-          setMessages(sorted);
-          const userIds = [...new Set(sorted.map((m) => m.senderId))];
-          const userDocs = await getDocs(collection(db, "user"));
+          setMessages(sortedMessages);
+
+          const userIds = sortedMessages.map((msg) => msg.senderId);
+          const uniqueUserIds = [...new Set(userIds)];
+
           const usersData = {};
-          userDocs.forEach((d) => {
-            const u = d.data();
-            if (userIds.includes(u.id)) usersData[u.id] = u;
+          const usersCollection = collection(db, "user");
+          const userDocs = await getDocs(usersCollection);
+
+          userDocs.forEach((doc) => {
+            const userData = doc.data();
+            if (uniqueUserIds.includes(userData.id)) {
+              usersData[userData.id] = userData;
+            }
           });
           setUsers(usersData);
-        } else setMessages([]);
+        } else {
+          setMessages([]);
+        }
       }
     );
+
     return () => unsubscribe();
   }, [groupId]);
 
+  const analyzeSentiment = async (text) => {
+    try {
+      const prompt = `
+האם אתה מזהה בהודעה זו תסמינים של מצב רוח שלילי, מצוקה רגשית, או רמזים לאובדנות? אם כן, ציין מה אתה מזה
+ענה במבנה הבא:
+1.  כן/לא
+2. אילו רגשות או תסמנים אתה מזהה?
+
+ההודעה: "${text}"
+`;
+      const response = await ai.models.generateContent({
+        model: model,
+        contents: [{ text: prompt }],
+      });
+
+      botResponseText = response.text;
+      console.log("Bot response:", botResponseText);
+      return botResponseText.toLowerCase().includes("כן");
+    } catch (error) {
+      console.error("Error analyzing sentiment:", error);
+      return false;
+    }
+  };
+
   const sendMessage = async () => {
-    if (!newMessage.trim()) return;
+    if (!newMessage.trim() || !groupId) return;
     const newId = doc(collection(db, "community", groupId, "messages")).id;
-    const msg = {
+    const message = {
       id: newId,
       text: newMessage.trim(),
       senderName: user.userName,
       senderId: user.id,
       timestamp: new Date().toISOString(),
     };
+
+    const groupRef = doc(db, "community", groupId);
     try {
-      await updateDoc(doc(db, "community", groupId), {
-        messages: arrayUnion(msg),
+      await updateDoc(groupRef, {
+        messages: arrayUnion(message),
       });
+      const messageToAnalyze = newMessage.trim();
       setNewMessage("");
-    } catch (e) {
-      console.error("Error sending:", e);
+      setTimeout(async () => {
+        const isNegative = await analyzeSentiment(messageToAnalyze.trim());
+        if (isNegative) {
+          sendAlertToServer(user.id, newMessage.trim());
+        }
+      }, 0);
+    } catch (error) {
+      console.error("Failed to send message:", error, message);
     }
+  };
+
+  const reportMessage = async (message, description) => {
+    if (!message?.id) {
+      alert("לא ניתן לדווח על ההודעה הזו. אין לה מזהה.");
+      return;
+    }
+    const report = {
+      messageId: message.id,
+      senderId: message.senderId,
+      communityId: groupId,
+      text: message.text,
+      reportedBy: user.id,
+      description: description,
+      timestamp: new Date().toISOString(),
+    };
+
+    try {
+      await addDoc(collection(db, "reports"), report);
+      alert("הדיווח נשלח בהצלחה.");
+    } catch (error) {
+      console.error("Error reporting message:", error);
+      alert("נכשל בשליחת הדיווח.");
+    }
+  };
+
+  const sendAlertToServer = async (userId, text) => {
+    await addDoc(collection(db, "alerts"), {
+      userId,
+      text,
+      timestamp: new Date(),
+      analyzedSentiment: botResponseText,
+    });
   };
 
   const leaveCommunity = async () => {
@@ -106,11 +188,13 @@ export default function chatScreen() {
   return (
     <>
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
+        <TouchableOpacity
+          onPress={() => router.back()}
+          style={styles.backButton}>
           <Text style={styles.backButtonText}>{"<"}</Text>
         </TouchableOpacity>
         <TouchableOpacity
-          onPress={() => setShowCommunityDetails(true)}
+          onPress={() => setShowMembers(true)}
           style={{ flexDirection: "row", alignItems: "center" }}>
           <Text style={styles.communityName}>{community.name}</Text>
           <Image
@@ -131,22 +215,73 @@ export default function chatScreen() {
             data={messages}
             renderItem={({ item }) => {
               const isSender = item.senderId === user.id;
+              const userData = users[item.senderId];
+
               return (
-                <View style={[styles.messageContainer, isSender ? styles.rightAlign : styles.leftAlign]}>
-                  <View style={[styles.messageBubble, isSender ? styles.senderBubble : styles.receiverBubble]}>
-                    <Text>{item.senderName}</Text>
-                    <Text>{item.text}</Text>
+                <View
+                  style={[
+                    styles.messageContainer,
+                    isSender ? styles.rightAlign : styles.leftAlign,
+                  ]}>
+                  {!isSender && userData && (
+                    <TouchableOpacity
+                      onPress={() => {
+                        setSelectedUser(userData);
+                        setShowUserOptionsModal(true);
+                      }}>
+                      <Image
+                        source={{
+                          uri: `data:image/png;base64,${userData.profilePicture}`,
+                        }}
+                        style={styles.userImage}
+                      />
+                    </TouchableOpacity>
+                  )}
+
+                  <View
+                    style={[
+                      styles.messageBubble,
+                      isSender ? styles.senderBubble : styles.receiverBubble,
+                    ]}>
+                    <Text style={styles.nameText}>{item.senderName}</Text>
+                    <Text style={styles.messageText}>{item.text}</Text>
+                    <Text style={styles.timeText}>
+                      {new Date(item.timestamp).toLocaleTimeString("he-IL", {
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      })}
+                    </Text>
                   </View>
+                  {!isSender && (
+                    <TouchableOpacity
+                      style={styles.reportButton}
+                      onPress={() => {
+                        setSelectedMessage(item);
+                        setShowReportModal(true);
+                      }}>
+                      <Text style={styles.reportButtonText}>!</Text>
+                    </TouchableOpacity>
+                  )}
+                  {isSender && userData && (
+                    <Image
+                      source={{
+                        uri: `data:image/png;base64,${userData.profilePicture}`,
+                      }}
+                      style={styles.userImage}
+                    />
+                  )}
                 </View>
               );
             }}
             keyExtractor={(item) => item.id}
+            contentContainerStyle={{ paddingBottom: 10 }}
           />
           <View style={styles.inputContainer}>
             <TextInput
               value={newMessage}
               onChangeText={setNewMessage}
               placeholder="...כתוב הודעה"
+              placeholderTextColor="#aaa"
               style={styles.input}
               textAlign="right"
             />
@@ -157,31 +292,110 @@ export default function chatScreen() {
         </ImageBackground>
       </KeyboardAvoidingView>
 
-      {showCommunityDetails && (
+      {showMembers && (
+        <View style={styles.modalContainer}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>חברי הקהילה</Text>
+            <FlatList
+              data={Object.values(users)}
+              keyExtractor={(item) => item.id}
+              renderItem={({ item }) => (
+                <View style={styles.memberItem}>
+                  <Image
+                    source={{
+                      uri: `data:image/png;base64,${item.profilePicture}`,
+                    }}
+                    style={styles.memberImage}
+                  />
+                  <Text style={styles.memberName}>{item.username}</Text>
+                  <TouchableOpacity
+                    style={styles.optionButton}
+                    onPress={() => {
+                      router.push({
+                        pathname: "/privateChatScreen",
+                        params: {
+                          receiver: JSON.stringify(item),
+                          sender: JSON.stringify(user),
+                        },
+                      });
+                      setShowUserOptionsModal(false);
+                    }}>
+                    <Text style={styles.optionText}>שלח הודעה</Text>
+                  </TouchableOpacity>
+                </View>
+              )}
+            />
+            <TouchableOpacity
+              style={styles.closeButton}
+              onPress={() => setShowMembers(false)}>
+              <Text style={styles.closeButtonText}>סגור</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      )}
+
+      {showUserOptionsModal && selectedUser && (
+        <View style={styles.modalContainer}>
+          <View style={styles.modalContent}>
+            <Image
+              source={{
+                uri: `data:image/png;base64,${selectedUser.profilePicture}`,
+              }}
+              style={styles.modalImage}
+            />
+            <Text style={styles.modalTitle}>{selectedUser.username}</Text>
+            <TouchableOpacity
+              style={styles.optionButton}
+              onPress={() => {
+                router.push({
+                  pathname: "/privateChatScreen",
+                  params: {
+                    receiver: JSON.stringify(selectedUser),
+                    sender: JSON.stringify(user),
+                  },
+                });
+                setShowUserOptionsModal(false);
+              }}>
+              <Text style={styles.optionText}>שלח הודעה</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.closeButton}
+              onPress={() => setShowUserOptionsModal(false)}>
+              <Text style={styles.closeButtonText}>סגור</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      )}
+
+      {showReportModal && (
         <Modal
-          animationType="slide"
           transparent={true}
-          visible={showCommunityDetails}
-          onRequestClose={() => setShowCommunityDetails(false)}>
-          <View style={styles.modalContainer}>
-            <View style={styles.modalContent}>
-              <Text style={styles.modalTitle}>פרטי הקהילה</Text>
-              <Image
-                source={{ uri: `data:image/png;base64,${community.photo}` }}
-                style={styles.modalCommunityImage}
-              />
-              <Text style={{ textAlign: "center" }}>{community.name}</Text>
-              <Text style={{ textAlign: "center", marginBottom: 20 }}>
-                {community.description || "אין תיאור זמין"}
+          animationType="slide"
+          visible={showReportModal}
+          onRequestClose={() => setShowReportModal(false)}>
+          <View style={styles.modalReportContainer}>
+            <View style={styles.modalReportContent}>
+              <Text style={styles.modalReportTitle}>
+                האם אתה בטוח שברצונך לדווח על ההודעה הזו?
               </Text>
+              <TextInput
+                placeholder="תיאור הדיווח"
+                placeholderTextColor="#aaa"
+                style={styles.reportInput}
+                value={reportDescription}
+                onChangeText={setReportDescription}
+              />
               <TouchableOpacity
-                style={[styles.submitButton, { backgroundColor: "red" }]}
-                onPress={leaveCommunity}>
-                <Text style={styles.submitButtonText}>עזוב קהילה</Text>
+                style={styles.submitButton}
+                onPress={() => {
+                  reportMessage(selectedMessage, reportDescription);
+                  setShowReportModal(false);
+                }}>
+                <Text style={styles.submitButtonText}>שלח דיווח</Text>
               </TouchableOpacity>
               <TouchableOpacity
                 style={styles.closeButton}
-                onPress={() => setShowCommunityDetails(false)}>
+                onPress={() => setShowReportModal(false)}>
                 <Text style={styles.closeButtonText}>סגור</Text>
               </TouchableOpacity>
             </View>
@@ -193,48 +407,84 @@ export default function chatScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1 },
-  background: { flex: 1, width: "100%", height: "100%" },
+  container: {
+    flex: 1,
+  },
+  background: {
+    flex: 1,
+    width: "100%",
+    height: "100%",
+    paddingTop: 20,
+  },
   header: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
     backgroundColor: "#fff",
-    padding: 10,
+    width: "100%",
   },
-  backButtonText: { fontSize: 24, color: "black" },
-  communityName: { fontSize: 20, fontWeight: "bold", color: "black" },
+  backButton: {
+    marginRight: 10,
+  },
+  backButtonText: {
+    fontSize: 24,
+    color: "black",
+  },
   communityImage: {
-    width: 50,
+    width: 62,
     height: 50,
-    borderRadius: 25,
-    marginLeft: 10,
-    borderWidth: 2,
-    borderColor: "white",
-    backgroundColor: "#ccc",
+    borderRadius: 10,
+    marginRight: 10,
+  },
+  communityName: {
+    fontSize: 20,
+    fontWeight: "bold",
+    color: "black",
   },
   messageContainer: {
     flexDirection: "row",
     marginVertical: 5,
     alignItems: "flex-start",
-    paddingHorizontal: 10,
   },
-  rightAlign: { justifyContent: "flex-end" },
-  leftAlign: { justifyContent: "flex-start" },
+  leftAlign: {
+    justifyContent: "flex-start",
+  },
+  rightAlign: {
+    justifyContent: "flex-end",
+  },
+  userImage: {
+    width: 54,
+    height: 54,
+    borderRadius: 18,
+    marginTop: 0,
+    marginHorizontal: 6,
+  },
   messageBubble: {
     maxWidth: "70%",
-    padding: 10,
-    borderRadius: 15,
-    backgroundColor: "#f0f0f0",
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    borderRadius: 20,
   },
-  senderBubble: { backgroundColor: "#dcf8c6" },
-  receiverBubble: { backgroundColor: "#ffffff" },
-  inputContainer: {
-    flexDirection: "row-reverse",
-    padding: 10,
+  senderBubble: {
+    backgroundColor: "#dcf8c6",
+    borderTopRightRadius: 0,
+  },
+  receiverBubble: {
     backgroundColor: "#fff",
-    borderTopWidth: 1,
-    borderTopColor: "#ddd",
+    borderTopLeftRadius: 0,
+  },
+  messageText: {
+    fontSize: 16,
+    color: "#000",
+  },
+  timeText: {
+    fontSize: 11,
+    color: "gray",
+    marginTop: 5,
+  },
+  nameText: {
+    fontSize: 11,
+    color: "gray",
   },
   input: {
     flex: 1,
@@ -243,54 +493,153 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     fontSize: 16,
     marginHorizontal: 8,
+    textAlign: "right",
+  },
+  inputContainer: {
+    flexDirection: "row-reverse",
+    padding: 10,
+    backgroundColor: "#fff",
+    borderTopWidth: 1,
+    borderTopColor: "#ddd",
   },
   sendButton: {
     backgroundColor: "black",
-    padding: 10,
+    paddingVertical: 10,
+    paddingHorizontal: 16,
     borderRadius: 20,
     justifyContent: "center",
     alignItems: "center",
   },
   modalContainer: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: "rgba(0,0,0,0.5)",
+    justifyContent: "center",
+    alignItems: "center",
+    zIndex: 10,
+  },
+  modalContent: {
+    backgroundColor: "white",
+    width: "85%",
+    maxHeight: "70%",
+    borderRadius: 20,
+    padding: 20,
+  },
+  modalTitle: {
+    fontSize: 20,
+    fontWeight: "bold",
+    marginBottom: 10,
+    textAlign: "center",
+    alignSelf: "center",
+    color: "black",
+  },
+  memberItem: {
+    flexDirection: "row-reverse",
+    alignItems: "center",
+    marginVertical: 10,
+  },
+  memberImage: {
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    marginLeft: 10,
+  },
+  memberName: {
+    fontSize: 16,
+    textAlign: "right",
+    flex: 1,
+  },
+  closeButton: {
+    marginTop: 15,
+    padding: 10,
+    backgroundColor: "white",
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: "Black",
+    alignItems: "center",
+  },
+  closeButtonText: {
+    color: "black",
+    fontSize: 16,
+    fontWeight: "bold",
+  },
+  optionButton: {
+    paddingVertical: 12,
+    paddingHorizontal: 10,
+    backgroundColor: "black",
+  },
+  optionText: {
+    fontSize: 16,
+    textAlign: "center",
+    color: "white",
+  },
+  modalImage: {
+    width: 100,
+    height: 100,
+    borderRadius: 35,
+    marginBottom: 5,
+    marginHorizontal: 6,
+    alignSelf: "center",
+  },
+  reportButton: {
+    padding: 5,
+    borderRadius: 5,
+    alignSelf: "center",
+    marginLeft: 5,
+  },
+  reportButtonText: {
+    color: "white",
+    borderRadius: 5,
+    fontSize: 14,
+  },
+  modalReportContainer: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
     backgroundColor: "rgba(0,0,0,0.5)",
   },
-  modalContent: {
+  modalReportContent: {
     backgroundColor: "white",
-    padding: 20,
-    borderRadius: 15,
     width: "85%",
-    alignItems: "center",
+    borderRadius: 20,
+    padding: 20,
   },
-  modalTitle: { fontSize: 20, fontWeight: "bold", marginBottom: 10 },
-  modalCommunityImage: {
-    width: 100,
-    height: 100,
-    borderRadius: 50,
+  modalReportTitle: {
+    fontSize: 20,
+    fontWeight: "bold",
     marginBottom: 10,
-    borderWidth: 2,
+    textAlign: "center",
+  },
+  reportInput: {
+    borderWidth: 1,
     borderColor: "#ccc",
+    borderRadius: 5,
+    padding: 10,
+    marginBottom: 10,
+    textAlign: "right",
   },
   submitButton: {
+    backgroundColor: "black",
     padding: 10,
-    borderRadius: 10,
-    backgroundColor: "red",
-    marginTop: 10,
-    width: "80%",
+    borderRadius: 5,
     alignItems: "center",
   },
-  submitButtonText: { color: "white", fontSize: 16 },
+  submitButtonText: {
+    color: "white",
+    fontSize: 16,
+  },
   closeButton: {
     padding: 10,
     borderRadius: 10,
     backgroundColor: "white",
     marginTop: 10,
-    width: "80%",
+    width: "100%",
     borderWidth: 1,
     borderColor: "black",
-    alignItems: "center",
+    alignSelf: "center",
   },
-  closeButtonText: { color: "black", fontSize: 16 },
+  closeButtonText: { color: "black", fontSize: 16, alignSelf: "center" },
 });
