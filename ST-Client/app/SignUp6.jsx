@@ -11,16 +11,16 @@ import { SafeAreaView, SafeAreaProvider } from "react-native-safe-area-context";
 import React, { useEffect, useState } from "react";
 import { Link, useRouter, useLocalSearchParams } from "expo-router";
 import AsyncStorage from "@react-native-async-storage/async-storage"; // Import AsyncStorage
-import { doc, updateDoc, arrayUnion } from "firebase/firestore";
+import { doc, updateDoc, arrayUnion, setDoc } from "firebase/firestore";
 import { db } from "../fireBaseConfig"; // Import Firestore instance
 
 export default function SignUp6() {
   const router = useRouter();
   const params = useLocalSearchParams(); // These are the params from previous screens
   const [loading, setLoading] = useState(true);
-  const [users, setUsers] = useState([]); // Use state to store users
+  //const [users, setUsers] = useState([]); // Use state to store users
 
-  useEffect(() => {
+  /* useEffect(() => {
     const getData = async () => {
       try {
         const response = await fetch(
@@ -40,11 +40,11 @@ export default function SignUp6() {
     };
     getData();
   }, []); // Fetch users from the backend -- [] means it runs only once when the component mounts
-
+*/
   useEffect(() => {
     setLoading(true);
     const sendData = async () => {
-      if (users.length === 0) return; // Ensure users are fetched before sending data
+      //  if (users.length === 0) return; // Ensure users are fetched before sending data
 
       try {
         const response = await fetch(
@@ -55,9 +55,8 @@ export default function SignUp6() {
               "Content-Type": "application/json",
             },
             body: JSON.stringify({
-              // Generate a unique ID for the new user
               id: 1, // Consider using a more reliable ID generation method
-              name: `${params.firstName} ${params.lastName}`,
+              name: params.name,
               email: params.email,
               password: params.password,
               role: "משתמש רגיל",
@@ -92,7 +91,7 @@ export default function SignUp6() {
     };
 
     sendData();
-  }, [users]); // Run when users change
+  }); // Run when users change
 
   const storeData = async (data) => {
     setLoading(true);
@@ -105,6 +104,9 @@ export default function SignUp6() {
         id: data, // Use the ID returned from the API
       };
       await AsyncStorage.setItem("user", JSON.stringify(userData)); // Store user data as a string
+      await setDoc(doc(db, "user", userData.id.toString()), {
+        ...userData,
+      });
       await joinGroup(userData.id); // Call joinGroup with the user ID
       router.replace("/BottomNav"); // Navigate to BottomNav after storing data
     } catch (e) {

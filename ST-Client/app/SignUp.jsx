@@ -48,7 +48,11 @@ export default function SignUp() {
       // If everything is OK, move to SignUp2
       router.push({
         pathname: "/SignUp2",
-        params: { ...params, firstName, lastName, location },
+        params: {
+          ...params,
+          name: String(`${firstName} ${lastName}`),
+          location,
+        },
       });
     } else {
       Alert.alert("שגיאה", "אנא מלא את כל השדות בצורה תקינה");

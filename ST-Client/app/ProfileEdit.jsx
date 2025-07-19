@@ -15,8 +15,12 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as ImagePicker from "expo-image-picker";
+import { db } from "../fireBaseConfig"; // Import Firestore instance
+import { doc, updateDoc } from "firebase/firestore"; // Import Firestore functions
+import { useNavigation } from "@react-navigation/native";
 
 const ProfileEdit = () => {
+  const navigation = useNavigation();
   const [userData, setUserData] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -33,7 +37,6 @@ const ProfileEdit = () => {
         const userObj = JSON.parse(userString);
 
         if (userObj?.email) {
-          // משיכת הנתונים מהשרת לפי האימייל
           const response = await fetch(
             `https://proj.ruppin.ac.il/igroup15/test2/tar1/api/User/${userObj.email}`
           );
@@ -65,39 +68,38 @@ const ProfileEdit = () => {
     setFormData((prev) => ({ ...prev, [key]: value }));
   };
 
-  const pickImage = async () => {
-    const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      allowsEditing: true,
-      quality: 1,
-      base64: true, 
-    });
-
-    if (!result.canceled) {
-      const base64img = result.assets[0].base64;
-      setProfileImage(base64img);
-      handleChange("profilePicture", base64img);
-    }
-  };
-
   const handleSave = async () => {
     if (newPassword !== confirmPassword) {
       setPasswordMismatch(true);
       return;
     }
-    setPasswordMismatch(false);
-    setLoading(true);
 
     try {
-      const updatedUser = {
-        id: userData.id,
+      if (!userData?.id || typeof userData.id !== "number") {
+        Alert.alert("שגיאה", "מזהה המשתמש אינו חוקי לעדכון ב-Firestore");
+        return;
+      }
+
+      const userRef = doc(db, "user", String(userData.id));
+      await updateDoc(userRef, {
         name: formData.name,
         username: formData.userName,
         email: formData.email,
         password: newPassword || formData.password,
         profilePicture: profileImage,
+      });
+
+      const updatedUser = {
+        ...userData,
+        name: formData.name,
+        userName: formData.userName,
+        email: formData.email,
+        password: newPassword || formData.password,
+        profilePicture: profileImage,
       };
 
+      await AsyncStorage.setItem("user", JSON.stringify(updatedUser));
+      setUserData(updatedUser);
       const response = await fetch(
         `https://proj.ruppin.ac.il/igroup15/test2/tar1/api/User/${userData.id}`,
         {
@@ -105,25 +107,44 @@ const ProfileEdit = () => {
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify(updatedUser),
+          body: JSON.stringify({
+            ...updatedUser,
+            role: userData.role,
+            coins: userData.coins,
+            diabetesType: userData.diabetesType,
+            gender: userData.gender,
+            isActive: userData.isActive,
+          }),
         }
       );
-
-      if (response.ok) {
-        Alert.alert("הצלחה", "הפרופיל עודכן בהצלחה");
-        setIsEditing(false);
-        setUserData(updatedUser);
-        await AsyncStorage.setItem("user", JSON.stringify(updatedUser));
-      } else {
-        const errorData = await response.json();
-        console.error("Update failed:", errorData);
-        Alert.alert("שגיאה", "העדכון נכשל");
+      if (!response.ok) {
+        throw new Error("Failed to update user on server");
       }
+
+      // 🧹 Clear temp states and exit editing mode
+      setNewPassword("");
+      setConfirmPassword("");
+      setPasswordMismatch(false);
+      setIsEditing(false);
+
+      Alert.alert("הצלחה", "הפרופיל עודכן בהצלחה");
     } catch (error) {
-      console.error("Error updating user:", error);
-      Alert.alert("שגיאה", "קרתה שגיאה בעדכון הפרופיל");
-    } finally {
-      setLoading(false);
+      console.error("Update error:", error);
+      Alert.alert("שגיאה", "שגיאה במהלך העדכון");
+    }
+  };
+
+  const pickImage = async () => {
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      quality: 1,
+    });
+
+    if (!result.canceled) {
+      const uri = result.assets[0].uri;
+      setProfileImage(uri);
+      handleChange("profilePicture", uri);
     }
   };
 
@@ -140,30 +161,32 @@ const ProfileEdit = () => {
       <ImageBackground
         style={styles.background}
         source={require("../Images/Vector.png")}
-        resizeMode="cover"
-      >
+        resizeMode="cover">
         <TouchableOpacity
           onPress={() => setIsEditing(!isEditing)}
-          style={styles.editIcon}
-        >
+          style={styles.editIcon}>
           <Ionicons name="create-outline" size={28} color="white" />
         </TouchableOpacity>
 
-        <TouchableOpacity onPress={pickImage} style={styles.profileImageContainer}>
-          {profileImage ? (
-            <Image
-              source={{ uri: `data:image/png;base64,${profileImage}` }}
-              style={styles.profileImage}
-            />
-          ) : (
-            <View style={[styles.profileImage, {backgroundColor: "#ccc"}]} />
-          )}
+        <TouchableOpacity
+          onPress={pickImage}
+          style={styles.profileImageContainer}>
+          <Image
+            source={{
+              uri: `data:image/png;base64,${userData?.profilePicture}`,
+            }}
+            style={styles.profileImage}
+          />
         </TouchableOpacity>
 
         <View style={styles.form}>
           {[
             { field: "name", icon: "person-outline", label: "שם מלא" },
-            { field: "userName", icon: "person-circle-outline", label: "שם משתמש" },
+            {
+              field: "userName",
+              icon: "person-circle-outline",
+              label: "שם משתמש",
+            },
             { field: "email", icon: "mail-outline", label: "אימייל" },
             { field: "password", icon: "lock-closed-outline", label: "סיסמה" },
           ].map(({ field, icon, label }) => (
@@ -182,11 +205,11 @@ const ProfileEdit = () => {
                 placeholder={label}
                 placeholderTextColor="white"
                 secureTextEntry={field === "password"}
-                autoCapitalize="none"
               />
             </View>
           ))}
 
+          {/* Show password fields only when editing */}
           {isEditing && (
             <>
               <View style={styles.inputRow}>
@@ -203,7 +226,6 @@ const ProfileEdit = () => {
                   placeholder="סיסמה חדשה"
                   placeholderTextColor="white"
                   secureTextEntry
-                  autoCapitalize="none"
                 />
               </View>
 
@@ -221,7 +243,6 @@ const ProfileEdit = () => {
                   placeholder="אשר סיסמה חדשה"
                   placeholderTextColor="white"
                   secureTextEntry
-                  autoCapitalize="none"
                 />
               </View>
 
@@ -234,17 +255,20 @@ const ProfileEdit = () => {
 
         {isEditing && (
           <TouchableOpacity style={styles.saveButton} onPress={handleSave}>
-            {loading ? (
-              <ActivityIndicator color="white" />
-            ) : (
-              <Text style={styles.saveText}>שמור</Text>
-            )}
+            <Text style={styles.saveText}>שמור</Text>
+          </TouchableOpacity>
+        )}
+        {!isEditing && (
+          <TouchableOpacity onPress={() => navigation.goBack()}>
+            <Text style={styles.backText}>חזור</Text>
           </TouchableOpacity>
         )}
       </ImageBackground>
     </SafeAreaView>
   );
 };
+
+export default ProfileEdit;
 
 const styles = StyleSheet.create({
   container: {
@@ -280,7 +304,7 @@ const styles = StyleSheet.create({
   },
   form: {
     width: "80%",
-    marginTop: 120,
+    marginTop: 140,
   },
   inputRow: {
     flexDirection: "row-reverse",
@@ -303,7 +327,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#007BFF",
     padding: 14,
     borderRadius: 10,
-    marginTop: 30,
+    marginTop: 7,
     width: "80%",
     alignItems: "center",
   },
@@ -317,6 +341,8 @@ const styles = StyleSheet.create({
     fontSize: 14,
     marginTop: 5,
   },
+  backText: {
+    color: "white",
+    fontSize: 18,
+  },
 });
-
-export default ProfileEdit;

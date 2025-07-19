@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   View,
   Text,
@@ -12,8 +12,21 @@ import {
 import { Ionicons } from "@expo/vector-icons";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { router } from "expo-router";
+import { useFocusEffect } from "@react-navigation/native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 export default function Home({ userData }) {
+  const [userdata, setUserData] = useState(userData || null);
+  useFocusEffect(
+    React.useCallback(() => {
+      const loadUser = async () => {
+        let userStr = await AsyncStorage.getItem("user");
+        let user = JSON.parse(userStr);
+        setUserData(user);
+      };
+      loadUser();
+    }, [])
+  );
   const scaleValue = React.useRef(new Animated.Value(1)).current;
   const plusScale = React.useRef(new Animated.Value(1)).current;
   const bellScale = React.useRef(new Animated.Value(1)).current;
@@ -88,22 +101,22 @@ export default function Home({ userData }) {
           <Image
             style={styles.profileImage}
             source={
-              userData?.profilePicture
-                ? userData.profilePicture.startsWith("data:image")
-                  ? { uri: userData.profilePicture } // כבר Base64 עם prefix מתאים
-                  : userData.profilePicture.length > 100 // ניחוש אם זה Base64 בלי prefix
-                  ? { uri: `data:image/png;base64,${userData.profilePicture}` }
-                  : { uri: userData.profilePicture } // כנראה URL תקין
+              userdata?.profilePicture
+                ? userdata.profilePicture.startsWith("data:image")
+                  ? { uri: userdata.profilePicture } // כבר Base64 עם prefix מתאים
+                  : userdata.profilePicture.length > 100 // ניחוש אם זה Base64 בלי prefix
+                  ? { uri: `data:image/png;base64,${userdata.profilePicture}` }
+                  : { uri: userdata.profilePicture } // כנראה URL תקין
                 : require("../Images/placeholder.png") // תמונת ברירת מחדל אם אין תמונה
             }
           />
 
           <Text style={styles.greetingText}>
-            שלום {userData?.name || userData?.Name}!
+            שלום {userdata?.name || userdata?.Name || userdata?.Firstname}!
           </Text>
 
           {/* ברכה למשתמש מוביל */}
-          {userData?.role === "משתמש מוביל" && (
+          {userdata?.role === "משתמש מוביל" && (
             <Text style={styles.leaderGreeting}>
               כל הכבוד על ההתקדמות! 👏{"\n"} עכשיו אתה/את חלק מהמשתמשים המובילים
               שלנו
@@ -296,5 +309,17 @@ const styles = StyleSheet.create({
     textAlign: "center",
     fontWeight: "300",
     fontStyle: "italic",
+  },
+  backButton: {
+    backgroundColor: "#6c757d",
+    padding: 14,
+    borderRadius: 10,
+    marginTop: 15,
+    width: "80%",
+    alignItems: "center",
+  },
+  backText: {
+    color: "white",
+    fontSize: 18,
   },
 });
