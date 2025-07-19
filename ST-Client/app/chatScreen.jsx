@@ -25,6 +25,7 @@ import {
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { AntDesign } from "@expo/vector-icons";
 import { GoogleGenAI } from "@google/genai";
+import { Picker } from "@react-native-picker/picker"; // הוספת ה-Picker
 
 const API_KEY = "AIzaSyAonlahcFhubsUWuy1dRrsWcD9ERZBhPDY";
 
@@ -43,6 +44,7 @@ export default function ChatScreen() {
   const [showReportModal, setShowReportModal] = useState(false);
   const [reportDescription, setReportDescription] = useState("");
   const [selectedMessage, setSelectedMessage] = useState(null);
+  const [selectedReportReason, setSelectedReportReason] = useState(""); // הוספת סטייט לסיבת הדיווח
   const ai = new GoogleGenAI({ apiKey: API_KEY });
   const model = "gemini-2.5-flash";
   let botResponseText = "";
@@ -150,6 +152,7 @@ export default function ChatScreen() {
       text: message.text,
       reportedBy: user.id,
       description: description,
+      reason: selectedReportReason,
       timestamp: new Date().toISOString(),
     };
 
@@ -378,6 +381,22 @@ export default function ChatScreen() {
               <Text style={styles.modalReportTitle}>
                 האם אתה בטוח שברצונך לדווח על ההודעה הזו?
               </Text>
+
+              <Picker
+                selectedValue={selectedReportReason}
+                onValueChange={(itemValue) =>
+                  setSelectedReportReason(itemValue)
+                }
+                style={styles.picker}>
+                <Picker.Item label="בחר סיבה" value="" />
+                <Picker.Item label="שפה פוגענית" value="offensive_language" />
+                <Picker.Item label="הטרדה" value="harassment" />
+                <Picker.Item
+                  label="תוכן לא הולם"
+                  value="inappropriate_content"
+                />
+                <Picker.Item label="אחר" value="other" />
+              </Picker>
               <TextInput
                 placeholder="תיאור הדיווח"
                 placeholderTextColor="#aaa"
@@ -642,4 +661,10 @@ const styles = StyleSheet.create({
     alignSelf: "center",
   },
   closeButtonText: { color: "black", fontSize: 16, alignSelf: "center" },
+  picker: {
+    textAlign: "right",
+    height: 50,
+    width: "100%",
+    marginBottom: 10,
+  },
 });

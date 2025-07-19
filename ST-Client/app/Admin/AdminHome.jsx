@@ -179,6 +179,14 @@ export function Reports() {
             </Text>
             {/* Message Content */}
             <Text style={styles.detailText}>תוכן ההודעה: {item.text}</Text>
+            {/* Report Reason */}
+            <Text style={styles.detailText}>
+              סיבת הדיווח: {item.reason || "לא צוין"}
+            </Text>
+            {/* Report Description */}
+            <Text style={styles.detailText}>
+              תיאור הדיווח: {item.description || "לא צוין"}
+            </Text>
             {/* Timestamp */}
             <Text style={styles.detailText}>
               זמן הדיווח:{" "}
@@ -316,7 +324,6 @@ export function Alerts() {
     // Get user and community names/IDs
     const senderName = userMap[item.userId] || "לא ידוע";
     const AlertFor = userMap[item.analyzedSentiment] || "לא ידוע";
-    console.log(item);
     return (
       <View style={styles.rowWrapper}>
         <TouchableOpacity
