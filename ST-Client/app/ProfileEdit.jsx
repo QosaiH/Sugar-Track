@@ -143,7 +143,7 @@ const ProfileEdit = () => {
 
     if (!result.canceled) {
       const uri = result.assets[0].uri;
-      setProfileImage(uri);
+      setProfileImage(uri); // URI מקומי
       handleChange("profilePicture", uri);
     }
   };
@@ -161,20 +161,24 @@ const ProfileEdit = () => {
       <ImageBackground
         style={styles.background}
         source={require("../Images/Vector.png")}
-        resizeMode="cover">
+        resizeMode="cover"
+      >
         <TouchableOpacity
           onPress={() => setIsEditing(!isEditing)}
-          style={styles.editIcon}>
+          style={styles.editIcon}
+        >
           <Ionicons name="create-outline" size={28} color="white" />
         </TouchableOpacity>
 
-        <TouchableOpacity
-          onPress={pickImage}
-          style={styles.profileImageContainer}>
+        <TouchableOpacity onPress={pickImage} style={styles.profileImageContainer}>
           <Image
-            source={{
-              uri: `data:image/png;base64,${userData?.profilePicture}`,
-            }}
+            source={
+              profileImage
+                ? profileImage.startsWith("data:") || profileImage.startsWith("http")
+                  ? { uri: profileImage }
+                  : { uri: `data:image/png;base64,${profileImage}` }
+                : require("../Images/placeholder.png")
+            }
             style={styles.profileImage}
           />
         </TouchableOpacity>
@@ -182,21 +186,12 @@ const ProfileEdit = () => {
         <View style={styles.form}>
           {[
             { field: "name", icon: "person-outline", label: "שם מלא" },
-            {
-              field: "userName",
-              icon: "person-circle-outline",
-              label: "שם משתמש",
-            },
+            { field: "userName", icon: "person-circle-outline", label: "שם משתמש" },
             { field: "email", icon: "mail-outline", label: "אימייל" },
             { field: "password", icon: "lock-closed-outline", label: "סיסמה" },
           ].map(({ field, icon, label }) => (
             <View key={field} style={styles.inputRow}>
-              <Ionicons
-                name={icon}
-                size={20}
-                color="white"
-                style={styles.inputIcon}
-              />
+              <Ionicons name={icon} size={20} color="white" style={styles.inputIcon} />
               <TextInput
                 style={styles.input}
                 editable={isEditing}
