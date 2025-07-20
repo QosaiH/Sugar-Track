@@ -389,12 +389,9 @@ export default function ChatScreen() {
                 }
                 style={styles.picker}>
                 <Picker.Item label="בחר סיבה" value="" />
-                <Picker.Item label="שפה פוגענית" value="offensive_language" />
-                <Picker.Item label="הטרדה" value="harassment" />
-                <Picker.Item
-                  label="תוכן לא הולם"
-                  value="inappropriate_content"
-                />
+                <Picker.Item label="שפה פוגענית" value="שפה פוגענית" />
+                <Picker.Item label="הטרדה" value="הטרדה" />
+                <Picker.Item label="תוכן לא הולם" value="תוכן לא הולם" />
                 <Picker.Item label="אחר" value="other" />
               </Picker>
               <TextInput

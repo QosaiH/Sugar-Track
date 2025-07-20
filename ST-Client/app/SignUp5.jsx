@@ -41,7 +41,6 @@ export default function SignUp5() {
       pathname: "/SignUp6",
       params: {
         ...params,
-        image,
         imageBase64, // שולח את הבייס64 למסך הבא
       },
     });

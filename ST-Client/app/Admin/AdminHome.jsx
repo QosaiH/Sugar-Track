@@ -302,11 +302,15 @@ export function Alerts() {
   const handleSearch = (text) => {
     setSearchQuery(text);
     const query = text.toLowerCase();
-    const filtered = reports.filter((report) =>
-      // Search by reporter name or ID
-      `${userMap[report.userID]} (${report.userID})`
-        .toLowerCase()
-        .includes(query)
+    const filtered = reports.filter(
+      (report) =>
+        // Search by reporter name or ID
+        `${userMap[report.userId]} (${report.userId})`
+          .toLowerCase()
+          .includes(query) ||
+        `${userMap[report.senderName]} (${report.senderName})`
+          .toLowerCase()
+          .includes(query)
     );
     setFilteredReports(filtered);
   };
@@ -409,10 +413,10 @@ export function Alerts() {
   );
 }
 const styles = StyleSheet.create({
-  container: { flex: 1, width: "100%" },
+  container: { width: "100%", height: "100%" },
   background: {
-    flex: 1,
     width: "100%",
+    height: "100%",
   },
   tabContainer: {
     paddingTop: 30,
