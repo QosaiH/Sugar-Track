@@ -44,12 +44,40 @@ const hebrewMonths = [
   "דצמ",
 ];
 
+// פונקציה לחישוב תאריך התחלה לפי טאב ו-offset (מספר תקופות לאחור/קדימה)
+const getPeriodStartDate = (selectedTab, offset) => {
+  const now = new Date();
+
+  if (selectedTab === "שנתי") {
+    return new Date(now.getFullYear() + offset, 0, 1);
+  }
+
+  if (selectedTab === "חודשי") {
+    const totalMonths = now.getMonth() + offset;
+    const year = now.getFullYear() + Math.floor(totalMonths / 12);
+    const month = (totalMonths % 12 + 12) % 12; // תיקון מודולו למקרה שלילי
+    return new Date(year, month, 1);
+  }
+
+  if (selectedTab === "שבועי") {
+    // שבוע מתחיל ביום ראשון
+    const dayOfWeek = now.getDay(); // 0=ראשון
+    const sunday = new Date(now);
+    sunday.setDate(now.getDate() - dayOfWeek + offset * 7);
+    sunday.setHours(0, 0, 0, 0);
+    return sunday;
+  }
+
+  return now;
+};
+
 const Statics = () => {
   const [chartData, setChartData] = useState({
     labels: [],
     datasets: [{ data: [] }],
   });
   const [selectedTab, setSelectedTab] = useState("חודשי");
+  const [periodOffset, setPeriodOffset] = useState(0);
   const [logDetails, setLogDetails] = useState(null);
   const [average, setAverage] = useState(null);
   const [stdDeviation, setStdDeviation] = useState(null);
@@ -57,85 +85,68 @@ const Statics = () => {
   const [logs, setLogs] = useState([]);
   const [showChart, setShowChart] = useState(true);
 
-  // פונקציות לעיבוד נתונים לפי טאב נבחר:
   const filterData = (data) => {
-    const now = new Date();
+    const periodStart = getPeriodStartDate(selectedTab, periodOffset);
+    let periodEnd;
+
+    if (selectedTab === "שנתי") {
+      periodEnd = new Date(periodStart.getFullYear() + 1, 0, 1);
+    } else if (selectedTab === "חודשי") {
+      periodEnd = new Date(periodStart.getFullYear(), periodStart.getMonth() + 1, 1);
+    } else if (selectedTab === "שבועי") {
+      periodEnd = new Date(periodStart);
+      periodEnd.setDate(periodStart.getDate() + 7);
+    } else {
+      periodEnd = new Date();
+    }
+
     return data.filter((log) => {
       const logDate = new Date(log.logDate);
-      switch (selectedTab) {
-        case "שנתי":
-          return logDate.getFullYear() === now.getFullYear();
-        case "חודשי":
-          return (
-            logDate.getMonth() === now.getMonth() &&
-            logDate.getFullYear() === now.getFullYear()
-          );
-        case "שבועי":
-          const weekAgo = new Date();
-          weekAgo.setDate(now.getDate() - 6);
-          return logDate >= weekAgo;
-        default:
-          return true;
-      }
+      return logDate >= periodStart && logDate < periodEnd;
     });
   };
 
-  // מחזירה אובייקט עם תוויות וערכים בלבד של הימים/חודשים שיש להם נתונים
   const generateDataWithLabels = (filtered) => {
     if (selectedTab === "שנתי") {
-      // 12 חודשים, ממוצע חודשי
-      const monthly = Array(12)
-        .fill()
-        .map(() => []);
+      const monthly = Array(12).fill().map(() => []);
       filtered.forEach((log) => {
         const date = new Date(log.logDate);
         monthly[date.getMonth()].push(log.logValue);
       });
       const labels = [];
       const values = [];
-
       monthly.forEach((monthData, idx) => {
         if (monthData.length > 0) {
           labels.push(hebrewMonths[idx]);
           values.push(mean(monthData));
         }
       });
-
       return { labels, values };
     }
 
     if (selectedTab === "שבועי") {
-      // 7 ימים, ממוצע יומי
-      const daily = Array(7)
-        .fill()
-        .map(() => []);
-      const now = new Date();
+      const daily = Array(7).fill().map(() => []);
+      const startDate = getPeriodStartDate(selectedTab, periodOffset);
       filtered.forEach((log) => {
         const date = new Date(log.logDate);
-        const diff = Math.floor((now - date) / (1000 * 60 * 60 * 24));
-        if (diff >= 0 && diff < 7) {
-          daily[6 - diff].push(log.logValue);
+        const diffDays = Math.floor((date - startDate) / (1000 * 60 * 60 * 24));
+        if (diffDays >= 0 && diffDays < 7) {
+          daily[diffDays].push(log.logValue);
         }
       });
-
       const labels = [];
       const values = [];
-
-      daily.forEach((dayData, idx) => {
-        if (dayData.length > 0) {
-          // יום בהתאמה מ-hebrewDays לפי אינדקס
-          const nowDayIndex = new Date().getDay();
-          // חשב את היום בעברית, עם סידור לפי המערך - אפשרות 1: פשוט השתמש ב-hebrewDays בסדר
-          labels.push(hebrewDays[(nowDayIndex - (6 - idx) + 7) % 7]);
-          values.push(mean(dayData));
+      for (let i = 0; i < 7; i++) {
+        if (daily[i].length > 0) {
+          const dayIndex = (startDate.getDay() + i) % 7;
+          labels.push(hebrewDays[dayIndex]);
+          values.push(mean(daily[i]));
         }
-      });
-
+      }
       return { labels, values };
     }
 
     if (selectedTab === "חודשי") {
-      // ממוצע יומי בחודש נוכחי, רק ימים שיש להם מדידות
       const grouped = {};
       filtered.forEach((log) => {
         const date = new Date(log.logDate);
@@ -144,9 +155,16 @@ const Statics = () => {
         grouped[day].push(log.logValue);
       });
 
-      const labels = Object.keys(grouped);
-      const values = labels.map((day) => mean(grouped[day]));
+      const sortedDays = Object.keys(grouped)
+        .map((d) => parseInt(d))
+        .sort((a, b) => a - b);
 
+      const labels = [];
+      const values = [];
+      sortedDays.forEach((day) => {
+        labels.push(day.toString());
+        values.push(mean(grouped[day]));
+      });
       return { labels, values };
     }
 
@@ -161,6 +179,7 @@ const Statics = () => {
           `https://proj.ruppin.ac.il/igroup15/test2/tar1/api/GlucoseLogs/${user.id}`
         );
         let data = await response.json();
+
         let filtered = filterData(data);
 
         filtered.sort(
@@ -170,7 +189,6 @@ const Statics = () => {
 
         const { labels, values } = generateDataWithLabels(filtered);
 
-        // פילטר להסרת ערכים לא חוקיים (כגון 0 או null) לפני חישוב ממוצע וסטיית תקן
         const filteredValues = values.filter(
           (v) => v !== 0 && v !== null && v !== undefined
         );
@@ -192,18 +210,6 @@ const Statics = () => {
           datasets: [
             {
               data: values,
-              onDataPointClick: ({ index }) => {
-                if (filtered[index]) {
-                  const log = filtered[index];
-                  const date = new Date(log.logDate);
-                  setLogDetails({
-                    value: log.logValue,
-                    date: `${date.getDate()}/${date.getMonth() + 1}/${date.getFullYear()}`,
-                    type: log.logType,
-                    status: log.logStatus,
-                  });
-                }
-              },
             },
           ],
         });
@@ -215,7 +221,7 @@ const Statics = () => {
     };
 
     fetchData();
-  }, [selectedTab]);
+  }, [selectedTab, periodOffset]);
 
   return (
     <ImageBackground
@@ -244,6 +250,7 @@ const Statics = () => {
               onPress={() => {
                 setSelectedTab(tab);
                 setLogDetails(null);
+                setPeriodOffset(0); // אפס את ה-offset כשמשנים טאב
               }}
             >
               <Text
@@ -256,6 +263,47 @@ const Statics = () => {
               </Text>
             </TouchableOpacity>
           ))}
+        </View>
+
+        {/* חיצים לניווט תקופה */}
+        <View style={styles.periodNavigation}>
+          <TouchableOpacity
+            style={styles.arrowButton}
+            onPress={() => {
+              setPeriodOffset((prev) => prev - 1);
+              setLogDetails(null);
+            }}
+          >
+            <Text style={styles.arrowText}>→</Text>
+          </TouchableOpacity>
+
+          <Text style={styles.periodLabel}>
+            {(() => {
+              const start = getPeriodStartDate(selectedTab, periodOffset);
+              if (selectedTab === "שנתי") return start.getFullYear();
+              if (selectedTab === "חודשי")
+                return `${hebrewMonths[start.getMonth()]} ${start.getFullYear()}`;
+              if (selectedTab === "שבועי") {
+                const end = new Date(start);
+                end.setDate(start.getDate() + 6);
+                return `${start.getDate()}/${start.getMonth() + 1} - ${end.getDate()}/${end.getMonth() + 1}`;
+              }
+              return "";
+            })()}
+          </Text>
+
+          <TouchableOpacity
+            style={styles.arrowButton}
+            onPress={() => {
+              setPeriodOffset((prev) => Math.min(prev + 1, 0));
+              setLogDetails(null);
+            }}
+            disabled={periodOffset >= 0}
+          >
+            <Text style={[styles.arrowText, periodOffset >= 0 && styles.disabledArrow]}>
+              ←
+            </Text>
+          </TouchableOpacity>
         </View>
 
         {chartData.datasets[0].data.length > 0 ? (
@@ -278,6 +326,18 @@ const Statics = () => {
                   withOuterLines={false}
                   fromZero
                   style={styles.chart}
+                  onDataPointClick={({ index }) => {
+                    const log = logs[index];
+                    if (log) {
+                      const date = new Date(log.logDate);
+                      setLogDetails({
+                        value: log.logValue,
+                        date: `${date.getDate()}/${date.getMonth() + 1}/${date.getFullYear()}`,
+                        type: log.logType,
+                        status: log.logStatus,
+                      });
+                    }
+                  }}
                 />
               </View>
             ) : (
@@ -337,7 +397,7 @@ const styles = StyleSheet.create({
   },
   tabs: {
     flexDirection: "row-reverse",
-    marginBottom: 16,
+    marginBottom: 10,
   },
   tab: {
     paddingVertical: 8,
@@ -356,6 +416,31 @@ const styles = StyleSheet.create({
   activeTabText: {
     color: "white",
     fontWeight: "bold",
+  },
+  periodNavigation: {
+
+    flexDirection: "row-reverse",
+    alignItems: "center",
+    justifyContent: "center",
+    marginBottom: 10,
+  },
+  arrowButton: {
+    paddingHorizontal: 16,
+    paddingVertical: 6,
+  },
+  arrowText: {
+    fontSize: 28,
+    color: "white",
+  },
+  disabledArrow: {
+    color: "rgba(255,255,255,0.3)",
+  },
+  periodLabel: {
+    fontSize: 16,
+    color: "white",
+    marginHorizontal: 12,
+    minWidth: 140,
+    textAlign: "center",
   },
   chartWrapper: {
     borderRadius: 16,
