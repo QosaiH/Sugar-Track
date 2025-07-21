@@ -190,22 +190,24 @@ export default function ChatScreen() {
 
   return (
     <>
-      <View style={styles.header}>
-        <TouchableOpacity
-          onPress={() => router.back()}
-          style={styles.backButton}>
-          <Text style={styles.backButtonText}>{"<"}</Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          onPress={() => setShowMembers(true)}
-          style={{ flexDirection: "row", alignItems: "center" }}>
-          <Text style={styles.communityName}>{community.name}</Text>
-          <Image
-            source={{ uri: `data:image/png;base64,${community.photo}` }}
-            style={styles.communityImage}
-          />
-        </TouchableOpacity>
-      </View>
+     <View style={styles.header}>
+  <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
+    <AntDesign name="arrowleft" size={24} color="black" />
+  </TouchableOpacity>
+
+  <TouchableOpacity
+    onPress={() => setShowMembers(true)}
+    style={styles.communityInfoContainer}
+  >
+    <Image
+      source={{ uri: `data:image/png;base64,${community.photo}` }}
+      style={styles.communityImage}
+    />
+    <Text numberOfLines={1} style={styles.communityName}>
+      {community.name}
+    </Text>
+  </TouchableOpacity>
+</View>
 
       <KeyboardAvoidingView
         style={styles.container}
@@ -231,13 +233,14 @@ export default function ChatScreen() {
                       onPress={() => {
                         setSelectedUser(userData);
                         setShowUserOptionsModal(true);
-                      }}>
-                      <Image
-                        source={{
-                          uri: `data:image/png;base64,${userData.profilePicture}`,
-                        }}
-                        style={styles.userImage}
-                      />
+                      }}><Image
+                source={
+                userData.profilePicture
+                 ? { uri:  userData.profilePicture.startsWith("data:image") ? userData.profilePicture : `data:image/png;base64,${ userData.profilePicture}` }
+                 : require("../Images/placeholder.png") 
+                      }
+                       style={styles.userImage}
+/> 
                     </TouchableOpacity>
                   )}
 
@@ -248,12 +251,7 @@ export default function ChatScreen() {
                     ]}>
                     <Text style={styles.nameText}>{item.senderName}</Text>
                     <Text style={styles.messageText}>{item.text}</Text>
-                    <Text style={styles.timeText}>
-                      {new Date(item.timestamp).toLocaleTimeString("he-IL", {
-                        hour: "2-digit",
-                        minute: "2-digit",
-                      })}
-                    </Text>
+                    <Text style={styles.timeText}>{formatTimestamp(item.timestamp)}</Text>
                   </View>
                   {!isSender && (
                     <TouchableOpacity
@@ -265,13 +263,14 @@ export default function ChatScreen() {
                       <Text style={styles.reportButtonText}>!</Text>
                     </TouchableOpacity>
                   )}
-                  {isSender && userData && (
-                    <Image
-                      source={{
-                        uri: `data:image/png;base64,${userData.profilePicture}`,
-                      }}
-                      style={styles.userImage}
-                    />
+                  {isSender && userData && (<Image
+                 source={
+                 userData.profilePicture
+                ? { uri:  userData.profilePicture.startsWith("data:image") ? userData.profilePicture : `data:image/png;base64,${ userData.profilePicture}` }
+                : require("../Images/placeholder.png") // ברירת מחדל
+                }
+                style={styles.userImage}
+/>          
                   )}
                 </View>
               );
@@ -424,6 +423,43 @@ export default function ChatScreen() {
     </>
   );
 }
+function formatTimestamp(timestamp) {
+  const date = new Date(timestamp);
+  const now = new Date();
+
+  const isToday =
+    date.getDate() === now.getDate() &&
+    date.getMonth() === now.getMonth() &&
+    date.getFullYear() === now.getFullYear();
+
+  const yesterday = new Date(now);
+  yesterday.setDate(now.getDate() - 1);
+  const isYesterday =
+    date.getDate() === yesterday.getDate() &&
+    date.getMonth() === yesterday.getMonth() &&
+    date.getFullYear() === yesterday.getFullYear();
+
+  if (isToday) {
+    return date.toLocaleTimeString("he-IL", {
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+  } else if (isYesterday) {
+    return (
+      "אתמול " +
+      date.toLocaleTimeString("he-IL", {
+        hour: "2-digit",
+        minute: "2-digit",
+      })
+    );
+  } else {
+    return (
+      date.toLocaleDateString("he-IL", { day: "2-digit", month: "2-digit" }) +
+      " " +
+      date.toLocaleTimeString("he-IL", { hour: "2-digit", minute: "2-digit" })
+    );
+  }
+}
 
 const styles = StyleSheet.create({
   container: {
@@ -436,30 +472,44 @@ const styles = StyleSheet.create({
     paddingTop: 20,
   },
   header: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    backgroundColor: "#fff",
-    width: "100%",
-  },
-  backButton: {
-    marginRight: 10,
-  },
-  backButtonText: {
-    fontSize: 24,
-    color: "black",
-  },
-  communityImage: {
-    width: 62,
-    height: 50,
-    borderRadius: 10,
-    marginRight: 10,
-  },
-  communityName: {
-    fontSize: 20,
-    fontWeight: "bold",
-    color: "black",
-  },
+  flexDirection: "row",
+  alignItems: "center",
+  justifyContent: "space-between",
+  backgroundColor: "rgba(255,255,255,0.9)",
+  paddingHorizontal: 10,
+  paddingVertical: 12,
+  borderBottomWidth: 1,
+  borderBottomColor: "#e0e0e0",
+  zIndex: 100,
+},
+
+backButton: {
+  padding: 6,
+},
+
+communityInfoContainer: {
+  flexDirection: "row-reverse",
+  alignItems: "center",
+  gap: 10,
+  maxWidth: "80%",
+},
+
+communityImage: {
+  width: 44,
+  height: 44,
+  borderRadius: 22,
+  marginLeft: 10,
+  borderWidth: 1,
+  borderColor: "#ccc",
+},
+
+communityName: {
+  fontSize: 22,
+  fontWeight: "600",
+  color: "#000",
+  maxWidth: "65%",
+},
+
   messageContainer: {
     flexDirection: "row",
     marginVertical: 5,
@@ -479,32 +529,46 @@ const styles = StyleSheet.create({
     marginHorizontal: 6,
   },
   messageBubble: {
-    maxWidth: "70%",
-    paddingVertical: 8,
-    paddingHorizontal: 12,
-    borderRadius: 20,
-  },
-  senderBubble: {
-    backgroundColor: "#dcf8c6",
-    borderTopRightRadius: 0,
-  },
-  receiverBubble: {
-    backgroundColor: "#fff",
-    borderTopLeftRadius: 0,
-  },
-  messageText: {
-    fontSize: 16,
-    color: "#000",
-  },
-  timeText: {
-    fontSize: 11,
-    color: "gray",
-    marginTop: 5,
-  },
-  nameText: {
-    fontSize: 11,
-    color: "gray",
-  },
+  maxWidth: "70%",
+  paddingVertical: 10,
+  paddingHorizontal: 14,
+  borderRadius: 20,
+  shadowColor: "#000",
+  shadowOffset: { width: 0, height: 1 },
+  shadowOpacity: 0.1,
+  shadowRadius: 2,
+  elevation: 2,
+},
+senderBubble: {
+  backgroundColor: "#dcf8c6",
+  borderTopRightRadius: 0,
+},
+receiverBubble: {
+  backgroundColor: "#fff",
+  borderTopLeftRadius: 0,
+},
+nameText: {
+  fontSize: 12,
+  color: "#555",
+  marginBottom: 4,
+  fontWeight: "600",
+},
+messageText: {
+  fontSize: 16,
+  color: "#000",
+},
+timeText: {
+  fontSize: 10,
+  color: "#999",
+  marginTop: 6,
+  alignSelf: "flex-end",
+},
+messageContainer: {
+  flexDirection: "row",
+  marginVertical: 8,
+  alignItems: "flex-start",
+},
+
   input: {
     flex: 1,
     padding: 10,
