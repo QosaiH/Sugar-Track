@@ -17,16 +17,39 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 
 export default function Home({ userData }) {
   const [userdata, setUserData] = useState(userData || null);
+  const [quote, setQuote] = useState({
+    text: "הדרך הטובה ביותר לחזות את העתיד היא להמציא אותו.",
+    author: "- פיטר דרוקר",
+  });
+
   useFocusEffect(
     React.useCallback(() => {
       const loadUser = async () => {
-        let userStr = await AsyncStorage.getItem("user");
-        let user = JSON.parse(userStr);
-        setUserData(user);
+        try {
+          let userStr = await AsyncStorage.getItem("user");
+          let user = JSON.parse(userStr);
+          setUserData(user);
+        } catch (e) {
+          console.log("Error loading user:", e);
+        }
       };
+
+      const loadQuote = async () => {
+        try {
+          const storedQuote = await AsyncStorage.getItem("homeQuote");
+          if (storedQuote) {
+            setQuote(JSON.parse(storedQuote));
+          }
+        } catch (e) {
+          console.log("Error loading quote:", e);
+        }
+      };
+
       loadUser();
+      loadQuote();
     }, [])
   );
+
   const scaleValue = React.useRef(new Animated.Value(1)).current;
   const plusScale = React.useRef(new Animated.Value(1)).current;
   const bellScale = React.useRef(new Animated.Value(1)).current;
@@ -86,10 +109,12 @@ export default function Home({ userData }) {
       <ImageBackground
         style={styles.background}
         source={require("../Images/Vector.png")}
-        resizeMode="cover">
+        resizeMode="cover"
+      >
         {/* Bell Icon */}
         <Animated.View
-          style={[styles.bellButton, { transform: [{ scale: bellScale }] }]}>
+          style={[styles.bellButton, { transform: [{ scale: bellScale }] }]}
+        >
           <TouchableOpacity onPress={handleBellPress} activeOpacity={0.7}>
             <Ionicons name="notifications-outline" size={32} color="white" />
             <View style={styles.bellBadge} />
@@ -103,11 +128,11 @@ export default function Home({ userData }) {
             source={
               userdata?.profilePicture
                 ? userdata.profilePicture.startsWith("data:image")
-                  ? { uri: userdata.profilePicture } // כבר Base64 עם prefix מתאים
-                  : userdata.profilePicture.length > 100 // ניחוש אם זה Base64 בלי prefix
+                  ? { uri: userdata.profilePicture } // Base64 עם prefix
+                  : userdata.profilePicture.length > 100
                   ? { uri: `data:image/png;base64,${userdata.profilePicture}` }
                   : { uri: userdata.profilePicture } // כנראה URL תקין
-                : require("../Images/placeholder.png") // תמונת ברירת מחדל אם אין תמונה
+                : require("../Images/placeholder.png") // ברירת מחדל
             }
           />
 
@@ -118,8 +143,8 @@ export default function Home({ userData }) {
           {/* ברכה למשתמש מוביל */}
           {userdata?.role === "משתמש מוביל" && (
             <Text style={styles.leaderGreeting}>
-              כל הכבוד על ההתקדמות! 👏{"\n"} עכשיו אתה/את חלק מהמשתמשים המובילים
-              שלנו
+              כל הכבוד על ההתקדמות! 👏{"\n"} עכשיו אתה/את חלק מהמשתמשים
+              המובילים שלנו
             </Text>
           )}
         </View>
@@ -132,13 +157,12 @@ export default function Home({ userData }) {
               onPressIn={handlePressIn}
               onPressOut={handlePressOut}
               onPress={handleLogPress}
-              style={styles.addButton}>
+              style={styles.addButton}
+            >
               <Text style={styles.addButtonText}>הזן ערך יומי</Text>
               <Animated.View
-                style={[
-                  styles.plusIconContainer,
-                  { transform: [{ scale: plusScale }] },
-                ]}>
+                style={[styles.plusIconContainer, { transform: [{ scale: plusScale }] }]}
+              >
                 <View style={styles.plusIconBackground}>
                   <Ionicons name="add" size={28} color="black" />
                 </View>
@@ -149,10 +173,8 @@ export default function Home({ userData }) {
 
         {/* Quote */}
         <View style={styles.quoteContainer}>
-          <Text style={styles.quoteText}>
-            "הדרך הטובה ביותר לחזות את העתיד היא להמציא אותו."
-          </Text>
-          <Text style={styles.quoteAuthor}>- פיטר דרוקר</Text>
+          <Text style={styles.quoteText}>"{quote.text}"</Text>
+          <Text style={styles.quoteAuthor}>{quote.author}</Text>
         </View>
       </ImageBackground>
     </SafeAreaView>
@@ -217,21 +239,10 @@ const styles = StyleSheet.create({
     marginTop: 10,
     fontSize: 15,
     fontWeight: "700",
-    color: "white", // זהב בוהק
+    color: "white",
     textAlign: "center",
-    //textShadowColor: "rgba(255, 255, 255, 0.8)", // צל צהוב-זהוב עדין
-    // textShadowOffset: { width: 0, height: 0 },
     textShadowRadius: 2,
     paddingHorizontal: 15,
-    // lineHeight: 24,
-    //  backgroundColor: "rgba(255,255,255,0.15)",
-    // borderRadius: 12,
-    //borderWidth: 1.2,
-    // borderColor: "rgba(255,255,255,0.2)",
-    // shadowColor: "white",
-    // shadowOpacity: 0.4,
-    // shadowOffset: { width: 0, height: 1 },
-    //shadowRadius: 1,
     elevation: 6,
   },
   buttonContainer: {

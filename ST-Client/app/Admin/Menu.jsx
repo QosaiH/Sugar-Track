@@ -9,31 +9,34 @@ import {
   ImageBackground,
   Platform,
 } from "react-native";
-import { useRouter } from "expo-router";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useRouter } from "expo-router";
 
 export default function Menu({ isVisible, onClose }) {
   const router = useRouter();
-  const slideAnim = React.useRef(new Animated.Value(300)).current; // Start off-screen
+  const slideAnim = React.useRef(new Animated.Value(300)).current;
 
-  // Slide animation to show/hide the menu
   React.useEffect(() => {
     Animated.timing(slideAnim, {
-      toValue: isVisible ? 0 : 300, // Slide in or out
+      toValue: isVisible ? 0 : 300,
       duration: 300,
       useNativeDriver: true,
     }).start();
   }, [isVisible]);
 
-  // Handle the logout process
   const handleLogout = async () => {
     try {
-      await AsyncStorage.removeItem("user"); // Clear user session from AsyncStorage
-      onClose(); // Close the menu after logging out
-      router.replace("/LogIn"); // Navigate to login screen (use correct route)
+      await AsyncStorage.removeItem("user");
+      onClose();
+      router.replace("/LogIn");
     } catch (error) {
-      console.error("Logout error:", error); // Handle any errors during logout
+      console.error("Logout error:", error);
     }
+  };
+
+  const handleNavigate = (path) => {
+    onClose();
+    router.push(path);
   };
 
   const backgroundStyle = {
@@ -46,18 +49,18 @@ export default function Menu({ isVisible, onClose }) {
   return (
     <Modal transparent animationType="none" visible={isVisible}>
       <View style={styles.overlay}>
-        <TouchableOpacity
-          style={styles.overlay}
-          onPress={onClose}
-          activeOpacity={1}>
-          <Animated.View
-            style={[styles.drawer, { transform: [{ translateX: slideAnim }] }]}>
-            <ImageBackground
-              source={require("../../Images/Vector.png")}
-              style={backgroundStyle}>
+        <TouchableOpacity style={styles.overlay} onPress={onClose} activeOpacity={1}>
+          <Animated.View style={[styles.drawer, { transform: [{ translateX: slideAnim }] }]}>
+            <ImageBackground source={require("../../Images/Vector.png")} style={backgroundStyle}>
               <Text style={styles.title}>תפריט</Text>
 
-              {/* Logout option */}
+              <TouchableOpacity
+                style={styles.menuItem}
+                onPress={() => handleNavigate("./quoteFix")}
+              >
+                <Text style={styles.menuText}>עריכת ציטוט</Text>
+              </TouchableOpacity>
+
               <TouchableOpacity style={styles.menuItem} onPress={handleLogout}>
                 <Text style={styles.menuText}>יציאה</Text>
               </TouchableOpacity>
