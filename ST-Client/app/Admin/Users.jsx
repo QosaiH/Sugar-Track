@@ -283,24 +283,54 @@ const styles = StyleSheet.create({
     marginBottom: 10,
     fontSize: 16,
   },
-  filterContainer: {
+  /*
+  tabContainer: {
+    paddingTop: 30,
     flexDirection: "row",
+    justifyContent: "space-around",
+    alignSelf: "center",
+    marginBottom: 20,
+    gap: 10,
+  },
+ 
+  tabButton: {
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 20,
+   
+  },
+  activeTab: {
+    backgroundColor: "rgba(0,0,0,0.3)",
+  },
+  tabText: {
+    color: "#fff",
+    fontWeight: "bold",
+    fontSize: 16,
+  },*/
+  filterContainer: {
+    paddingTop: 30,
+    flexDirection: "row",
+    justifyContent: "space-around",
+    alignSelf: "center",
+    marginBottom: 20,
+    gap: 10,
     justifyContent: "center",
-    marginBottom: 10,
   },
   filterButton: {
-    paddingVertical: 8,
-    paddingHorizontal: 16,
-    backgroundColor: "gray",
-    borderRadius: 20,
-    marginHorizontal: 5,
+  paddingVertical: 10,
+  paddingHorizontal: 20,
+  borderRadius: 20,
+  backgroundColor: "rgba(255,255,255,0.2)",
+
   },
   activeFilterButton: {
-    backgroundColor: "#4CAF50",
+    backgroundColor: "rgba(0,0,0,0.3)",
   },
+
   filterButtonText: {
-    color: "white",
+     color: "#fff",
     fontWeight: "bold",
+    fontSize: 16,
   },
   tableContainer: {
     width: "100%",

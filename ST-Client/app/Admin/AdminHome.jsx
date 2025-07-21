@@ -414,26 +414,30 @@ const styles = StyleSheet.create({
     flex: 1,
     width: "100%",
   },
+ 
   tabContainer: {
     paddingTop: 30,
     flexDirection: "row",
     justifyContent: "space-around",
     alignSelf: "center",
-    gap: 20,
+    marginBottom: 20,
+    gap: 10,
   },
+ 
   tabButton: {
     paddingVertical: 10,
+    backgroundColor: "rgba(255,255,255,0.2)",
     paddingHorizontal: 20,
     borderRadius: 20,
-    backgroundColor: "rgba(255,255,255,0.2)",
+   
   },
   activeTab: {
     backgroundColor: "rgba(0,0,0,0.3)",
   },
   tabText: {
-    color: "white",
-    fontSize: 24,
+    color: "#fff",
     fontWeight: "bold",
+    fontSize: 16,
   },
   header: {
     fontSize: 24,

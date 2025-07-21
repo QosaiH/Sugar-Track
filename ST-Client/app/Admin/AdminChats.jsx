@@ -8,6 +8,7 @@ import {
   TouchableOpacity,
   Modal,
   Pressable,
+  TextInput,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { db } from "../../fireBaseConfig";
@@ -22,6 +23,7 @@ export default function AdminChats() {
   const [selectedType, setSelectedType] = useState(null);
   const [deleteConfirmVisible, setDeleteConfirmVisible] = useState(false);
   const [chatToDelete, setChatToDelete] = useState(null);
+  const [searchTerm, setSearchTerm] = useState("");
 
   useEffect(() => {
     const unsubscribePrivateChats = onSnapshot(
@@ -89,7 +91,7 @@ export default function AdminChats() {
     return (
       <View style={styles.modalContent}>
         <Text style={styles.modalTitle}>
-          {selectedType === "community" ? "קהילת" : "שיחה בין"}:{" "}
+          {selectedType === "community" ? "קהילת" : "שיחה בין"}: {" "}
           {selectedChat?.name || selectedChat?.id}
         </Text>
         <FlatList
@@ -97,21 +99,9 @@ export default function AdminChats() {
           keyExtractor={(_, index) => index.toString()}
           renderItem={({ item }) => (
             <View style={styles.messageItem}>
-              <View
-                style={{
-                  flexDirection: "row",
-                  alignItems: "center",
-                  marginBottom: 5,
-                }}>
-                <Text style={styles.messageSender}>
-                  {item.senderName || "לא ידוע"}:
-                </Text>
-                <TouchableOpacity
-                  style={styles.viewButton}
-                  onPress={() => alert(`צפייה בפרטים של ${item.senderName}`)}>
-                  <Text style={styles.viewButtonText}>צפה</Text>
-                </TouchableOpacity>
-              </View>
+              <Text style={styles.messageSender}>
+                {item.senderName || "לא ידוע"}:
+              </Text>
               <Text style={styles.messageText}>{item.text}</Text>
             </View>
           )}
@@ -149,6 +139,12 @@ export default function AdminChats() {
     </View>
   );
 
+  const filteredChats = (showType === "community" ? communityChats : privateChats).filter(
+    (chat) =>
+      chat.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      chat.id?.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
   return (
     <SafeAreaView style={styles.container}>
       <ImageBackground
@@ -161,7 +157,8 @@ export default function AdminChats() {
               styles.toggleButton,
               showType === "private" && styles.toggleButtonActive,
             ]}
-            onPress={() => setShowType("private")}>
+            onPress={() => setShowType("private")}
+          >
             <Text style={styles.toggleButtonText}>צ'אטים פרטיים </Text>
           </TouchableOpacity>
           <TouchableOpacity
@@ -169,13 +166,22 @@ export default function AdminChats() {
               styles.toggleButton,
               showType === "community" && styles.toggleButtonActive,
             ]}
-            onPress={() => setShowType("community")}>
+            onPress={() => setShowType("community")}
+          >
             <Text style={styles.toggleButtonText}>קהילות</Text>
           </TouchableOpacity>
         </View>
 
+        <TextInput
+          style={styles.searchInput}
+          placeholder="...חפש לפי שם צ'אט"
+          placeholderTextColor="#aaa"
+          value={searchTerm}
+          onChangeText={setSearchTerm}
+        />
+
         <FlatList
-          data={showType === "community" ? communityChats : privateChats}
+          data={filteredChats}
           renderItem={({ item }) => renderChatItem(item, showType)}
           keyExtractor={(item) => item.id}
           style={styles.chatList}
@@ -257,6 +263,15 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     fontSize: 16,
   },
+  searchInput: {
+    backgroundColor: "#fff",
+    borderRadius: 10,
+    padding: 10,
+    width: "90%",
+    marginBottom: 15,
+    fontSize: 16,
+    textAlign: "right",
+  },
   chatList: {
     width: "90%",
   },
@@ -337,18 +352,6 @@ const styles = StyleSheet.create({
   messageText: {
     fontSize: 14,
     color: "#555",
-  },
-  viewButton: {
-    marginLeft: 10,
-    backgroundColor: "#4A90E2",
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 5,
-  },
-  viewButtonText: {
-    color: "#fff",
-    fontSize: 12,
-    fontWeight: "bold",
   },
   closeModalBtn: {
     backgroundColor: "#4A90E2",
