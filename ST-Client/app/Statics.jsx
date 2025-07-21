@@ -443,6 +443,7 @@ const styles = StyleSheet.create({
     textAlign: "center",
   },
   chartWrapper: {
+    width:"90",
     borderRadius: 16,
     backgroundColor: "#fff",
     padding: 10,
