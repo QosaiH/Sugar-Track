@@ -137,21 +137,27 @@ export default function PrivateChatScreen() {
   return (
     <>
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => router.back()}>
-          <Text style={styles.backText}>{"<"}</Text>
-        </TouchableOpacity>
-        <View style={styles.userInfo}>
-          <Image
-            source={{
-              uri: `data:image/png;base64,${otherUser.profilePicture}`,
-            }}
-            style={styles.avatar}
-          />
-          <Text style={styles.username}>
-            {otherUser.username || otherUser.userName}
-          </Text>
-        </View>
-      </View>
+  <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
+    <AntDesign name="arrowleft" size={24} color="black" />
+  </TouchableOpacity>
+
+  <View style={styles.userInfo}>
+    <Image
+   
+  source={
+    otherUser.profilePicture
+      ? otherUser.profilePicture.startsWith("data:image")
+        ? { uri: otherUser.profilePicture }
+        : { uri: `data:image/png;base64,${otherUser.profilePicture}` }
+      : require("../Images/placeholder.png")
+  }
+  style={styles.avatar}
+/>
+
+    <Text style={styles.username}>{otherUser.username || otherUser.userName}</Text>
+  </View>
+</View>
+
       <KeyboardAvoidingView
         style={{ flex: 1, backgroundColor: "#fff" }}
         behavior={Platform.OS === "ios" ? "padding" : undefined}>
@@ -171,12 +177,17 @@ export default function PrivateChatScreen() {
                     isSender ? styles.rightAlign : styles.leftAlign,
                   ]}>
                   {!isSender && (
-                    <Image
-                      source={{
-                        uri: `data:image/png;base64,${otherUser.profilePicture}`,
-                      }}
-                      style={styles.userImage}
-                    />
+                   <Image
+  source={
+    otherUser.profilePicture
+      ? otherUser.profilePicture.startsWith("data:image")
+        ? { uri: otherUser.profilePicture }
+        : { uri: `data:image/png;base64,${otherUser.profilePicture}` }
+      : require("../Images/placeholder.png")
+  }
+  style={styles.avatar}
+/>
+
                   )}
 
                   <View
@@ -216,12 +227,17 @@ export default function PrivateChatScreen() {
                     </Text>
                   </View>
                   {isSender && (
-                    <Image
-                      source={{
-                        uri: `data:image/png;base64,${user.profilePicture}`,
-                      }}
-                      style={styles.userImage}
-                    />
+                   <Image
+  source={
+    user.profilePicture
+      ? user.profilePicture.startsWith("data:image")
+        ? { uri: user.profilePicture }
+        : { uri: `data:image/png;base64,${user.profilePicture}` }
+      : require("../Images/placeholder.png")
+  }
+  style={styles.avatar}
+/>
+
                   )}
                 </View>
               );
@@ -246,127 +262,71 @@ export default function PrivateChatScreen() {
     </>
   );
 }
-
+function getProfilePictureUri(profilePicture) {
+  if (!profilePicture) return require("../Images/placeholder.png");
+  if (profilePicture.startsWith("data:image")) return profilePicture;
+  return `data:image/png;base64,${profilePicture}`;
+}
 const styles = StyleSheet.create({
   header: {
-    flexDirection: "row-reverse",
+    flexDirection: "row",
     alignItems: "center",
-    padding: 10,
-    backgroundColor: "#f5f5f5",
+    justifyContent: "space-between",
+    backgroundColor: "rgba(255,255,255,0.9)",
+    paddingHorizontal: 10,
+    paddingVertical: 12,
     borderBottomWidth: 1,
-    borderColor: "#ddd",
+    borderBottomColor: "#e0e0e0",
+    zIndex: 100,
   },
-  backText: {
-    fontSize: 18,
+
+  backButton: {
+    padding: 6,
+    marginRight: 10, // שמרתי גם את המרווח מההגדרה השנייה
+  },
+
+  backButtonText: {
+    fontSize: 24,
     color: "black",
-    marginHorizontal: 10,
   },
+
   userInfo: {
     flexDirection: "row-reverse",
     alignItems: "center",
-    flex: 1,
+    gap: 10,
+    maxWidth: "80%",
   },
+
   avatar: {
     width: 42,
     height: 42,
     borderRadius: 21,
     marginLeft: 10,
+    borderWidth: 1,
+    borderColor: "#ccc",
   },
+
   username: {
     fontSize: 18,
-    fontWeight: "bold",
-  },
-  messageBubble: {
-    padding: 10,
-    marginVertical: 4,
-    borderRadius: 10,
-    maxWidth: "75%",
-  },
-  myMessage: {
-    alignSelf: "flex-end",
-    backgroundColor: "#dcf8c6",
-  },
-  otherMessage: {
-    alignSelf: "flex-start",
-    backgroundColor: "#eee",
-  },
-  senderName: {
-    fontSize: 12,
-    color: "gray",
-  },
-  time: {
-    fontSize: 10,
-    color: "gray",
-    textAlign: "left",
-    marginTop: 5,
-  },
-  inputContainer: {
-    flexDirection: "row-reverse",
-    padding: 10,
-    borderTopWidth: 1,
-    borderColor: "#ddd",
-    backgroundColor: "#fff",
-  },
-  input: {
-    flex: 1,
-    backgroundColor: "#f0f0f0",
-    borderRadius: 20,
-    paddingHorizontal: 16,
-    fontSize: 16,
+    fontWeight: "600",
+    color: "#333",
     marginRight: 8,
   },
-  sendButton: {
-    backgroundColor: "black",
-    borderRadius: 20,
-    padding: 10,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  container: {
-    flex: 1,
-  },
-  background: {
-    flex: 1,
-    width: "100%",
-    height: "100%",
-    paddingTop: 20,
-  },
-  header: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    backgroundColor: "#fff",
-    width: "100%",
-  },
-  backButton: {
-    marginRight: 10,
-  },
-  backButtonText: {
-    fontSize: 24,
-    color: "black",
-  },
-  communityImage: {
-    width: 62,
-    height: 50,
-    borderRadius: 10,
-    marginRight: 10,
-  },
-  communityName: {
-    fontSize: 20,
-    fontWeight: "bold",
-    color: "#black",
-  },
+
   messageContainer: {
     flexDirection: "row",
     marginVertical: 5,
     alignItems: "flex-start",
   },
+
   leftAlign: {
     justifyContent: "flex-start",
   },
+
   rightAlign: {
     justifyContent: "flex-end",
   },
+
   userImage: {
     width: 54,
     height: 54,
@@ -374,55 +334,76 @@ const styles = StyleSheet.create({
     marginTop: 0,
     marginHorizontal: 6,
   },
+
   messageBubble: {
     maxWidth: "70%",
     paddingVertical: 8,
     paddingHorizontal: 12,
     borderRadius: 20,
   },
+
   senderBubble: {
     backgroundColor: "#dcf8c6",
     borderTopRightRadius: 0,
   },
+
   receiverBubble: {
     backgroundColor: "#fff",
     borderTopLeftRadius: 0,
   },
+
   messageText: {
     fontSize: 16,
     color: "#000",
   },
+
   senderMessageText: {
     textAlign: "right",
   },
+
   receiverMessageText: {
     textAlign: "left",
   },
+
   timeText: {
     fontSize: 11,
     color: "gray",
     marginTop: 5,
   },
+
   senderTimeText: {
     textAlign: "left",
     marginRight: 20,
   },
+
   reciverTimeText: {
     textAlign: "right",
     marginLeft: 20,
   },
+
   nameText: {
     fontSize: 11,
     color: "gray",
   },
+
   senderNameText: {
     textAlign: "right",
     marginLeft: 20,
   },
+
   reciverNameText: {
     textAlign: "left",
     marginRight: 20,
   },
+
+  inputContainer: {
+    flexDirection: "row-reverse",
+    padding: 10,
+    backgroundColor: "#fff",
+    borderTopWidth: 1,
+    borderTopColor: "#ddd",
+  },
+
   input: {
     flex: 1,
     padding: 10,
@@ -432,13 +413,7 @@ const styles = StyleSheet.create({
     marginHorizontal: 8,
     textAlign: "right",
   },
-  inputContainer: {
-    flexDirection: "row-reverse",
-    padding: 10,
-    backgroundColor: "#fff",
-    borderTopWidth: 1,
-    borderTopColor: "#ddd",
-  },
+
   sendButton: {
     backgroundColor: "black",
     paddingVertical: 10,
@@ -447,4 +422,17 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
   },
+
+  container: {
+    flex: 1,
+  },
+
+  background: {
+    flex: 1,
+    width: "100%",
+    height: "100%",
+    paddingTop: 20,
+  },
+
+ 
 });
