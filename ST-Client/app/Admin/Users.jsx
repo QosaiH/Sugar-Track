@@ -272,43 +272,24 @@ const styles = StyleSheet.create({
     marginBottom: 20,
     textAlign: "center",
   },
+ 
   searchInput: {
-    height: 40,
-    width: "90%",
-    textAlign: "right",
-    alignSelf: "center",
-    backgroundColor: "white",
-    borderRadius: 8,
-    paddingHorizontal: 10,
-    marginBottom: 10,
+    backgroundColor: "rgba(255,255,255,0.85)",
+    borderRadius: 10,
+    padding: 12,
     fontSize: 16,
-  },
-  /*
-  tabContainer: {
-    paddingTop: 30,
-    flexDirection: "row",
-    justifyContent: "space-around",
+    marginBottom: 10,
+    textAlign: "right",
+    color: "#333",
+    borderWidth: 1,
+    borderColor: "#ccc",
+    width: "90%",
     alignSelf: "center",
-    marginBottom: 20,
-    gap: 10,
+    height: 50,
   },
  
-  tabButton: {
-    paddingVertical: 10,
-    paddingHorizontal: 20,
-    borderRadius: 20,
-   
-  },
-  activeTab: {
-    backgroundColor: "rgba(0,0,0,0.3)",
-  },
-  tabText: {
-    color: "#fff",
-    fontWeight: "bold",
-    fontSize: 16,
-  },*/
   filterContainer: {
-    paddingTop: 30,
+    paddingTop: 20,
     flexDirection: "row",
     justifyContent: "space-around",
     alignSelf: "center",
@@ -321,7 +302,6 @@ const styles = StyleSheet.create({
   paddingHorizontal: 20,
   borderRadius: 20,
   backgroundColor: "rgba(255,255,255,0.2)",
-
   },
   activeFilterButton: {
     backgroundColor: "rgba(0,0,0,0.3)",
