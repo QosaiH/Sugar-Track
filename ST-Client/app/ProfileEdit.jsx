@@ -154,7 +154,7 @@ const ProfileEdit = () => {
   if (loading) {
     return (
       <SafeAreaView style={styles.container}>
-        <ActivityIndicator size="large" color="#ffffff" />
+        <ActivityIndicator size="large" color="black" />
       </SafeAreaView>
     );
   }
@@ -164,20 +164,21 @@ const ProfileEdit = () => {
       <ImageBackground
         style={styles.background}
         source={require("../Images/Vector.png")}
-        resizeMode="cover"
-      >
+        resizeMode="cover">
         <TouchableOpacity
           onPress={() => setIsEditing(!isEditing)}
-          style={styles.editIcon}
-        >
+          style={styles.editIcon}>
           <Ionicons name="create-outline" size={28} color="white" />
         </TouchableOpacity>
 
-        <TouchableOpacity onPress={pickImage} style={styles.profileImageContainer}>
+        <TouchableOpacity
+          onPress={pickImage}
+          style={styles.profileImageContainer}>
           <Image
             source={
               profileImage
-                ? profileImage.startsWith("data:") || profileImage.startsWith("http")
+                ? profileImage.startsWith("data:") ||
+                  profileImage.startsWith("http")
                   ? { uri: profileImage }
                   : { uri: `data:image/png;base64,${profileImage}` }
                 : require("../Images/placeholder.png")
@@ -189,12 +190,21 @@ const ProfileEdit = () => {
         <View style={styles.form}>
           {[
             { field: "name", icon: "person-outline", label: "שם מלא" },
-            { field: "userName", icon: "person-circle-outline", label: "שם משתמש" },
+            {
+              field: "userName",
+              icon: "person-circle-outline",
+              label: "שם משתמש",
+            },
             { field: "email", icon: "mail-outline", label: "אימייל" },
             { field: "password", icon: "lock-closed-outline", label: "סיסמה" },
           ].map(({ field, icon, label }) => (
             <View key={field} style={styles.inputRow}>
-              <Ionicons name={icon} size={20} color="white" style={styles.inputIcon} />
+              <Ionicons
+                name={icon}
+                size={20}
+                color="white"
+                style={styles.inputIcon}
+              />
               <TextInput
                 style={styles.input}
                 editable={isEditing}
@@ -254,7 +264,7 @@ const ProfileEdit = () => {
         {isEditing && (
           <TouchableOpacity style={styles.saveButton} onPress={handleSave}>
             {isSaving ? (
-              <ActivityIndicator size="large" color="#ffffff" />
+              <ActivityIndicator size="large" color="black" />
             ) : (
               <Text style={styles.saveText}>שמור</Text>
             )}

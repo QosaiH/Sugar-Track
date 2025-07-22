@@ -190,24 +190,25 @@ export default function ChatScreen() {
 
   return (
     <>
-     <View style={styles.header}>
-  <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
-    <AntDesign name="arrowleft" size={24} color="black" />
-  </TouchableOpacity>
+      <View style={styles.header}>
+        <TouchableOpacity
+          onPress={() => router.back()}
+          style={styles.backButton}>
+          <AntDesign name="arrowleft" size={24} color="black" />
+        </TouchableOpacity>
 
-  <TouchableOpacity
-    onPress={() => setShowMembers(true)}
-    style={styles.communityInfoContainer}
-  >
-    <Image
-      source={{ uri: `data:image/png;base64,${community.photo}` }}
-      style={styles.communityImage}
-    />
-    <Text numberOfLines={1} style={styles.communityName}>
-      {community.name}
-    </Text>
-  </TouchableOpacity>
-</View>
+        <TouchableOpacity
+          onPress={() => setShowMembers(true)}
+          style={styles.communityInfoContainer}>
+          <Image
+            source={{ uri: `data:image/png;base64,${community.photo}` }}
+            style={styles.communityImage}
+          />
+          <Text numberOfLines={1} style={styles.communityName}>
+            {community.name}
+          </Text>
+        </TouchableOpacity>
+      </View>
 
       <KeyboardAvoidingView
         style={styles.container}
@@ -233,14 +234,21 @@ export default function ChatScreen() {
                       onPress={() => {
                         setSelectedUser(userData);
                         setShowUserOptionsModal(true);
-                      }}><Image
-                source={
-                userData.profilePicture
-                 ? { uri:  userData.profilePicture.startsWith("data:image") ? userData.profilePicture : `data:image/png;base64,${ userData.profilePicture}` }
-                 : require("../Images/placeholder.png") 
-                      }
-                       style={styles.userImage}
-/> 
+                      }}>
+                      <Image
+                        source={
+                          userData.profilePicture
+                            ? {
+                                uri: userData.profilePicture.startsWith(
+                                  "data:image"
+                                )
+                                  ? userData.profilePicture
+                                  : `data:image/png;base64,${userData.profilePicture}`,
+                              }
+                            : require("../Images/placeholder.png")
+                        }
+                        style={styles.userImage}
+                      />
                     </TouchableOpacity>
                   )}
 
@@ -251,7 +259,9 @@ export default function ChatScreen() {
                     ]}>
                     <Text style={styles.nameText}>{item.senderName}</Text>
                     <Text style={styles.messageText}>{item.text}</Text>
-                    <Text style={styles.timeText}>{formatTimestamp(item.timestamp)}</Text>
+                    <Text style={styles.timeText}>
+                      {formatTimestamp(item.timestamp)}
+                    </Text>
                   </View>
                   {!isSender && (
                     <TouchableOpacity
@@ -263,14 +273,21 @@ export default function ChatScreen() {
                       <Text style={styles.reportButtonText}>!</Text>
                     </TouchableOpacity>
                   )}
-                  {isSender && userData && (<Image
-                 source={
-                 userData.profilePicture
-                ? { uri:  userData.profilePicture.startsWith("data:image") ? userData.profilePicture : `data:image/png;base64,${ userData.profilePicture}` }
-                : require("../Images/placeholder.png") // ברירת מחדל
-                }
-                style={styles.userImage}
-/>          
+                  {isSender && userData && (
+                    <Image
+                      source={
+                        userData.profilePicture
+                          ? {
+                              uri: userData.profilePicture.startsWith(
+                                "data:image"
+                              )
+                                ? userData.profilePicture
+                                : `data:image/png;base64,${userData.profilePicture}`,
+                            }
+                          : require("../Images/placeholder.png") // ברירת מחדל
+                      }
+                      style={styles.userImage}
+                    />
                   )}
                 </View>
               );
@@ -469,43 +486,43 @@ const styles = StyleSheet.create({
     paddingTop: 20,
   },
   header: {
-  flexDirection: "row",
-  alignItems: "center",
-  justifyContent: "space-between",
-  backgroundColor: "rgba(255,255,255,0.9)",
-  paddingHorizontal: 10,
-  paddingVertical: 12,
-  borderBottomWidth: 1,
-  borderBottomColor: "#e0e0e0",
-  zIndex: 100,
-},
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    backgroundColor: "rgba(255,255,255,0.9)",
+    paddingHorizontal: 10,
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: "#e0e0e0",
+    zIndex: 100,
+  },
 
-backButton: {
-  padding: 6,
-},
+  backButton: {
+    padding: 6,
+  },
 
-communityInfoContainer: {
-  flexDirection: "row-reverse",
-  alignItems: "center",
-  gap: 10,
-  maxWidth: "80%",
-},
+  communityInfoContainer: {
+    flexDirection: "row-reverse",
+    alignItems: "center",
+    gap: 10,
+    maxWidth: "80%",
+  },
 
-communityImage: {
-  width: 44,
-  height: 44,
-  borderRadius: 22,
-  marginLeft: 10,
-  borderWidth: 1,
-  borderColor: "#ccc",
-},
+  communityImage: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    marginLeft: 10,
+    borderWidth: 1,
+    borderColor: "#ccc",
+  },
 
-communityName: {
-  fontSize: 22,
-  fontWeight: "600",
-  color: "#000",
-  maxWidth: "65%",
-},
+  communityName: {
+    fontSize: 22,
+    fontWeight: "600",
+    color: "#000",
+    maxWidth: "65%",
+  },
 
   messageContainer: {
     flexDirection: "row",
@@ -526,45 +543,45 @@ communityName: {
     marginHorizontal: 6,
   },
   messageBubble: {
-  maxWidth: "70%",
-  paddingVertical: 10,
-  paddingHorizontal: 14,
-  borderRadius: 20,
-  shadowColor: "#000",
-  shadowOffset: { width: 0, height: 1 },
-  shadowOpacity: 0.1,
-  shadowRadius: 2,
-  elevation: 2,
-},
-senderBubble: {
-  backgroundColor: "#dcf8c6",
-  borderTopRightRadius: 0,
-},
-receiverBubble: {
-  backgroundColor: "#fff",
-  borderTopLeftRadius: 0,
-},
-nameText: {
-  fontSize: 12,
-  color: "#555",
-  marginBottom: 4,
-  fontWeight: "600",
-},
-messageText: {
-  fontSize: 16,
-  color: "#000",
-},
-timeText: {
-  fontSize: 10,
-  color: "#999",
-  marginTop: 6,
-  alignSelf: "flex-end",
-},
-messageContainer: {
-  flexDirection: "row",
-  marginVertical: 8,
-  alignItems: "flex-start",
-},
+    maxWidth: "70%",
+    paddingVertical: 10,
+    paddingHorizontal: 14,
+    borderRadius: 20,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+    elevation: 2,
+  },
+  senderBubble: {
+    backgroundColor: "#dcf8c6",
+    borderTopRightRadius: 0,
+  },
+  receiverBubble: {
+    backgroundColor: "#fff",
+    borderTopLeftRadius: 0,
+  },
+  nameText: {
+    fontSize: 12,
+    color: "#555",
+    marginBottom: 4,
+    fontWeight: "600",
+  },
+  messageText: {
+    fontSize: 16,
+    color: "#000",
+  },
+  timeText: {
+    fontSize: 10,
+    color: "#999",
+    marginTop: 6,
+    alignSelf: "flex-end",
+  },
+  messageContainer: {
+    flexDirection: "row",
+    marginVertical: 8,
+    alignItems: "flex-start",
+  },
 
   input: {
     flex: 1,
@@ -727,5 +744,8 @@ messageContainer: {
     height: 50,
     width: "100%",
     marginBottom: 10,
+    borderWidth: 1,
+    borderRadius: 5,
+    borderColor: "#ccc",
   },
 });

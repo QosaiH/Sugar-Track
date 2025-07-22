@@ -418,7 +418,7 @@ const styles = StyleSheet.create({
     width: "100%",
     height: "100%",
   },
- 
+
   tabContainer: {
     paddingTop: 30,
     flexDirection: "row",
@@ -427,13 +427,12 @@ const styles = StyleSheet.create({
     marginBottom: 20,
     gap: 10,
   },
- 
+
   tabButton: {
     paddingVertical: 10,
     backgroundColor: "rgba(255,255,255,0.2)",
     paddingHorizontal: 20,
     borderRadius: 20,
-   
   },
   activeTab: {
     backgroundColor: "rgba(0,0,0,0.3)",
@@ -469,12 +468,12 @@ const styles = StyleSheet.create({
   },
   listContainer: {
     width: "100%",
-    paddingBottom: 20,
+    paddingBottom: 80,
     paddingHorizontal: 8,
     backgroundColor: "transparent",
   },
   rowWrapper: {
-    marginBottom: 12,
+    marginBottom: 15,
     marginHorizontal: 8,
     borderRadius: 8,
     backgroundColor: "transparent",
