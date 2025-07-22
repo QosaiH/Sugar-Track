@@ -180,9 +180,13 @@ function PrivateChats({ userData }) {
                   }
                 >
                   <Image
-                    source={{
-                      uri: `data:image/png;base64,${other.profilePicture}`,
-                    }}
+                    source={
+                     other.profilePicture
+                     ? other.profilePicture.startsWith("data:image")
+                     ? { uri: other.profilePicture }
+                     : { uri: `data:image/png;base64,${other.profilePicture}` }
+                     : require("../Images/placeholder.png")
+                    }
                     style={styles.profileImage}
                   />
                   <Text style={styles.chatText}>{other.username}</Text>
