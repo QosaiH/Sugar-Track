@@ -29,7 +29,7 @@ const ProfileEdit = () => {
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [passwordMismatch, setPasswordMismatch] = useState(false);
-
+  const [isSaving, setIsSaving] = useState(false);
   useEffect(() => {
     const loadUser = async () => {
       try {
@@ -73,6 +73,8 @@ const ProfileEdit = () => {
       setPasswordMismatch(true);
       return;
     }
+
+    setIsSaving(true);
 
     try {
       if (!userData?.id || typeof userData.id !== "number") {
@@ -121,7 +123,6 @@ const ProfileEdit = () => {
         throw new Error("Failed to update user on server");
       }
 
-      // 🧹 Clear temp states and exit editing mode
       setNewPassword("");
       setConfirmPassword("");
       setPasswordMismatch(false);
@@ -131,6 +132,8 @@ const ProfileEdit = () => {
     } catch (error) {
       console.error("Update error:", error);
       Alert.alert("שגיאה", "שגיאה במהלך העדכון");
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -250,9 +253,14 @@ const ProfileEdit = () => {
 
         {isEditing && (
           <TouchableOpacity style={styles.saveButton} onPress={handleSave}>
-            <Text style={styles.saveText}>שמור</Text>
+            {isSaving ? (
+              <ActivityIndicator size="large" color="#ffffff" />
+            ) : (
+              <Text style={styles.saveText}>שמור</Text>
+            )}
           </TouchableOpacity>
         )}
+
         {!isEditing && (
           <TouchableOpacity onPress={() => navigation.goBack()}>
             <Text style={styles.backText}>חזור</Text>
@@ -319,7 +327,7 @@ const styles = StyleSheet.create({
     textAlign: "right",
   },
   saveButton: {
-    backgroundColor: "#007BFF",
+    backgroundColor: "white",
     padding: 14,
     borderRadius: 10,
     marginTop: 7,
@@ -327,7 +335,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   saveText: {
-    color: "white",
+    color: "black",
     fontSize: 18,
   },
   errorText: {
