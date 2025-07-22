@@ -55,7 +55,7 @@ const getPeriodStartDate = (selectedTab, offset) => {
   if (selectedTab === "חודשי") {
     const totalMonths = now.getMonth() + offset;
     const year = now.getFullYear() + Math.floor(totalMonths / 12);
-    const month = (totalMonths % 12 + 12) % 12; // תיקון מודולו למקרה שלילי
+    const month = ((totalMonths % 12) + 12) % 12; // תיקון מודולו למקרה שלילי
     return new Date(year, month, 1);
   }
 
@@ -92,7 +92,11 @@ const Statics = () => {
     if (selectedTab === "שנתי") {
       periodEnd = new Date(periodStart.getFullYear() + 1, 0, 1);
     } else if (selectedTab === "חודשי") {
-      periodEnd = new Date(periodStart.getFullYear(), periodStart.getMonth() + 1, 1);
+      periodEnd = new Date(
+        periodStart.getFullYear(),
+        periodStart.getMonth() + 1,
+        1
+      );
     } else if (selectedTab === "שבועי") {
       periodEnd = new Date(periodStart);
       periodEnd.setDate(periodStart.getDate() + 7);
@@ -108,7 +112,9 @@ const Statics = () => {
 
   const generateDataWithLabels = (filtered) => {
     if (selectedTab === "שנתי") {
-      const monthly = Array(12).fill().map(() => []);
+      const monthly = Array(12)
+        .fill()
+        .map(() => []);
       filtered.forEach((log) => {
         const date = new Date(log.logDate);
         monthly[date.getMonth()].push(log.logValue);
@@ -125,7 +131,9 @@ const Statics = () => {
     }
 
     if (selectedTab === "שבועי") {
-      const daily = Array(7).fill().map(() => []);
+      const daily = Array(7)
+        .fill()
+        .map(() => []);
       const startDate = getPeriodStartDate(selectedTab, periodOffset);
       filtered.forEach((log) => {
         const date = new Date(log.logDate);
@@ -193,13 +201,19 @@ const Statics = () => {
           (v) => v !== 0 && v !== null && v !== undefined
         );
 
-        setAverage(filteredValues.length ? mean(filteredValues).toFixed(1) : null);
+        setAverage(
+          filteredValues.length ? mean(filteredValues).toFixed(1) : null
+        );
         setStdDeviation(
-          filteredValues.length ? standardDeviation(filteredValues).toFixed(1) : null
+          filteredValues.length
+            ? standardDeviation(filteredValues).toFixed(1)
+            : null
         );
 
         if (filteredValues.length >= 2) {
-          const diff = filteredValues[filteredValues.length - 1] - filteredValues[filteredValues.length - 2];
+          const diff =
+            filteredValues[filteredValues.length - 1] -
+            filteredValues[filteredValues.length - 2];
           setTrend(diff > 0 ? "עלייה" : diff < 0 ? "ירידה" : "יציב");
         } else {
           setTrend(null);
@@ -227,15 +241,13 @@ const Statics = () => {
     <ImageBackground
       source={require("../Images/Vector.png")}
       style={styles.background}
-      resizeMode="cover"
-    >
+      resizeMode="cover">
       <TouchableOpacity
         onPress={() => {
           setShowChart(!showChart);
           setLogDetails(null);
         }}
-        style={styles.iconToggle}
-      >
+        style={styles.iconToggle}>
         <Text style={styles.iconText}>{showChart ? "📃" : "📈"}</Text>
       </TouchableOpacity>
 
@@ -251,14 +263,12 @@ const Statics = () => {
                 setSelectedTab(tab);
                 setLogDetails(null);
                 setPeriodOffset(0); // אפס את ה-offset כשמשנים טאב
-              }}
-            >
+              }}>
               <Text
                 style={[
                   styles.tabText,
                   selectedTab === tab && styles.activeTabText,
-                ]}
-              >
+                ]}>
                 {tab}
               </Text>
             </TouchableOpacity>
@@ -272,8 +282,7 @@ const Statics = () => {
             onPress={() => {
               setPeriodOffset((prev) => prev - 1);
               setLogDetails(null);
-            }}
-          >
+            }}>
             <Text style={styles.arrowText}>→</Text>
           </TouchableOpacity>
 
@@ -282,11 +291,15 @@ const Statics = () => {
               const start = getPeriodStartDate(selectedTab, periodOffset);
               if (selectedTab === "שנתי") return start.getFullYear();
               if (selectedTab === "חודשי")
-                return `${hebrewMonths[start.getMonth()]} ${start.getFullYear()}`;
+                return `${
+                  hebrewMonths[start.getMonth()]
+                } ${start.getFullYear()}`;
               if (selectedTab === "שבועי") {
                 const end = new Date(start);
                 end.setDate(start.getDate() + 6);
-                return `${start.getDate()}/${start.getMonth() + 1} - ${end.getDate()}/${end.getMonth() + 1}`;
+                return `${start.getDate()}/${
+                  start.getMonth() + 1
+                } - ${end.getDate()}/${end.getMonth() + 1}`;
               }
               return "";
             })()}
@@ -298,9 +311,12 @@ const Statics = () => {
               setPeriodOffset((prev) => Math.min(prev + 1, 0));
               setLogDetails(null);
             }}
-            disabled={periodOffset >= 0}
-          >
-            <Text style={[styles.arrowText, periodOffset >= 0 && styles.disabledArrow]}>
+            disabled={periodOffset >= 0}>
+            <Text
+              style={[
+                styles.arrowText,
+                periodOffset >= 0 && styles.disabledArrow,
+              ]}>
               ←
             </Text>
           </TouchableOpacity>
@@ -332,7 +348,9 @@ const Statics = () => {
                       const date = new Date(log.logDate);
                       setLogDetails({
                         value: log.logValue,
-                        date: `${date.getDate()}/${date.getMonth() + 1}/${date.getFullYear()}`,
+                        date: `${date.getDate()}/${
+                          date.getMonth() + 1
+                        }/${date.getFullYear()}`,
                         type: log.logType,
                         status: log.logStatus,
                       });
@@ -347,9 +365,12 @@ const Statics = () => {
                   return (
                     <View key={index} style={styles.logItem}>
                       <Text style={styles.logText}>
-                        תאריך: {date.getDate()}/{date.getMonth() + 1}/{date.getFullYear()}
+                        תאריך: {date.getDate()}/{date.getMonth() + 1}/
+                        {date.getFullYear()}
                       </Text>
-                      <Text style={styles.logText}>ערך: {log.logValue} mg/dL</Text>
+                      <Text style={styles.logText}>
+                        ערך: {log.logValue} mg/dL
+                      </Text>
                       <Text style={styles.logText}>סוג: {log.logType}</Text>
                       <Text style={styles.logText}>מצב: {log.logStatus}</Text>
                     </View>
@@ -361,8 +382,12 @@ const Statics = () => {
             {logDetails && showChart && (
               <View style={styles.tooltip}>
                 <Text style={styles.tooltipText}>תאריך: {logDetails.date}</Text>
-                <Text style={styles.tooltipText}>ערך: {logDetails.value} mg/dL</Text>
-                <Text style={styles.tooltipText}>סוג מדידה: {logDetails.type}</Text>
+                <Text style={styles.tooltipText}>
+                  ערך: {logDetails.value} mg/dL
+                </Text>
+                <Text style={styles.tooltipText}>
+                  סוג מדידה: {logDetails.type}
+                </Text>
                 <Text style={styles.tooltipText}>מצב: {logDetails.status}</Text>
               </View>
             )}
@@ -418,7 +443,6 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
   },
   periodNavigation: {
-
     flexDirection: "row-reverse",
     alignItems: "center",
     justifyContent: "center",
@@ -443,7 +467,7 @@ const styles = StyleSheet.create({
     textAlign: "center",
   },
   chartWrapper: {
-    width:"90",
+    width: "100%",
     borderRadius: 16,
     backgroundColor: "#fff",
     padding: 10,
