@@ -12,7 +12,7 @@ import {
   Button,
   TextInput,
 } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 import { BlurView } from "expo-blur";
 import { Checkbox } from "react-native-paper";
 
@@ -96,19 +96,20 @@ export default function Users() {
   };
 
   const filteredUsers = users.filter((user) => {
-    const matchesSearch = user.name.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesSearch = user.name
+      .toLowerCase()
+      .includes(searchTerm.toLowerCase());
     if (filterStatus === "all") return matchesSearch;
     if (filterStatus === "active") return user.isActive && matchesSearch;
     if (filterStatus === "inactive") return !user.isActive && matchesSearch;
   });
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaProvider style={styles.container}>
       <ImageBackground
         style={styles.background}
         source={require("../../Images/Vector.png")}
-        resizeMode="cover"
-      >
+        resizeMode="cover">
         <TextInput
           style={styles.searchInput}
           placeholder="...חיפוש משתמשים"
@@ -124,8 +125,7 @@ export default function Users() {
               styles.filterButton,
               filterStatus === "all" && styles.activeFilterButton,
             ]}
-            onPress={() => setFilterStatus("all")}
-          >
+            onPress={() => setFilterStatus("all")}>
             <Text style={styles.filterButtonText}>הכל</Text>
           </TouchableOpacity>
           <TouchableOpacity
@@ -133,8 +133,7 @@ export default function Users() {
               styles.filterButton,
               filterStatus === "active" && styles.activeFilterButton,
             ]}
-            onPress={() => setFilterStatus("active")}
-          >
+            onPress={() => setFilterStatus("active")}>
             <Text style={styles.filterButtonText}>פעילים</Text>
           </TouchableOpacity>
           <TouchableOpacity
@@ -142,8 +141,7 @@ export default function Users() {
               styles.filterButton,
               filterStatus === "inactive" && styles.activeFilterButton,
             ]}
-            onPress={() => setFilterStatus("inactive")}
-          >
+            onPress={() => setFilterStatus("inactive")}>
             <Text style={styles.filterButtonText}>לא פעילים</Text>
           </TouchableOpacity>
         </View>
@@ -166,8 +164,7 @@ export default function Users() {
               <View key={user.id}>
                 <TouchableOpacity
                   style={styles.tableRow}
-                  onPress={() => toggleUserDetails(user.id)}
-                >
+                  onPress={() => toggleUserDetails(user.id)}>
                   <View style={styles.tableCell}>
                     <Checkbox
                       status={user.isActive ? "checked" : "unchecked"}
@@ -187,8 +184,7 @@ export default function Users() {
                           borderRadius: 5,
                           paddingHorizontal: 5,
                         },
-                      ]}
-                    >
+                      ]}>
                       {user.isActive ? "פעיל" : "לא פעיל"}
                     </Text>
                   </View>
@@ -201,22 +197,28 @@ export default function Users() {
                   <View style={styles.userDetailsContainer}>
                     <View style={styles.userDetailsTextContainer}>
                       <Text style={styles.userDetailsText}>
-                        <Text style={styles.detailsLabel}>שם משתמש:</Text> {user.userName}
+                        <Text style={styles.detailsLabel}>שם משתמש:</Text>{" "}
+                        {user.userName}
                       </Text>
                       <Text style={styles.userDetailsText}>
-                        <Text style={styles.detailsLabel}>אימייל:</Text> {user.email}
+                        <Text style={styles.detailsLabel}>אימייל:</Text>{" "}
+                        {user.email}
                       </Text>
                       <Text style={styles.userDetailsText}>
-                        <Text style={styles.detailsLabel}>תפקיד:</Text> {user.role}
+                        <Text style={styles.detailsLabel}>תפקיד:</Text>{" "}
+                        {user.role}
                       </Text>
                       <Text style={styles.userDetailsText}>
-                        <Text style={styles.detailsLabel}>מין:</Text> {user.gender}
+                        <Text style={styles.detailsLabel}>מין:</Text>{" "}
+                        {user.gender}
                       </Text>
                       <Text style={styles.userDetailsText}>
-                        <Text style={styles.detailsLabel}>סוג סוכרת:</Text> {user.diabetesType}
+                        <Text style={styles.detailsLabel}>סוג סוכרת:</Text>{" "}
+                        {user.diabetesType}
                       </Text>
                       <Text style={styles.userDetailsText}>
-                        <Text style={styles.detailsLabel}>כמות מטבעות:</Text> {user.coins}
+                        <Text style={styles.detailsLabel}>כמות מטבעות:</Text>{" "}
+                        {user.coins}
                       </Text>
                     </View>
                   </View>
@@ -230,11 +232,12 @@ export default function Users() {
           visible={modalVisible}
           transparent={true}
           animationType="fade"
-          onRequestClose={() => setModalVisible(false)}
-        >
+          onRequestClose={() => setModalVisible(false)}>
           <View style={styles.modalBackground}>
             <View style={styles.modalContainer}>
-              <Text style={styles.modalTitle}>האם אתה בטוח לשנות את הסטטוס?</Text>
+              <Text style={styles.modalTitle}>
+                האם אתה בטוח לשנות את הסטטוס?
+              </Text>
               <View style={styles.modalButtons}>
                 <Button
                   title="בטל"
@@ -254,16 +257,17 @@ export default function Users() {
           </View>
         </Modal>
       </ImageBackground>
-    </SafeAreaView>
+    </SafeAreaProvider>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1 },
+  container: { flex: 1, height: "100%" },
   background: {
     flex: 1,
     width: "100%",
     paddingTop: 40,
+    height: "120%",
   },
   title: {
     color: "white",
@@ -272,7 +276,7 @@ const styles = StyleSheet.create({
     marginBottom: 20,
     textAlign: "center",
   },
- 
+
   searchInput: {
     backgroundColor: "rgba(255,255,255,0.85)",
     borderRadius: 10,
@@ -287,7 +291,7 @@ const styles = StyleSheet.create({
     alignSelf: "center",
     height: 50,
   },
- 
+
   filterContainer: {
     paddingTop: 20,
     flexDirection: "row",
@@ -298,17 +302,17 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   filterButton: {
-  paddingVertical: 10,
-  paddingHorizontal: 20,
-  borderRadius: 20,
-  backgroundColor: "rgba(255,255,255,0.2)",
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 20,
+    backgroundColor: "rgba(255,255,255,0.2)",
   },
   activeFilterButton: {
     backgroundColor: "rgba(0,0,0,0.3)",
   },
 
   filterButtonText: {
-     color: "#fff",
+    color: "#fff",
     fontWeight: "bold",
     fontSize: 16,
   },

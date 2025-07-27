@@ -43,21 +43,26 @@ export default function Menu({ isVisible, onClose }) {
     flex: 1,
     width: "100%",
     height: "100%",
-    marginTop: Platform.OS === "web" ? 138 : 130,
+    marginTop: Platform.OS === "web" ? 138 : 74,
   };
 
   return (
     <Modal transparent animationType="none" visible={isVisible}>
       <View style={styles.overlay}>
-        <TouchableOpacity style={styles.overlay} onPress={onClose} activeOpacity={1}>
-          <Animated.View style={[styles.drawer, { transform: [{ translateX: slideAnim }] }]}>
-            <ImageBackground source={require("../../Images/Vector.png")} style={backgroundStyle}>
+        <TouchableOpacity
+          style={styles.overlay}
+          onPress={onClose}
+          activeOpacity={1}>
+          <Animated.View
+            style={[styles.drawer, { transform: [{ translateX: slideAnim }] }]}>
+            <ImageBackground
+              source={require("../../Images/Vector.png")}
+              style={backgroundStyle}>
               <Text style={styles.title}>תפריט</Text>
 
               <TouchableOpacity
                 style={styles.menuItem}
-                onPress={() => handleNavigate("./quoteFix")}
-              >
+                onPress={() => handleNavigate("./quoteFix")}>
                 <Text style={styles.menuText}>עריכת ציטוט</Text>
               </TouchableOpacity>
 

@@ -1,14 +1,19 @@
 // app/index.js
-import React from "react";
-import Welcome from "./Welcome";
+/*
 import BottomNav from "./BottomNav";
 import { app, getAuth, db } from "../fireBaseConfig"; // Import your Firebase config
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { doc, collection, setDoc, getDoc } from "firebase/firestore"; // Ensure you import getDoc
 import { useEffect } from "react";
+*/
+import React from "react";
+import { LogBox } from "react-native";
+import Welcome from "./Welcome";
 
+LogBox.ignoreAllLogs(); // Ignore all logs for cleaner output
 export default function App() {
   //return <BottomNav />;
+
   return <Welcome />;
 }
 /*

@@ -125,38 +125,36 @@ export default function SignUp6() {
   };
 
   return (
-    <SafeAreaProvider>
-      <SafeAreaView style={styles.logo}>
-        <View style={styles.upperSide}>
-          <Image style={styles.image} source={require("../Images/logo.png")} />
-          <Text style={styles.buttonText}>
-            {loading ? "כבר מחברים אותך למערכת..." : "התרחשה שגיאה, נסה שוב"}
-          </Text>
-          {loading ? (
-            <ActivityIndicator
-              style={{ marginTop: 10 }}
-              size="large"
-              color="black"
-            />
-          ) : null}
-        </View>
+    <SafeAreaProvider style={styles.logo}>
+      <View style={styles.upperSide}>
+        <Image style={styles.image} source={require("../Images/logo.png")} />
+        <Text style={styles.buttonText}>
+          {loading ? "כבר מחברים אותך למערכת..." : "התרחשה שגיאה, נסה שוב"}
+        </Text>
+        {loading ? (
+          <ActivityIndicator
+            style={{ marginTop: 10 }}
+            size="large"
+            color="black"
+          />
+        ) : null}
+      </View>
 
-        <ImageBackground
-          style={styles.background}
-          source={require("../Images/Vector.png")}
-          resizeMode="cover">
-          {!loading && (
-            <View style={styles.rememberMeContainer}>
-              <Link href="/BottomNav">
-                <Text style={styles.color}>הבא</Text>
-              </Link>
-              <Link href="/SignUp5">
-                <Text style={styles.color}>הקודם</Text>
-              </Link>
-            </View>
-          )}
-        </ImageBackground>
-      </SafeAreaView>
+      <ImageBackground
+        style={styles.background}
+        source={require("../Images/Vector.png")}
+        resizeMode="cover">
+        {!loading && (
+          <View style={styles.rememberMeContainer}>
+            <Link href="/BottomNav">
+              <Text style={styles.color}>הבא</Text>
+            </Link>
+            <Link href="/SignUp5">
+              <Text style={styles.color}>הקודם</Text>
+            </Link>
+          </View>
+        )}
+      </ImageBackground>
     </SafeAreaProvider>
   );
 }
@@ -176,10 +174,10 @@ const styles = StyleSheet.create({
   image: {
     width: 170,
     height: 170,
-    marginTop: 5,
+    marginTop: 50,
   },
   background: {
-    height: "100%",
+    height: "125%",
     width: "100%",
     flex: 1,
     alignItems: "center",

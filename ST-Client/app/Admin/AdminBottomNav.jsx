@@ -1,4 +1,4 @@
-import { View, StyleSheet } from "react-native";
+import { View, StyleSheet, Platform } from "react-native";
 import React, { useState, useEffect } from "react";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
@@ -86,7 +86,8 @@ export default function AdminBottomNav() {
               elevation: 0,
               shadowOpacity: 0,
               width: "100%",
-              height: 60,
+              // height: 60,
+              marginBottom: Platform.OS === "ios" ? 30 : 0,
               zIndex: 1,
             },
             tabBarActiveTintColor: "white",

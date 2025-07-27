@@ -105,94 +105,92 @@ export default function Home({ userData }) {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
-      <ImageBackground
-        style={styles.background}
-        source={require("../Images/Vector.png")}
-        resizeMode="cover"
-      >
-        {/* Bell Icon */}
-        <Animated.View
-          style={[styles.bellButton, { transform: [{ scale: bellScale }] }]}
-        >
-          <TouchableOpacity onPress={handleBellPress} activeOpacity={0.7}>
-            <Ionicons name="notifications-outline" size={32} color="white" />
-            <View style={styles.bellBadge} />
+    <ImageBackground
+      style={styles.background}
+      source={require("../Images/Vector.png")}
+      resizeMode="cover">
+      {/* Bell Icon */}
+      <Animated.View
+        style={[styles.bellButton, { transform: [{ scale: bellScale }] }]}>
+        <TouchableOpacity onPress={handleBellPress} activeOpacity={0.7}>
+          <Ionicons name="notifications-outline" size={32} color="white" />
+          <View style={styles.bellBadge} />
+        </TouchableOpacity>
+      </Animated.View>
+
+      {/* Profile Section */}
+      <View style={styles.topSection}>
+        <Image
+          style={styles.profileImage}
+          source={
+            userdata?.profilePicture
+              ? userdata.profilePicture.startsWith("data:image")
+                ? { uri: userdata.profilePicture } // Base64 עם prefix
+                : userdata.profilePicture.length > 100
+                ? { uri: `data:image/png;base64,${userdata.profilePicture}` }
+                : { uri: userdata.profilePicture } // כנראה URL תקין
+              : require("../Images/placeholder.png") // ברירת מחדל
+          }
+        />
+
+        <Text style={styles.greetingText}>
+          שלום {userdata?.name || userdata?.Name || userdata?.Firstname}!
+        </Text>
+
+        {/* ברכה למשתמש מוביל */}
+        {userdata?.role === "משתמש מוביל" && (
+          <Text style={styles.leaderGreeting}>
+            כל הכבוד על ההתקדמות! 👏{"\n"} עכשיו אתה/את חלק מהמשתמשים המובילים
+            שלנו
+          </Text>
+        )}
+      </View>
+
+      {/* Main Button */}
+      <View style={styles.buttonContainer}>
+        <Animated.View style={{ transform: [{ scale: scaleValue }] }}>
+          <TouchableOpacity
+            activeOpacity={0.94}
+            onPressIn={handlePressIn}
+            onPressOut={handlePressOut}
+            onPress={handleLogPress}
+            style={styles.addButton}>
+            <Text style={styles.addButtonText}>הזן ערך יומי</Text>
+            <Animated.View
+              style={[
+                styles.plusIconContainer,
+                { transform: [{ scale: plusScale }] },
+              ]}>
+              <View style={styles.plusIconBackground}>
+                <Ionicons name="add" size={28} color="black" />
+              </View>
+            </Animated.View>
           </TouchableOpacity>
         </Animated.View>
+      </View>
 
-        {/* Profile Section */}
-        <View style={styles.topSection}>
-          <Image
-            style={styles.profileImage}
-            source={
-              userdata?.profilePicture
-                ? userdata.profilePicture.startsWith("data:image")
-                  ? { uri: userdata.profilePicture } // Base64 עם prefix
-                  : userdata.profilePicture.length > 100
-                  ? { uri: `data:image/png;base64,${userdata.profilePicture}` }
-                  : { uri: userdata.profilePicture } // כנראה URL תקין
-                : require("../Images/placeholder.png") // ברירת מחדל
-            }
-          />
-
-          <Text style={styles.greetingText}>
-            שלום {userdata?.name || userdata?.Name || userdata?.Firstname}!
-          </Text>
-
-          {/* ברכה למשתמש מוביל */}
-          {userdata?.role === "משתמש מוביל" && (
-            <Text style={styles.leaderGreeting}>
-              כל הכבוד על ההתקדמות! 👏{"\n"} עכשיו אתה/את חלק מהמשתמשים
-              המובילים שלנו
-            </Text>
-          )}
-        </View>
-
-        {/* Main Button */}
-        <View style={styles.buttonContainer}>
-          <Animated.View style={{ transform: [{ scale: scaleValue }] }}>
-            <TouchableOpacity
-              activeOpacity={0.94}
-              onPressIn={handlePressIn}
-              onPressOut={handlePressOut}
-              onPress={handleLogPress}
-              style={styles.addButton}
-            >
-              <Text style={styles.addButtonText}>הזן ערך יומי</Text>
-              <Animated.View
-                style={[styles.plusIconContainer, { transform: [{ scale: plusScale }] }]}
-              >
-                <View style={styles.plusIconBackground}>
-                  <Ionicons name="add" size={28} color="black" />
-                </View>
-              </Animated.View>
-            </TouchableOpacity>
-          </Animated.View>
-        </View>
-
-        {/* Quote */}
-        <View style={styles.quoteContainer}>
-          <Text style={styles.quoteText}>"{quote.text}"</Text>
-          <Text style={styles.quoteAuthor}>{quote.author}</Text>
-        </View>
-      </ImageBackground>
-    </SafeAreaView>
+      {/* Quote */}
+      <View style={styles.quoteContainer}>
+        <Text style={styles.quoteText}>"{quote.text}"</Text>
+        <Text style={styles.quoteAuthor}>{quote.author}</Text>
+      </View>
+    </ImageBackground>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    marginTop: Platform.OS === "ios" ? 0 : 0,
+
+    marginBottom: Platform.OS === "ios" ? 0 : 0,
   },
   background: {
     flex: 1,
     width: "100%",
-    height: "100%",
+    height: "120%",
     justifyContent: "space-around",
     alignItems: "center",
-    marginBottom: Platform.OS === "ios" ? -30 : 0,
+    marginBottom: Platform.OS === "ios" ? -30 : -30,
   },
   bellButton: {
     position: "absolute",

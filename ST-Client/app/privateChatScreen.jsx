@@ -11,6 +11,7 @@ import {
   Platform,
   Alert,
   ImageBackground,
+  SafeAreaView,
 } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { db } from "../fireBaseConfig";
@@ -26,6 +27,8 @@ import {
 } from "firebase/firestore";
 import { AntDesign } from "@expo/vector-icons";
 import { GoogleGenAI } from "@google/genai";
+import { SafeAreaProvider } from "react-native-safe-area-context";
+
 const API_KEY = "AIzaSyAonlahcFhubsUWuy1dRrsWcD9ERZBhPDY";
 
 export default function PrivateChatScreen() {
@@ -135,32 +138,38 @@ export default function PrivateChatScreen() {
     });
   };
   return (
-    <>
+    <SafeAreaProvider style={{ flex: 1, width: "100%", marginTop: 35 }}>
       <View style={styles.header}>
-  <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
-    <AntDesign name="arrowleft" size={24} color="black" />
-  </TouchableOpacity>
+        <TouchableOpacity
+          onPress={() => router.back()}
+          style={styles.backButton}>
+          <AntDesign name="arrowleft" size={24} color="black" />
+        </TouchableOpacity>
 
-  <View style={styles.userInfo}>
-    <Image
-   
-  source={
-    otherUser.profilePicture
-      ? otherUser.profilePicture.startsWith("data:image")
-        ? { uri: otherUser.profilePicture }
-        : { uri: `data:image/png;base64,${otherUser.profilePicture}` }
-      : require("../Images/placeholder.png")
-  }
-  style={styles.avatar}
-/>
+        <View style={styles.userInfo}>
+          <Image
+            source={
+              otherUser.profilePicture
+                ? otherUser.profilePicture.startsWith("data:image")
+                  ? { uri: otherUser.profilePicture }
+                  : {
+                      uri: `data:image/png;base64,${otherUser.profilePicture}`,
+                    }
+                : require("../Images/placeholder.png")
+            }
+            style={styles.avatar}
+          />
 
-    <Text style={styles.username}>{otherUser.username || otherUser.userName}</Text>
-  </View>
-</View>
+          <Text style={styles.username}>
+            {otherUser.username || otherUser.userName}
+          </Text>
+        </View>
+      </View>
 
       <KeyboardAvoidingView
-        style={{ flex: 1, backgroundColor: "#fff" }}
-        behavior={Platform.OS === "ios" ? "padding" : undefined}>
+        style={{ flex: 1, paddingBottom: 35 }}
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        keyboardVerticalOffset={Platform.OS === "ios" ? 40 : 0}>
         <ImageBackground
           style={styles.background}
           source={require("../Images/Vector.png")}
@@ -177,17 +186,18 @@ export default function PrivateChatScreen() {
                     isSender ? styles.rightAlign : styles.leftAlign,
                   ]}>
                   {!isSender && (
-                   <Image
-  source={
-    otherUser.profilePicture
-      ? otherUser.profilePicture.startsWith("data:image")
-        ? { uri: otherUser.profilePicture }
-        : { uri: `data:image/png;base64,${otherUser.profilePicture}` }
-      : require("../Images/placeholder.png")
-  }
-  style={styles.avatar}
-/>
-
+                    <Image
+                      source={
+                        otherUser.profilePicture
+                          ? otherUser.profilePicture.startsWith("data:image")
+                            ? { uri: otherUser.profilePicture }
+                            : {
+                                uri: `data:image/png;base64,${otherUser.profilePicture}`,
+                              }
+                          : require("../Images/placeholder.png")
+                      }
+                      style={styles.avatar}
+                    />
                   )}
 
                   <View
@@ -227,17 +237,18 @@ export default function PrivateChatScreen() {
                     </Text>
                   </View>
                   {isSender && (
-                   <Image
-  source={
-    user.profilePicture
-      ? user.profilePicture.startsWith("data:image")
-        ? { uri: user.profilePicture }
-        : { uri: `data:image/png;base64,${user.profilePicture}` }
-      : require("../Images/placeholder.png")
-  }
-  style={styles.avatar}
-/>
-
+                    <Image
+                      source={
+                        user.profilePicture
+                          ? user.profilePicture.startsWith("data:image")
+                            ? { uri: user.profilePicture }
+                            : {
+                                uri: `data:image/png;base64,${user.profilePicture}`,
+                              }
+                          : require("../Images/placeholder.png")
+                      }
+                      style={styles.avatar}
+                    />
                   )}
                 </View>
               );
@@ -259,7 +270,7 @@ export default function PrivateChatScreen() {
           </View>
         </ImageBackground>
       </KeyboardAvoidingView>
-    </>
+    </SafeAreaProvider>
   );
 }
 function getProfilePictureUri(profilePicture) {
@@ -430,9 +441,7 @@ const styles = StyleSheet.create({
   background: {
     flex: 1,
     width: "100%",
-    height: "100%",
+    height: "120%",
     paddingTop: 20,
   },
-
- 
 });

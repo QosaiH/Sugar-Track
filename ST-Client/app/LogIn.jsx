@@ -9,6 +9,7 @@ import {
   Alert,
   ActivityIndicator,
   Platform,
+  KeyboardAvoidingView,
 } from "react-native";
 import { SafeAreaView, SafeAreaProvider } from "react-native-safe-area-context";
 import { Checkbox } from "react-native-paper";
@@ -125,17 +126,21 @@ export default function LogIn() {
   };
 
   return (
-    <SafeAreaProvider>
-      <SafeAreaView style={styles.logo}>
+    <SafeAreaProvider style={styles.logo}>
+      <KeyboardAvoidingView
+        style={{ flex: 1, width: "100%" }}
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        keyboardVerticalOffset={Platform.OS === "ios" ? 40 : 0}>
         <View style={styles.upperSide}>
           <Image
-            style={{ width: 120, height: 120, marginTop: 5 }}
+            style={{ width: 170, height: 170, marginTop: 50 }}
             source={require("../Images/logo.png")}
           />
+          {/*
           <Image
-            style={{ width: 100, height: 100, marginTop: 5 }}
+            style={{ width: 80, height: 80, marginTop: 10 }}
             source={require("../Images/LogIn.png")}
-          />
+          />*/}
         </View>
         <ImageBackground
           style={styles.background}
@@ -146,6 +151,7 @@ export default function LogIn() {
             placeholder="אימייל"
             value={email}
             onChangeText={setEmail}
+            keyboardType="email-address"
             editable={!loading} // Disable input when loading
           />
           <TextInput
@@ -188,7 +194,7 @@ export default function LogIn() {
             </Link>
           </View>
         </ImageBackground>
-      </SafeAreaView>
+      </KeyboardAvoidingView>
     </SafeAreaProvider>
   );
 }
@@ -204,7 +210,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     backgroundColor: "white",
     width: "100%",
-    height: "40%",
+    height: "45%",
   },
   background: {
     height: "125%",
@@ -213,6 +219,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     flexDirection: "column",
     justifyContent: "center",
+    gap: 2,
   },
   input: {
     height: 40,
@@ -221,6 +228,7 @@ const styles = StyleSheet.create({
     width: 300,
     backgroundColor: "white",
     textAlign: "right",
+    marginTop: 25,
   },
   button: {
     backgroundColor: "white",

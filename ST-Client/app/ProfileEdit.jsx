@@ -286,12 +286,12 @@ export default ProfileEdit;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    marginTop: Platform.OS === "ios" ? -70 : 0,
+    marginTop: Platform.OS === "ios" ? -70 : -32,
   },
   background: {
     flex: 1,
     width: "100%",
-    height: "100%",
+    height: "120%",
     justifyContent: "space-around",
     alignItems: "center",
     marginBottom: Platform.OS === "ios" ? -30 : 0,

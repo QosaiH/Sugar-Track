@@ -10,7 +10,7 @@ import {
   Pressable,
   TextInput,
 } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 import { db } from "../../fireBaseConfig";
 import { collection, onSnapshot, deleteDoc, doc } from "firebase/firestore";
 
@@ -91,7 +91,7 @@ export default function AdminChats() {
     return (
       <View style={styles.modalContent}>
         <Text style={styles.modalTitle}>
-          {selectedType === "community" ? "קהילת" : "שיחה בין"}: {" "}
+          {selectedType === "community" ? "קהילת" : "שיחה בין"}:{" "}
           {selectedChat?.name || selectedChat?.id}
         </Text>
         <FlatList
@@ -139,14 +139,16 @@ export default function AdminChats() {
     </View>
   );
 
-  const filteredChats = (showType === "community" ? communityChats : privateChats).filter(
+  const filteredChats = (
+    showType === "community" ? communityChats : privateChats
+  ).filter(
     (chat) =>
       chat.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       chat.id?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaProvider style={styles.container}>
       <ImageBackground
         style={styles.background}
         source={require("../../Images/Vector.png")}
@@ -157,8 +159,7 @@ export default function AdminChats() {
               styles.toggleButton,
               showType === "private" && styles.toggleButtonActive,
             ]}
-            onPress={() => setShowType("private")}
-          >
+            onPress={() => setShowType("private")}>
             <Text style={styles.toggleButtonText}>צ'אטים פרטיים </Text>
           </TouchableOpacity>
           <TouchableOpacity
@@ -166,8 +167,7 @@ export default function AdminChats() {
               styles.toggleButton,
               showType === "community" && styles.toggleButtonActive,
             ]}
-            onPress={() => setShowType("community")}
-          >
+            onPress={() => setShowType("community")}>
             <Text style={styles.toggleButtonText}>קהילות</Text>
           </TouchableOpacity>
         </View>
@@ -229,7 +229,7 @@ export default function AdminChats() {
           </View>
         </Modal>
       </ImageBackground>
-    </SafeAreaView>
+    </SafeAreaProvider>
   );
 }
 
@@ -240,9 +240,11 @@ const styles = StyleSheet.create({
     justifyContent: "flex-start",
     alignItems: "center",
     paddingTop: 20,
+    height: "120%",
   },
   container: {
     flex: 1,
+    height: "100%",
   },
   toggleContainer: {
     flexDirection: "row",
@@ -264,7 +266,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
   searchInput: {
-     backgroundColor: "rgba(255,255,255,0.85)",
+    backgroundColor: "rgba(255,255,255,0.85)",
     borderRadius: 10,
     padding: 12,
     fontSize: 16,
@@ -277,7 +279,7 @@ const styles = StyleSheet.create({
     alignSelf: "center",
     height: 50,
   },
-  
+
   chatList: {
     width: "90%",
   },

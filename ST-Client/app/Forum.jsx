@@ -215,7 +215,7 @@ export default function Forum({ userData }) {
     }));
   };
   return (
-    <SafeAreaView style={styles.container}>
+    <>
       {/* Modal for Creating New Post */}
       {modalVisible && (
         <ImageBackground
@@ -432,7 +432,7 @@ export default function Forum({ userData }) {
           </ScrollView>
         </KeyboardAvoidingView>
       </ImageBackground>
-    </SafeAreaView>
+    </>
   );
 }
 
@@ -444,7 +444,7 @@ const styles = StyleSheet.create({
   background: {
     flex: 1,
     width: "100%",
-    height: "100%",
+    height: "120%",
     justifyContent: "space-around",
     alignItems: "center",
     marginBottom: Platform.OS === "ios" ? -30 : 0,

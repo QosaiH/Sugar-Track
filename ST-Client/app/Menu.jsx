@@ -41,7 +41,7 @@ export default function Menu({ isVisible, onClose }) {
     marginTop: Platform.select({
       ios: 170,
       web: 138,
-      android: 130,
+      android: 74,
     }),
   };
 
@@ -51,15 +51,12 @@ export default function Menu({ isVisible, onClose }) {
         <TouchableOpacity
           style={styles.overlay}
           onPress={onClose}
-          activeOpacity={1}
-        >
+          activeOpacity={1}>
           <Animated.View
-            style={[styles.drawer, { transform: [{ translateX: slideAnim }] }]}
-          >
+            style={[styles.drawer, { transform: [{ translateX: slideAnim }] }]}>
             <ImageBackground
               source={require("../Images/Vector.png")}
-              style={backgroundStyle}
-            >
+              style={backgroundStyle}>
               <Text style={styles.title}>תפריט</Text>
 
               <TouchableOpacity style={styles.menuItem} onPress={onClose}>

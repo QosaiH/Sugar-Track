@@ -11,6 +11,7 @@ import {
   Modal,
   KeyboardAvoidingView,
   Platform,
+  SafeAreaView,
 } from "react-native";
 import { db } from "../fireBaseConfig";
 import {
@@ -26,6 +27,7 @@ import { useLocalSearchParams, useRouter } from "expo-router";
 import { AntDesign } from "@expo/vector-icons";
 import { GoogleGenAI } from "@google/genai";
 import { Picker } from "@react-native-picker/picker"; // הוספת ה-Picker
+import { SafeAreaProvider } from "react-native-safe-area-context";
 
 const API_KEY = "AIzaSyAonlahcFhubsUWuy1dRrsWcD9ERZBhPDY";
 
@@ -189,7 +191,7 @@ export default function ChatScreen() {
   };
 
   return (
-    <>
+    <SafeAreaProvider style={{ flex: 1, width: "100%", marginTop: 35 }}>
       <View style={styles.header}>
         <TouchableOpacity
           onPress={() => router.back()}
@@ -211,8 +213,9 @@ export default function ChatScreen() {
       </View>
 
       <KeyboardAvoidingView
-        style={styles.container}
-        behavior={Platform.OS === "ios" ? "padding" : undefined}>
+        style={{ flex: 1, paddingBottom: 35 }}
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        keyboardVerticalOffset={Platform.OS === "ios" ? 40 : 0}>
         <ImageBackground
           style={styles.background}
           source={require("../Images/Vector.png")}
@@ -434,7 +437,7 @@ export default function ChatScreen() {
           </View>
         </Modal>
       )}
-    </>
+    </SafeAreaProvider>
   );
 }
 function formatTimestamp(timestamp) {
@@ -476,13 +479,10 @@ function formatTimestamp(timestamp) {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
   background: {
     flex: 1,
     width: "100%",
-    height: "100%",
+    height: "120%",
     paddingTop: 20,
   },
   header: {
@@ -490,7 +490,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "space-between",
     backgroundColor: "rgba(255,255,255,0.9)",
-    paddingHorizontal: 10,
+    paddingHorizontal: 20,
     paddingVertical: 12,
     borderBottomWidth: 1,
     borderBottomColor: "#e0e0e0",
@@ -518,7 +518,7 @@ const styles = StyleSheet.create({
   },
 
   communityName: {
-    fontSize: 22,
+    fontSize: 20,
     fontWeight: "600",
     color: "#000",
     maxWidth: "65%",

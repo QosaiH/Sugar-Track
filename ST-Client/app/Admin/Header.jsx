@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Text, View, Image, StyleSheet } from "react-native";
+import { Text, View, Image, StyleSheet, Platform } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 import AsyncStorage from "@react-native-async-storage/async-storage"; // יבוא AsyncStorage
@@ -47,6 +47,7 @@ const styles = StyleSheet.create({
     height: 75,
     alignItems: "center",
     backgroundColor: "white",
+    marginBottom: Platform.OS === "ios" ? -35 : -48,
   },
   points: {
     color: "black",

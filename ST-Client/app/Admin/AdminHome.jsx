@@ -9,7 +9,7 @@ import {
   TextInput,
   TouchableOpacity,
 } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 import { db } from "../../fireBaseConfig";
 import { collection, onSnapshot, getDocs } from "firebase/firestore";
 
@@ -17,7 +17,7 @@ export default function AdminHome() {
   const [activeTab, setActiveTab] = useState("alerts");
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaProvider style={styles.container}>
       <ImageBackground
         style={styles.background}
         source={require("../../Images/Vector.png")}
@@ -46,7 +46,7 @@ export default function AdminHome() {
           {activeTab === "alerts" ? <Alerts /> : <Reports />}
         </View>
       </ImageBackground>
-    </SafeAreaView>
+    </SafeAreaProvider>
   );
 }
 
@@ -204,47 +204,42 @@ export function Reports() {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
-      <ImageBackground
-        style={styles.background}
-        source={require("../../Images/Vector.png")}
-        resizeMode="cover">
-        <Text style={styles.header}>ניהול דיווחים</Text>
+    <View style={styles.container}>
+      <Text style={styles.header}>ניהול דיווחים</Text>
 
-        <TextInput
-          style={styles.searchInput}
-          placeholder="חיפוש לפי מזהה, שם או תוכן"
-          placeholderTextColor="#aaa"
-          value={searchQuery}
-          onChangeText={handleSearch}
+      <TextInput
+        style={styles.searchInput}
+        placeholder="חיפוש לפי מזהה, שם או תוכן"
+        placeholderTextColor="#aaa"
+        value={searchQuery}
+        onChangeText={handleSearch}
+      />
+
+      {loading ? (
+        <ActivityIndicator
+          size="large"
+          color="#fff"
+          style={{ marginTop: 30 }}
         />
-
-        {loading ? (
-          <ActivityIndicator
-            size="large"
-            color="#fff"
-            style={{ marginTop: 30 }}
+      ) : filteredReports.length === 0 ? (
+        <Text style={styles.noReports}>אין דיווחים התואמים לחיפוש.</Text>
+      ) : (
+        <>
+          <View style={styles.headerRow}>
+            <Text style={styles.headerCell}>מזהה ושם מדווח</Text>
+            <Text style={styles.headerCell}>מזהה ושם קהילה</Text>
+            <Text style={styles.headerCell}>פרטים</Text>
+          </View>
+          <FlatList
+            data={filteredReports}
+            renderItem={renderReportItem}
+            keyExtractor={(item) => item.id}
+            contentContainerStyle={styles.listContainer}
+            showsVerticalScrollIndicator={false}
           />
-        ) : filteredReports.length === 0 ? (
-          <Text style={styles.noReports}>אין דיווחים התואמים לחיפוש.</Text>
-        ) : (
-          <>
-            <View style={styles.headerRow}>
-              <Text style={styles.headerCell}>מזהה ושם מדווח</Text>
-              <Text style={styles.headerCell}>מזהה ושם קהילה</Text>
-              <Text style={styles.headerCell}>פרטים</Text>
-            </View>
-            <FlatList
-              data={filteredReports}
-              renderItem={renderReportItem}
-              keyExtractor={(item) => item.id}
-              contentContainerStyle={styles.listContainer}
-              showsVerticalScrollIndicator={false}
-            />
-          </>
-        )}
-      </ImageBackground>
-    </SafeAreaView>
+        </>
+      )}
+    </View>
   );
 }
 export function Alerts() {
@@ -370,46 +365,41 @@ export function Alerts() {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
-      <ImageBackground
-        style={styles.background}
-        source={require("../../Images/Vector.png")}
-        resizeMode="cover">
-        <Text style={styles.header}>ניהול התראות חריגות</Text>
+    <View style={styles.container}>
+      <Text style={styles.header}>ניהול התראות חריגות</Text>
 
-        <TextInput
-          style={styles.searchInput}
-          placeholder="חיפוש לפי מזהה, שם או תוכן"
-          placeholderTextColor="#aaa"
-          value={searchQuery}
-          onChangeText={handleSearch}
+      <TextInput
+        style={styles.searchInput}
+        placeholder="חיפוש לפי מזהה, שם או תוכן"
+        placeholderTextColor="#aaa"
+        value={searchQuery}
+        onChangeText={handleSearch}
+      />
+
+      {loading ? (
+        <ActivityIndicator
+          size="large"
+          color="#fff"
+          style={{ marginTop: 30 }}
         />
-
-        {loading ? (
-          <ActivityIndicator
-            size="large"
-            color="#fff"
-            style={{ marginTop: 30 }}
+      ) : filteredReports.length === 0 ? (
+        <Text style={styles.noReports}>אין דיווחים התואמים לחיפוש.</Text>
+      ) : (
+        <>
+          <View style={styles.headerRow}>
+            <Text style={styles.headerCell}>מזהה ושם משתמש</Text>
+            <Text style={styles.headerCell}>פרטים</Text>
+          </View>
+          <FlatList
+            data={filteredReports}
+            renderItem={renderReportItem}
+            keyExtractor={(item) => item.id}
+            contentContainerStyle={styles.listContainer}
+            showsVerticalScrollIndicator={false}
           />
-        ) : filteredReports.length === 0 ? (
-          <Text style={styles.noReports}>אין דיווחים התואמים לחיפוש.</Text>
-        ) : (
-          <>
-            <View style={styles.headerRow}>
-              <Text style={styles.headerCell}>מזהה ושם משתמש</Text>
-              <Text style={styles.headerCell}>פרטים</Text>
-            </View>
-            <FlatList
-              data={filteredReports}
-              renderItem={renderReportItem}
-              keyExtractor={(item) => item.id}
-              contentContainerStyle={styles.listContainer}
-              showsVerticalScrollIndicator={false}
-            />
-          </>
-        )}
-      </ImageBackground>
-    </SafeAreaView>
+        </>
+      )}
+    </View>
   );
 }
 const styles = StyleSheet.create({

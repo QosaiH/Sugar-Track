@@ -22,48 +22,48 @@ import {
   arrayUnion,
 } from "firebase/firestore";
 import { useRouter } from "expo-router";
+import { SafeAreaProvider } from "react-native-safe-area-context";
 
 export default function Chat({ userData }) {
   const [activeTab, setActiveTab] = useState("private");
 
   return (
-    <SafeAreaView style={styles.container}>
-      <ImageBackground
-        style={styles.background}
-        source={require("../Images/Vector.png")}
-        resizeMode="cover"
-      >
-        <View style={styles.tabContainer}>
-          <TouchableOpacity
-            style={[
-              styles.tabButton,
-              activeTab === "private" && styles.activeTab,
-            ]}
-            onPress={() => setActiveTab("private")}
-          >
-            <Text style={styles.tabText}>צ'אט פרטי</Text>
-          </TouchableOpacity>
+    <SafeAreaProvider>
+      <SafeAreaView style={styles.container}>
+        <ImageBackground
+          style={styles.background}
+          source={require("../Images/Vector.png")}
+          resizeMode="cover">
+          <View style={styles.tabContainer}>
+            <TouchableOpacity
+              style={[
+                styles.tabButton,
+                activeTab === "private" && styles.activeTab,
+              ]}
+              onPress={() => setActiveTab("private")}>
+              <Text style={styles.tabText}>צ'אט פרטי</Text>
+            </TouchableOpacity>
 
-          <TouchableOpacity
-            style={[
-              styles.tabButton,
-              activeTab === "communities" && styles.activeTab,
-            ]}
-            onPress={() => setActiveTab("communities")}
-          >
-            <Text style={styles.tabText}>קהילות</Text>
-          </TouchableOpacity>
-        </View>
+            <TouchableOpacity
+              style={[
+                styles.tabButton,
+                activeTab === "communities" && styles.activeTab,
+              ]}
+              onPress={() => setActiveTab("communities")}>
+              <Text style={styles.tabText}>קהילות</Text>
+            </TouchableOpacity>
+          </View>
 
-        <View style={styles.contentContainer}>
-          {activeTab === "private" ? (
-            <PrivateChats userData={userData} />
-          ) : (
-            <Communities userData={userData} />
-          )}
-        </View>
-      </ImageBackground>
-    </SafeAreaView>
+          <View style={styles.contentContainer}>
+            {activeTab === "private" ? (
+              <PrivateChats userData={userData} />
+            ) : (
+              <Communities userData={userData} />
+            )}
+          </View>
+        </ImageBackground>
+      </SafeAreaView>
+    </SafeAreaProvider>
   );
 }
 
@@ -149,8 +149,7 @@ function PrivateChats({ userData }) {
                   sender: JSON.stringify(userData),
                 },
               });
-            }}
-          >
+            }}>
             <Image
               source={require("../Images/logo.png")}
               style={styles.BotProfileImage}
@@ -177,15 +176,16 @@ function PrivateChats({ userData }) {
                         receiver: JSON.stringify(other),
                       },
                     })
-                  }
-                >
+                  }>
                   <Image
                     source={
-                     other.profilePicture
-                     ? other.profilePicture.startsWith("data:image")
-                     ? { uri: other.profilePicture }
-                     : { uri: `data:image/png;base64,${other.profilePicture}` }
-                     : require("../Images/placeholder.png")
+                      other.profilePicture
+                        ? other.profilePicture.startsWith("data:image")
+                          ? { uri: other.profilePicture }
+                          : {
+                              uri: `data:image/png;base64,${other.profilePicture}`,
+                            }
+                        : require("../Images/placeholder.png")
                     }
                     style={styles.profileImage}
                   />
@@ -284,8 +284,7 @@ function Communities({ userData }) {
                     user: JSON.stringify(userData),
                   },
                 })
-              }
-            >
+              }>
               <View style={styles.groupItem}>
                 <Image
                   source={{ uri: `data:image/png;base64,${item.photo}` }}
@@ -311,8 +310,7 @@ function Communities({ userData }) {
               pathname: "/CreateCommunity",
               params: { user: JSON.stringify(userData) },
             })
-          }
-        >
+          }>
           <Text style={styles.floatingButtonText}>יצירת קהילה +</Text>
         </TouchableOpacity>
       )}
@@ -344,8 +342,8 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     backgroundColor: "rgba(255,255,255,0.2)",
   },
-  button:{
-    borderRadius:20,
+  button: {
+    borderRadius: 20,
   },
   activeTab: {
     backgroundColor: "rgba(0,0,0,0.3)",
@@ -424,26 +422,25 @@ const styles = StyleSheet.create({
   },
 
   floatingButton: {
-  position: "absolute",
-  bottom: 30,
-  left: 20,
-  paddingHorizontal: 20,
-  height: 60,
-  borderRadius: 30,
-  backgroundColor: "white",
-  justifyContent: "center",
-  alignItems: "center",
-  shadowColor: "#000",
-  shadowOffset: { width: 0, height: 2 },
-  shadowOpacity: 0.3,
-  shadowRadius: 4,
-  elevation: 5,
-  zIndex: 10,
-},
-floatingButtonText: {
-  color: "#000",
-  fontSize: 16,
-  fontWeight: "bold",
-},
-
+    position: "absolute",
+    bottom: 30,
+    left: 20,
+    paddingHorizontal: 20,
+    height: 60,
+    borderRadius: 30,
+    backgroundColor: "white",
+    justifyContent: "center",
+    alignItems: "center",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
+    elevation: 5,
+    zIndex: 10,
+  },
+  floatingButtonText: {
+    color: "#000",
+    fontSize: 16,
+    fontWeight: "bold",
+  },
 });

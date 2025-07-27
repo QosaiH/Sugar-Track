@@ -58,59 +58,57 @@ export default function SignUp5() {
   };
 
   return (
-    <SafeAreaProvider>
-      <SafeAreaView style={styles.logo}>
-        <View style={styles.upperSide}>
-          <Image style={styles.image} source={require("../Images/logo.png")} />
-          <View style={styles.container}>
-            <View style={styles.timeline}>
-              <View style={[styles.circle, styles.filled]}></View>
-              <View style={styles.line}></View>
-              <View style={[styles.circle, styles.filled]}></View>
-              <View style={styles.line}></View>
-              <View style={[styles.circle, styles.filled]}></View>
-              <View style={styles.line}></View>
-              <View style={[styles.circle, styles.filled]}></View>
-              <View style={styles.line}></View>
-              <View style={[styles.circle, styles.filled]}></View>
-            </View>
+    <SafeAreaProvider style={styles.logo}>
+      <View style={styles.upperSide}>
+        <Image style={styles.image} source={require("../Images/logo.png")} />
+        <View style={styles.container}>
+          <View style={styles.timeline}>
+            <View style={[styles.circle, styles.filled]}></View>
+            <View style={styles.line}></View>
+            <View style={[styles.circle, styles.filled]}></View>
+            <View style={styles.line}></View>
+            <View style={[styles.circle, styles.filled]}></View>
+            <View style={styles.line}></View>
+            <View style={[styles.circle, styles.filled]}></View>
+            <View style={styles.line}></View>
+            <View style={[styles.circle, styles.filled]}></View>
           </View>
         </View>
+      </View>
 
-        <ImageBackground
-          style={styles.background}
-          source={require("../Images/Vector.png")}
-          resizeMode="cover">
-          <TouchableOpacity style={styles.profileContainer} onPress={pickImage}>
-            {image ? (
-              <Image source={{ uri: image }} style={styles.profileImage} />
-            ) : (
-              <View style={styles.plusContainer}>
-                <Text style={styles.plus}>+</Text>
-              </View>
-            )}
-          </TouchableOpacity>
-
-          <TouchableOpacity onPress={pickImage}>
-            <Text style={styles.instruction}>הוסף תמונת פרופיל</Text>
-          </TouchableOpacity>
-
-          {image && (
-            <TouchableOpacity onPress={deleteImage}>
-              <Text style={styles.instruction}>מחק תמונה</Text>
-            </TouchableOpacity>
+      <ImageBackground
+        style={styles.background}
+        source={require("../Images/Vector.png")}
+        resizeMode="cover">
+        <TouchableOpacity style={styles.profileContainer} onPress={pickImage}>
+          {image ? (
+            <Image source={{ uri: image }} style={styles.profileImage} />
+          ) : (
+            <View style={styles.plusContainer}>
+              <Text style={styles.plus}>+</Text>
+            </View>
           )}
+        </TouchableOpacity>
 
-          <View style={styles.buttonContainer}>
-            <TouchableOpacity onPress={handleNext}>
-              <Text style={styles.color}>הבא</Text>
-            </TouchableOpacity>
-            <TouchableOpacity onPress={handlePrev}>
-              <Text style={styles.color}>הקודם</Text>
-            </TouchableOpacity>
-          </View>
-        </ImageBackground>
-      </SafeAreaView>
+        <TouchableOpacity onPress={pickImage}>
+          <Text style={styles.instruction}>הוסף תמונת פרופיל</Text>
+        </TouchableOpacity>
+
+        {image && (
+          <TouchableOpacity onPress={deleteImage}>
+            <Text style={styles.instruction}>מחק תמונה</Text>
+          </TouchableOpacity>
+        )}
+
+        <View style={styles.buttonContainer}>
+          <TouchableOpacity onPress={handleNext}>
+            <Text style={styles.color}>הבא</Text>
+          </TouchableOpacity>
+          <TouchableOpacity onPress={handlePrev}>
+            <Text style={styles.color}>הקודם</Text>
+          </TouchableOpacity>
+        </View>
+      </ImageBackground>
     </SafeAreaProvider>
   );
 }
@@ -130,10 +128,10 @@ const styles = StyleSheet.create({
   image: {
     width: 170,
     height: 170,
-    marginTop: 5,
+    marginTop: 50,
   },
   background: {
-    height: "100%",
+    height: "125%",
     width: "100%",
     flex: 1,
     alignItems: "center",

@@ -8,6 +8,8 @@ import {
   TextInput,
   Alert,
   TouchableOpacity,
+  KeyboardAvoidingView,
+  Platform,
 } from "react-native";
 import { SafeAreaView, SafeAreaProvider } from "react-native-safe-area-context";
 import { Link, useRouter, useLocalSearchParams } from "expo-router";
@@ -60,8 +62,11 @@ export default function SignUp() {
   };
 
   return (
-    <SafeAreaProvider>
-      <SafeAreaView style={styles.logo}>
+    <SafeAreaProvider style={styles.logo}>
+      <KeyboardAvoidingView
+        style={{ flex: 1, width: "100%" }}
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        keyboardVerticalOffset={Platform.OS === "ios" ? 40 : 0}>
         <View style={styles.upperSide}>
           <Image style={styles.image} source={require("../Images/logo.png")} />
           <View style={styles.container}>
@@ -124,7 +129,7 @@ export default function SignUp() {
             </View>
           </View>
         </ImageBackground>
-      </SafeAreaView>
+      </KeyboardAvoidingView>
     </SafeAreaProvider>
   );
 }
@@ -144,10 +149,10 @@ const styles = StyleSheet.create({
   image: {
     width: 170,
     height: 170,
-    marginTop: 5,
+    marginTop: 50,
   },
   background: {
-    height: "100%",
+    height: "125%",
     width: "100%",
     flex: 1,
     alignItems: "center",
