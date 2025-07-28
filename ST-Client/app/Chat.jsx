@@ -85,19 +85,12 @@ function PrivateChats({ userData }) {
         }));
         // Only chats with messages
         const userChats = chats.filter(
-          (chat) =>
-            chat.users.includes(userData.id) &&
-            Array.isArray(chat.messages) &&
-            chat.messages.length > 0
+          (chat) => chat.users.includes(userData.id) && Array.isArray(chat.messages) && chat.messages.length > 0
         );
         // Sort by last message date descending
         userChats.sort((a, b) => {
-          const aDate = new Date(
-            a.messages[a.messages.length - 1]?.timestamp || 0
-          );
-          const bDate = new Date(
-            b.messages[b.messages.length - 1]?.timestamp || 0
-          );
+          const aDate = new Date(a.messages[a.messages.length - 1]?.timestamp || 0);
+          const bDate = new Date(b.messages[b.messages.length - 1]?.timestamp || 0);
           return bDate - aDate;
         });
         setPrivateChats(userChats);
@@ -134,6 +127,8 @@ function PrivateChats({ userData }) {
       setFilteredChats(privateChats);
     }
   }, [searchQuery, privateChats, users, userData.id]);
+
+
 
   return (
     <View>
@@ -174,22 +169,9 @@ function PrivateChats({ userData }) {
               if (!other) return null;
               const lastMsg = item.messages[item.messages.length - 1];
               return (
-                <View
-                  style={{
-                    flexDirection: "row-reverse",
-                    alignItems: "center",
-                    marginBottom: 2,
-                  }}>
+                <View style={{ flexDirection: 'row-reverse', alignItems: 'center', marginBottom: 2 }}>
                   <TouchableOpacity
-                    style={[
-                      styles.chatItem,
-                      {
-                        flex: 1,
-                        flexDirection: "row-reverse",
-                        alignItems: "center",
-                        justifyContent: "flex-start",
-                      },
-                    ]}
+                    style={[styles.chatItem, { flex: 1, flexDirection: 'row-reverse', alignItems: 'center', justifyContent: 'flex-start' }]}
                     onPress={() =>
                       router.push({
                         pathname: "/privateChatScreen",
@@ -199,7 +181,8 @@ function PrivateChats({ userData }) {
                         },
                       })
                     }
-                    activeOpacity={0.7}>
+                    activeOpacity={0.7}
+                  >
                     <Image
                       source={
                         other.profilePicture
@@ -212,32 +195,22 @@ function PrivateChats({ userData }) {
                       }
                       style={styles.profileImage}
                     />
-                    <View
-                      style={{
-                        flex: 1,
-                        flexDirection: "column",
-                        alignItems: "flex-end",
-                        marginRight: 8,
-                      }}>
+                    <View style={{ flex: 1, flexDirection: 'column', alignItems: 'flex-end', marginRight: 8 }}>
                       <Text style={styles.chatText}>{other.username}</Text>
                       {lastMsg && (
-                        <Text
-                          style={{
-                            color: "#666",
-                            fontSize: 13,
-                            textAlign: "right",
-                          }}
-                          numberOfLines={1}>
+                        <Text style={{ color: '#666', fontSize: 13, textAlign: 'right' }} numberOfLines={1}>
                           {lastMsg.text}
                         </Text>
                       )}
                     </View>
                   </TouchableOpacity>
+                 
                 </View>
               );
             }}
             keyExtractor={(item) => item.id}
           />
+
         </>
       )}
     </View>
@@ -263,9 +236,7 @@ function Communities({ userData }) {
       }));
       setGroups(allGroups);
       // By default, show only user's groups
-      const myGroups = allGroups.filter((group) =>
-        group.members?.includes(userId)
-      );
+      const myGroups = allGroups.filter((group) => group.members?.includes(userId));
       setUserGroups(myGroups);
       setFilteredGroups(myGroups);
       setLoading(false);
@@ -327,14 +298,7 @@ function Communities({ userData }) {
                 <View style={{ flex: 1, marginRight: 10 }}>
                   <Text style={styles.groupName}>{item.name}</Text>
                   {item.description && (
-                    <Text
-                      style={{
-                        color: "#666",
-                        fontSize: 13,
-                        textAlign: "right",
-                      }}>
-                      {item.description}
-                    </Text>
+                    <Text style={{ color: '#666', fontSize: 13, textAlign: 'right' }}>{item.description}</Text>
                   )}
                 </View>
                 {!userGroups.some((g) => g.id === item.id) && (
@@ -412,8 +376,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: "#ccc",
     borderRadius: 5,
-    textAlign: "right",
-  },
+    textAlign: "right",  },
   groupItem: {
     flexDirection: "row-reverse",
     alignItems: "center",

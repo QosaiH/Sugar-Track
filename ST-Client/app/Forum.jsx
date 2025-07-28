@@ -27,6 +27,7 @@ import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useRouter } from "expo-router"; // Use Link from expo-router for navigation
 
+
 export default function Forum({ userData }) {
   // State for search and sorting
   const [searchQuery, setSearchQuery] = useState("");
@@ -359,40 +360,26 @@ export default function Forum({ userData }) {
                       style={{
                         color: "white",
                         fontWeight: "bold",
-                        textAlign: "right", // Right-aligned for RTL support
+                        textAlign: "right",
+                        flexDirection: "row",
+                        alignItems: "center",
+                        justifyContent: "center",
                         marginBottom: 5,
                       }}>
                       {(() => {
                         const isHebrew = /[\u0590-\u05FF]/.test(item.author);
-                        const date = new Date(item.createdAt.seconds * 1000);
+                        const dateStr = new Date(
+                          item.createdAt.seconds * 1000
+                        ).toLocaleString();
 
-                        const day = date.getDate().toString().padStart(2, "0");
-                        const month = (date.getMonth() + 1)
-                          .toString()
-                          .padStart(2, "0");
-                        const year = date.getFullYear();
-                        const hour = date
-                          .getHours()
-                          .toString()
-                          .padStart(2, "0");
-                        const minute = date
-                          .getMinutes()
-                          .toString()
-                          .padStart(2, "0");
-
-                        // ✅ For Hebrew: time first (right), then date (left) — natural RTL order
-                        const formattedTime = `${hour}:${minute}`;
-                        const formattedDate = `${day}.${month}.${year}`;
-
-                        const localizedDateTime = isHebrew
-                          ? `${formattedTime} ,${formattedDate}` // RTL style: time → date
-                          : `${formattedDate}, ${formattedTime}`; // LTR style: date → time
-
-                        return isHebrew
-                          ? `${item.author} • ${localizedDateTime}`
-                          : `${localizedDateTime} • ${item.author}`;
+                        if (isHebrew) {
+                          return `${item.author}  •  ${dateStr}`;
+                        } else {
+                          return `${dateStr}  •  ${item.author}`;
+                        }
                       })()}
                     </Text>
+
                     <Text style={styles.listDescription}>
                       {item.description}
                     </Text>
@@ -431,45 +418,11 @@ export default function Forum({ userData }) {
                         תגובות ({item.comments.length}):
                       </Text>
                       {item.comments.map((comment, index) => (
-                        <View
-                          key={index}
-                          style={{
-                            flexDirection: "row-reverse",
-                            alignItems: "center",
-                            marginBottom: 2,
-                            width: "100%",
-                          }}>
-                          <View
-                            style={{
-                              flexDirection: "column",
-                              alignItems: "flex-end",
-                            }}>
-                            {(() => {
-                              const isHebrew = /[\u0590-\u05FF]/.test(
-                                comment.userName
-                              );
-                              return (
-                                <Text
-                                  style={{
-                                    color: "white",
-                                    fontWeight: "bold",
-                                    textAlign: "right",
-                                  }}>
-                                  {isHebrew ? (
-                                    <>
-                                      <Text>{comment.userName}</Text>
-                                      <Text> : {comment.text}</Text>
-                                    </>
-                                  ) : (
-                                    <>
-                                      <Text>{comment.text} </Text>
-                                      <Text>:{comment.userName} </Text>
-                                    </>
-                                  )}
-                                </Text>
-                              );
-                            })()}
-                          </View>
+                        <View key={index} style={{ flexDirection: 'row-reverse', alignItems: 'center', marginBottom: 2, width: '100%' }}>
+                          <Text style={{ color: "white", fontWeight: "bold", textAlign: "right", marginLeft: 5 }}>
+                            {comment.userName}
+                          </Text>
+                          <Text style={{ color: "white", textAlign: "right" }}> : {comment.text}</Text>
                         </View>
                       ))}
                     </View>
@@ -480,12 +433,7 @@ export default function Forum({ userData }) {
                         placeholder="כתוב תגובה..."
                         placeholderTextColor="black"
                         value={commentInputs[item.id] || ""}
-                        onChangeText={(text) =>
-                          setCommentInputs((prev) => ({
-                            ...prev,
-                            [item.id]: text,
-                          }))
-                        }
+                        onChangeText={text => setCommentInputs(prev => ({ ...prev, [item.id]: text }))}
                         onSubmitEditing={({ nativeEvent }) => {
                           handleComment(item, commentInputs[item.id] || "");
                           Keyboard.dismiss(); // Dismiss keyboard after sending
