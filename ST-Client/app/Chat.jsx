@@ -83,15 +83,17 @@ function PrivateChats({ userData }) {
           id: doc.id,
           ...doc.data(),
         }));
-        const userChats = chats.filter((chat) =>
-          chat.users.includes(userData.id)
+        // Only chats with messages
+        const userChats = chats.filter(
+          (chat) => chat.users.includes(userData.id) && Array.isArray(chat.messages) && chat.messages.length > 0
         );
-
-        const uniqueChats = [
-          ...new Map(userChats.map((c) => [c.id, c])).values(),
-        ];
-
-        setPrivateChats(uniqueChats);
+        // Sort by last message date descending
+        userChats.sort((a, b) => {
+          const aDate = new Date(a.messages[a.messages.length - 1]?.timestamp || 0);
+          const bDate = new Date(b.messages[b.messages.length - 1]?.timestamp || 0);
+          return bDate - aDate;
+        });
+        setPrivateChats(userChats);
         setLoading(false);
       }
     );
@@ -126,13 +128,15 @@ function PrivateChats({ userData }) {
     }
   }, [searchQuery, privateChats, users, userData.id]);
 
+
+
   return (
     <View>
       <TextInput
         style={styles.input}
         value={searchQuery}
         onChangeText={setSearchQuery}
-        placeholder="...חפש צ'אט פרטי"
+        placeholder="חפש צ'אט פרטי"
       />
       <Text style={styles.sectionTitle}>רשימת צ'אטים פרטיים</Text>
 
@@ -163,38 +167,50 @@ function PrivateChats({ userData }) {
               const otherId = item.users.find((id) => id !== userData.id);
               const other = users[otherId];
               if (!other) return null;
-
+              const lastMsg = item.messages[item.messages.length - 1];
               return (
-                <TouchableOpacity
-                  key={item.id}
-                  style={styles.chatItem}
-                  onPress={() =>
-                    router.push({
-                      pathname: "/privateChatScreen",
-                      params: {
-                        sender: JSON.stringify(userData),
-                        receiver: JSON.stringify(other),
-                      },
-                    })
-                  }>
-                  <Image
-                    source={
-                      other.profilePicture
-                        ? other.profilePicture.startsWith("data:image")
-                          ? { uri: other.profilePicture }
-                          : {
-                              uri: `data:image/png;base64,${other.profilePicture}`,
-                            }
-                        : require("../Images/placeholder.png")
+                <View style={{ flexDirection: 'row-reverse', alignItems: 'center', marginBottom: 2 }}>
+                  <TouchableOpacity
+                    style={[styles.chatItem, { flex: 1, flexDirection: 'row-reverse', alignItems: 'center', justifyContent: 'flex-start' }]}
+                    onPress={() =>
+                      router.push({
+                        pathname: "/privateChatScreen",
+                        params: {
+                          sender: JSON.stringify(userData),
+                          receiver: JSON.stringify(other),
+                        },
+                      })
                     }
-                    style={styles.profileImage}
-                  />
-                  <Text style={styles.chatText}>{other.username}</Text>
-                </TouchableOpacity>
+                    activeOpacity={0.7}
+                  >
+                    <Image
+                      source={
+                        other.profilePicture
+                          ? other.profilePicture.startsWith("data:image")
+                            ? { uri: other.profilePicture }
+                            : {
+                                uri: `data:image/png;base64,${other.profilePicture}`,
+                              }
+                          : require("../Images/placeholder.png")
+                      }
+                      style={styles.profileImage}
+                    />
+                    <View style={{ flex: 1, flexDirection: 'column', alignItems: 'flex-end', marginRight: 8 }}>
+                      <Text style={styles.chatText}>{other.username}</Text>
+                      {lastMsg && (
+                        <Text style={{ color: '#666', fontSize: 13, textAlign: 'right' }} numberOfLines={1}>
+                          {lastMsg.text}
+                        </Text>
+                      )}
+                    </View>
+                  </TouchableOpacity>
+                 
+                </View>
               );
             }}
             keyExtractor={(item) => item.id}
           />
+
         </>
       )}
     </View>
@@ -213,43 +229,32 @@ function Communities({ userData }) {
   const showCreateButton = userData?.role === "משתמש מוביל";
 
   useEffect(() => {
-    const unsubscribeAll = onSnapshot(collection(db, "community"), (snap) => {
+    const unsubscribe = onSnapshot(collection(db, "community"), (snap) => {
       const allGroups = snap.docs.map((doc) => ({
         id: doc.id,
         ...doc.data(),
       }));
       setGroups(allGroups);
-      setFilteredGroups(allGroups);
-      setLoading(false);
-    });
-
-    const unsubscribeUser = onSnapshot(collection(db, "community"), (snap) => {
-      const myGroups = snap.docs
-        .map((doc) => ({
-          id: doc.id,
-          ...doc.data(),
-        }))
-        .filter((group) => group.members?.includes(userId));
-
+      // By default, show only user's groups
+      const myGroups = allGroups.filter((group) => group.members?.includes(userId));
       setUserGroups(myGroups);
+      setFilteredGroups(myGroups);
       setLoading(false);
     });
-
-    return () => {
-      unsubscribeAll();
-      unsubscribeUser();
-    };
+    return () => unsubscribe();
   }, []);
 
   const handleSearch = (query) => {
     setSearchQuery(query);
     if (query) {
+      // On search, show all groups matching query
       const filtered = groups.filter((group) =>
         group.name.toLowerCase().includes(query.toLowerCase())
       );
       setFilteredGroups(filtered);
     } else {
-      setFilteredGroups(groups);
+      // No search: show only user's groups
+      setFilteredGroups(userGroups);
     }
   };
 
@@ -266,7 +271,7 @@ function Communities({ userData }) {
         style={styles.input}
         value={searchQuery}
         onChangeText={handleSearch}
-        placeholder="...חפש קהילה"
+        placeholder="חפש קהילה"
       />
 
       {loading ? (
@@ -290,7 +295,12 @@ function Communities({ userData }) {
                   source={{ uri: `data:image/png;base64,${item.photo}` }}
                   style={styles.groupImage}
                 />
-                <Text style={styles.groupName}>{item.name}</Text>
+                <View style={{ flex: 1, marginRight: 10 }}>
+                  <Text style={styles.groupName}>{item.name}</Text>
+                  {item.description && (
+                    <Text style={{ color: '#666', fontSize: 13, textAlign: 'right' }}>{item.description}</Text>
+                  )}
+                </View>
                 {!userGroups.some((g) => g.id === item.id) && (
                   <Button title="הצטרף" onPress={() => joinGroup(item.id)} />
                 )}
@@ -366,8 +376,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: "#ccc",
     borderRadius: 5,
-    textAlign: "right",
-  },
+    textAlign: "right",  },
   groupItem: {
     flexDirection: "row-reverse",
     alignItems: "center",
