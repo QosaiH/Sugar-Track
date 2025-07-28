@@ -187,10 +187,10 @@ const styles = StyleSheet.create({
   background: {
     flex: 1,
     width: "100%",
-    height: "120%",
+    height: Platform.OS === "web" ? "100%" : "120%",
     justifyContent: "space-around",
     alignItems: "center",
-    marginBottom: Platform.OS === "ios" ? -30 : -30,
+    marginBottom: Platform.OS === "web" ? 0 : -30,
   },
   bellButton: {
     position: "absolute",

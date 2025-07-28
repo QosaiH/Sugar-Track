@@ -331,13 +331,14 @@ export default function ChatScreen() {
               onPress={async () => {
                 // Open image picker (expo-image-picker or similar)
                 if (window && window.ImagePicker) {
-                  const result = await window.ImagePicker.launchImageLibraryAsync({
-                    mediaTypes: window.ImagePicker.MediaTypeOptions.Images,
-                    allowsEditing: true,
-                    aspect: [1, 1],
-                    quality: 0.5,
-                    base64: true,
-                  });
+                  const result =
+                    await window.ImagePicker.launchImageLibraryAsync({
+                      mediaTypes: window.ImagePicker.MediaTypeOptions.Images,
+                      allowsEditing: true,
+                      aspect: [1, 1],
+                      quality: 0.5,
+                      base64: true,
+                    });
                   if (!result.cancelled) {
                     setCommunity({ ...community, photo: result.base64 });
                   }
@@ -348,14 +349,22 @@ export default function ChatScreen() {
               style={{ alignSelf: "center", marginBottom: 10 }}>
               <Image
                 source={{ uri: `data:image/png;base64,${community.photo}` }}
-                style={[styles.communityImage, { width: 80, height: 80, borderRadius: 40 }]}
+                style={[
+                  styles.communityImage,
+                  { width: 80, height: 80, borderRadius: 40 },
+                ]}
               />
-              <Text style={{ textAlign: "center", color: "#007AFF", marginTop: 4 }}>שנה תמונה</Text>
+              <Text
+                style={{ textAlign: "center", color: "#007AFF", marginTop: 4 }}>
+                שנה תמונה
+              </Text>
             </TouchableOpacity>
             {/* Community name edit */}
             <TextInput
               value={community.name || ""}
-              onChangeText={(text) => setCommunity({ ...community, name: text })}
+              onChangeText={(text) =>
+                setCommunity({ ...community, name: text })
+              }
               style={{
                 borderWidth: 1,
                 borderColor: "#ccc",
@@ -369,12 +378,15 @@ export default function ChatScreen() {
               placeholder="שם קהילה"
               placeholderTextColor="#aaa"
             />
-            <Text style={[styles.modalTitle, { fontSize: 16, marginBottom: 4 }]}>חברי הקהילה</Text>
+            <Text
+              style={[styles.modalTitle, { fontSize: 16, marginBottom: 4 }]}>
+              חברי הקהילה
+            </Text>
             <FlatList
               data={(() => {
                 const allUsers = Object.values(users);
-                const currentUser = allUsers.find(u => u.id === user.id);
-                const others = allUsers.filter(u => u.id !== user.id);
+                const currentUser = allUsers.find((u) => u.id === user.id);
+                const others = allUsers.filter((u) => u.id !== user.id);
                 return currentUser ? [currentUser, ...others] : others;
               })()}
               keyExtractor={(item) => item.id}
@@ -383,9 +395,11 @@ export default function ChatScreen() {
                   <Image
                     source={
                       item.profilePicture
-                        ? item.profilePicture.startsWith('data:image')
+                        ? item.profilePicture.startsWith("data:image")
                           ? { uri: item.profilePicture }
-                          : { uri: `data:image/png;base64,${item.profilePicture}` }
+                          : {
+                              uri: `data:image/png;base64,${item.profilePicture}`,
+                            }
                         : require("../Images/placeholder.png")
                     }
                     style={styles.memberImage}
@@ -429,9 +443,14 @@ export default function ChatScreen() {
               <Text style={styles.submitButtonText}>שמור שינויים</Text>
             </TouchableOpacity>
             <TouchableOpacity
-              style={[styles.closeButton, { backgroundColor: "#ffdddd", borderColor: "#ff4444" }]}
+              style={[
+                styles.closeButton,
+                { backgroundColor: "#ffdddd", borderColor: "#ff4444" },
+              ]}
               onPress={leaveCommunity}>
-              <Text style={[styles.closeButtonText, { color: "#ff4444" }]}>עזוב קהילה</Text>
+              <Text style={[styles.closeButtonText, { color: "#ff4444" }]}>
+                עזוב קהילה
+              </Text>
             </TouchableOpacity>
             <TouchableOpacity
               style={styles.closeButton}
@@ -678,23 +697,18 @@ const styles = StyleSheet.create({
     marginHorizontal: 8,
     textAlign: "right",
   },
-  inputContainer:
-    Platform.OS === "ios"
-      ? {
-          flexDirection: "row-reverse",
-          padding: 10,
-          backgroundColor: "#fff",
-          borderTopWidth: 1,
-          borderTopColor: "#ddd",
-          marginBottom: 3,
-        }
-      : {
-          flexDirection: "row-reverse",
-          padding: 10,
-          backgroundColor: "#fff",
-          borderTopWidth: 1,
-          borderTopColor: "#ddd",
-        },
+  inputContainer: {
+    flexDirection: "row-reverse",
+    padding: 10,
+    backgroundColor: "#fff",
+    borderTopWidth: 1,
+    borderTopColor: "#ddd",
+    marginBottom: Platform.select({
+      ios: 3,
+      web: -35,
+      android: 0,
+    }),
+  },
   sendButton: {
     backgroundColor: "black",
     paddingVertical: 10,

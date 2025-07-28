@@ -33,13 +33,17 @@ export default function Forum({ userData }) {
   const [sortOption, setSortOption] = useState("newest"); // newest | popular
 
   // State for list items
-  const [items, setItems] = useState([]);
+  const [allItems, setAllItems] = useState([]); // all items from db
+  const [items, setItems] = useState([]); // filtered and sorted
   const [expandedItems, setExpandedItems] = useState({});
 
   // Modal states
   const [modalVisible, setModalVisible] = useState(false);
   const [newPostTitle, setNewPostTitle] = useState("");
   const [newPostContent, setNewPostContent] = useState("");
+
+  // For per-item comment input
+  const [commentInputs, setCommentInputs] = useState({}); // { [itemId]: string }
 
   // Mock current user
   const currentUser = {
@@ -48,6 +52,8 @@ export default function Forum({ userData }) {
     profilePicture: userData.profilePicture,
   };
   const [userVotes, setUserVotes] = useState({}); // { postId: "liked" | "disliked" }
+
+  // Fetch all items from db
   useEffect(() => {
     const unsubscribe = onSnapshot(collection(db, "forumItems"), (snapshot) => {
       const updatedItems = snapshot.docs.map((doc) => {
@@ -59,21 +65,32 @@ export default function Forum({ userData }) {
           userVote: vote,
         };
       });
-
-      const sortedItems = [...updatedItems];
-      if (sortOption === "popular") {
-        sortedItems.sort(
-          (a, b) => b.likes + b.comments.length - (a.likes + a.comments.length)
-        );
-      } else {
-        sortedItems.sort((a, b) => b.createdAt.seconds - a.createdAt.seconds);
-      }
-
-      setItems(sortedItems);
+      setAllItems(updatedItems);
     });
-
     return () => unsubscribe();
-  }, [sortOption, currentUser.id]);
+  }, [currentUser.id]);
+
+  // Filter and sort items when allItems, searchQuery, or sortOption changes
+  useEffect(() => {
+    let filtered = allItems;
+    if (searchQuery.trim()) {
+      const q = searchQuery.trim().toLowerCase();
+      filtered = allItems.filter(
+        (item) =>
+          (item.title && item.title.toLowerCase().includes(q)) ||
+          (item.description && item.description.toLowerCase().includes(q))
+      );
+    }
+    const sortedItems = [...filtered];
+    if (sortOption === "popular") {
+      sortedItems.sort(
+        (a, b) => b.likes + b.comments.length - (a.likes + a.comments.length)
+      );
+    } else {
+      sortedItems.sort((a, b) => b.createdAt.seconds - a.createdAt.seconds);
+    }
+    setItems(sortedItems);
+  }, [allItems, searchQuery, sortOption]);
 
   // Handle sort change
   const handleSortChange = (option) => {
@@ -111,6 +128,7 @@ export default function Forum({ userData }) {
 
   // Comment handler
   const handleComment = async (item, commentText) => {
+    if (!commentText.trim()) return;
     const itemRef = doc(db, "forumItems", item.id);
     const newComment = {
       userId: currentUser.id,
@@ -118,10 +136,11 @@ export default function Forum({ userData }) {
       text: commentText,
       timestamp: new Date(),
     };
-
     await updateDoc(itemRef, {
       comments: arrayUnion(newComment),
     });
+    // Clear input for this item
+    setCommentInputs((prev) => ({ ...prev, [item.id]: "" }));
   };
   useEffect(() => {
     const initialVotes = {};
@@ -340,26 +359,40 @@ export default function Forum({ userData }) {
                       style={{
                         color: "white",
                         fontWeight: "bold",
-                        textAlign: "right",
-                        flexDirection: "row",
-                        alignItems: "center",
-                        justifyContent: "center",
+                        textAlign: "right", // Right-aligned for RTL support
                         marginBottom: 5,
                       }}>
                       {(() => {
                         const isHebrew = /[\u0590-\u05FF]/.test(item.author);
-                        const dateStr = new Date(
-                          item.createdAt.seconds * 1000
-                        ).toLocaleString();
+                        const date = new Date(item.createdAt.seconds * 1000);
 
-                        if (isHebrew) {
-                          return `${item.author}  •  ${dateStr}`;
-                        } else {
-                          return `${dateStr}  •  ${item.author}`;
-                        }
+                        const day = date.getDate().toString().padStart(2, "0");
+                        const month = (date.getMonth() + 1)
+                          .toString()
+                          .padStart(2, "0");
+                        const year = date.getFullYear();
+                        const hour = date
+                          .getHours()
+                          .toString()
+                          .padStart(2, "0");
+                        const minute = date
+                          .getMinutes()
+                          .toString()
+                          .padStart(2, "0");
+
+                        // ✅ For Hebrew: time first (right), then date (left) — natural RTL order
+                        const formattedTime = `${hour}:${minute}`;
+                        const formattedDate = `${day}.${month}.${year}`;
+
+                        const localizedDateTime = isHebrew
+                          ? `${formattedTime} ,${formattedDate}` // RTL style: time → date
+                          : `${formattedDate}, ${formattedTime}`; // LTR style: date → time
+
+                        return isHebrew
+                          ? `${item.author} • ${localizedDateTime}`
+                          : `${localizedDateTime} • ${item.author}`;
                       })()}
                     </Text>
-
                     <Text style={styles.listDescription}>
                       {item.description}
                     </Text>
@@ -398,16 +431,46 @@ export default function Forum({ userData }) {
                         תגובות ({item.comments.length}):
                       </Text>
                       {item.comments.map((comment, index) => (
-                        <Text
+                        <View
                           key={index}
-                          style={{ color: "white", textAlign: "right" }}>
-                          {comment.text}
-                          <Text
-                            style={{ fontWeight: "bold", textAlign: "right" }}>
-                            {" "}
-                            :{comment.userName}
-                          </Text>
-                        </Text>
+                          style={{
+                            flexDirection: "row-reverse",
+                            alignItems: "center",
+                            marginBottom: 2,
+                            width: "100%",
+                          }}>
+                          <View
+                            style={{
+                              flexDirection: "column",
+                              alignItems: "flex-end",
+                            }}>
+                            {(() => {
+                              const isHebrew = /[\u0590-\u05FF]/.test(
+                                comment.userName
+                              );
+                              return (
+                                <Text
+                                  style={{
+                                    color: "white",
+                                    fontWeight: "bold",
+                                    textAlign: "right",
+                                  }}>
+                                  {isHebrew ? (
+                                    <>
+                                      <Text>{comment.userName}</Text>
+                                      <Text> : {comment.text}</Text>
+                                    </>
+                                  ) : (
+                                    <>
+                                      <Text>{comment.text} </Text>
+                                      <Text>:{comment.userName} </Text>
+                                    </>
+                                  )}
+                                </Text>
+                              );
+                            })()}
+                          </View>
+                        </View>
                       ))}
                     </View>
 
@@ -416,8 +479,15 @@ export default function Forum({ userData }) {
                       <TextInput
                         placeholder="כתוב תגובה..."
                         placeholderTextColor="black"
+                        value={commentInputs[item.id] || ""}
+                        onChangeText={(text) =>
+                          setCommentInputs((prev) => ({
+                            ...prev,
+                            [item.id]: text,
+                          }))
+                        }
                         onSubmitEditing={({ nativeEvent }) => {
-                          handleComment(item, nativeEvent.text);
+                          handleComment(item, commentInputs[item.id] || "");
                           Keyboard.dismiss(); // Dismiss keyboard after sending
                         }}
                         blurOnSubmit

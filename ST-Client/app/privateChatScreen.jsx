@@ -273,11 +273,7 @@ export default function PrivateChatScreen() {
     </SafeAreaProvider>
   );
 }
-function getProfilePictureUri(profilePicture) {
-  if (!profilePicture) return require("../Images/placeholder.png");
-  if (profilePicture.startsWith("data:image")) return profilePicture;
-  return `data:image/png;base64,${profilePicture}`;
-}
+
 const styles = StyleSheet.create({
   header: {
     flexDirection: "row",
@@ -361,6 +357,7 @@ const styles = StyleSheet.create({
   receiverBubble: {
     backgroundColor: "#fff",
     borderTopLeftRadius: 0,
+    marginLeft: 10,
   },
 
   messageText: {
@@ -413,6 +410,11 @@ const styles = StyleSheet.create({
     backgroundColor: "#fff",
     borderTopWidth: 1,
     borderTopColor: "#ddd",
+    marginBottom: Platform.select({
+      ios: 3,
+      web: -35,
+      android: 0,
+    }),
   },
 
   input: {

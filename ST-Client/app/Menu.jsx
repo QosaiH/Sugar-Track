@@ -40,7 +40,7 @@ export default function Menu({ isVisible, onClose }) {
     height: "100%",
     marginTop: Platform.select({
       ios: 170,
-      web: 138,
+      web: 75,
       android: 74,
     }),
   };

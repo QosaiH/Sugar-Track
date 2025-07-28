@@ -47,7 +47,7 @@ const styles = StyleSheet.create({
     height: 75,
     alignItems: "center",
     backgroundColor: "white",
-    marginBottom: Platform.OS === "ios" ? -35 : -48,
+    marginBottom: Platform.OS === "web" ? 0 : -48,
   },
   points: {
     color: "black",
