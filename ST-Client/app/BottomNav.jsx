@@ -101,7 +101,7 @@ export default function BottomNav() {
               shadowOpacity: 0,
               width: "100%",
               // height: 60,
-              marginBottom: Platform.OS === "ios" ? 30 : 0,
+              marginBottom: Platform.OS === "ios" ? 1 : 0,
               zIndex: 1000,
             },
             tabBarActiveTintColor: "white",
