@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import {
   View,
   Text,
@@ -32,6 +32,7 @@ import { SafeAreaProvider } from "react-native-safe-area-context";
 const API_KEY = "AIzaSyAonlahcFhubsUWuy1dRrsWcD9ERZBhPDY";
 
 export default function ChatScreen() {
+  const flatListRef = useRef(null);
   const params = useLocalSearchParams();
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState("");
@@ -88,6 +89,8 @@ export default function ChatScreen() {
 
     return () => unsubscribe();
   }, [groupId]);
+
+  // Remove previous scroll-to-end useEffect
 
   const analyzeSentiment = async (text) => {
     try {
@@ -215,7 +218,7 @@ export default function ChatScreen() {
       <KeyboardAvoidingView
         style={{ flex: 1, paddingBottom: 35 }}
         behavior={Platform.OS === "ios" ? "padding" : "height"}
-        keyboardVerticalOffset={Platform.OS === "ios" ? 40 : 0}>
+        keyboardVerticalOffset={Platform.OS === "ios" ? 220 : 0}>
         <ImageBackground
           style={styles.background}
           source={require("../Images/Vector.png")}
@@ -225,13 +228,13 @@ export default function ChatScreen() {
             renderItem={({ item }) => {
               const isSender = item.senderId === user.id;
               const userData = users[item.senderId];
-
               return (
                 <View
                   style={[
                     styles.messageContainer,
                     isSender ? styles.rightAlign : styles.leftAlign,
                   ]}>
+                  {/* ...existing code for rendering each message... */}
                   {!isSender && userData && (
                     <TouchableOpacity
                       onPress={() => {
@@ -254,7 +257,6 @@ export default function ChatScreen() {
                       />
                     </TouchableOpacity>
                   )}
-
                   <View
                     style={[
                       styles.messageBubble,
@@ -297,6 +299,12 @@ export default function ChatScreen() {
             }}
             keyExtractor={(item) => item.id}
             contentContainerStyle={{ paddingBottom: 10 }}
+            ref={flatListRef}
+            onContentSizeChange={() => {
+              if (flatListRef.current && messages.length > 0) {
+                flatListRef.current.scrollToEnd({ animated: false });
+              }
+            }}
           />
           <View style={styles.inputContainer}>
             <TextInput
@@ -317,36 +325,114 @@ export default function ChatScreen() {
       {showMembers && (
         <View style={styles.modalContainer}>
           <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>חברי הקהילה</Text>
+            <Text style={styles.modalTitle}>ניהול קהילה</Text>
+            {/* Community image edit */}
+            <TouchableOpacity
+              onPress={async () => {
+                // Open image picker (expo-image-picker or similar)
+                if (window && window.ImagePicker) {
+                  const result = await window.ImagePicker.launchImageLibraryAsync({
+                    mediaTypes: window.ImagePicker.MediaTypeOptions.Images,
+                    allowsEditing: true,
+                    aspect: [1, 1],
+                    quality: 0.5,
+                    base64: true,
+                  });
+                  if (!result.cancelled) {
+                    setCommunity({ ...community, photo: result.base64 });
+                  }
+                } else {
+                  alert("Image picker not available in this environment.");
+                }
+              }}
+              style={{ alignSelf: "center", marginBottom: 10 }}>
+              <Image
+                source={{ uri: `data:image/png;base64,${community.photo}` }}
+                style={[styles.communityImage, { width: 80, height: 80, borderRadius: 40 }]}
+              />
+              <Text style={{ textAlign: "center", color: "#007AFF", marginTop: 4 }}>שנה תמונה</Text>
+            </TouchableOpacity>
+            {/* Community name edit */}
+            <TextInput
+              value={community.name || ""}
+              onChangeText={(text) => setCommunity({ ...community, name: text })}
+              style={{
+                borderWidth: 1,
+                borderColor: "#ccc",
+                borderRadius: 8,
+                padding: 8,
+                marginBottom: 10,
+                textAlign: "right",
+                fontSize: 18,
+                fontWeight: "bold",
+              }}
+              placeholder="שם קהילה"
+              placeholderTextColor="#aaa"
+            />
+            <Text style={[styles.modalTitle, { fontSize: 16, marginBottom: 4 }]}>חברי הקהילה</Text>
             <FlatList
-              data={Object.values(users)}
+              data={(() => {
+                const allUsers = Object.values(users);
+                const currentUser = allUsers.find(u => u.id === user.id);
+                const others = allUsers.filter(u => u.id !== user.id);
+                return currentUser ? [currentUser, ...others] : others;
+              })()}
               keyExtractor={(item) => item.id}
               renderItem={({ item }) => (
                 <View style={styles.memberItem}>
                   <Image
-                    source={{
-                      uri: `data:image/png;base64,${item.profilePicture}`,
-                    }}
+                    source={
+                      item.profilePicture
+                        ? item.profilePicture.startsWith('data:image')
+                          ? { uri: item.profilePicture }
+                          : { uri: `data:image/png;base64,${item.profilePicture}` }
+                        : require("../Images/placeholder.png")
+                    }
                     style={styles.memberImage}
                   />
                   <Text style={styles.memberName}>{item.username}</Text>
-                  <TouchableOpacity
-                    style={styles.optionButton}
-                    onPress={() => {
-                      router.push({
-                        pathname: "/privateChatScreen",
-                        params: {
-                          receiver: JSON.stringify(item),
-                          sender: JSON.stringify(user),
-                        },
-                      });
-                      setShowUserOptionsModal(false);
-                    }}>
-                    <Text style={styles.optionText}>שלח הודעה</Text>
-                  </TouchableOpacity>
+                  {item.id !== user.id && (
+                    <TouchableOpacity
+                      style={styles.optionButton}
+                      onPress={() => {
+                        router.push({
+                          pathname: "/privateChatScreen",
+                          params: {
+                            receiver: JSON.stringify(item),
+                            sender: JSON.stringify(user),
+                          },
+                        });
+                        setShowUserOptionsModal(false);
+                      }}>
+                      <Text style={styles.optionText}>שלח הודעה</Text>
+                    </TouchableOpacity>
+                  )}
                 </View>
               )}
+              style={{ maxHeight: 180 }}
             />
+            {/* Save and Leave buttons */}
+            <TouchableOpacity
+              style={[styles.submitButton, { marginTop: 10 }]}
+              onPress={async () => {
+                try {
+                  await updateDoc(doc(db, "community", groupId), {
+                    name: community.name,
+                    photo: community.photo,
+                  });
+                  alert("הקהילה עודכנה בהצלחה");
+                  setShowMembers(false);
+                } catch (err) {
+                  alert("שגיאה בעדכון הקהילה");
+                }
+              }}>
+              <Text style={styles.submitButtonText}>שמור שינויים</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[styles.closeButton, { backgroundColor: "#ffdddd", borderColor: "#ff4444" }]}
+              onPress={leaveCommunity}>
+              <Text style={[styles.closeButtonText, { color: "#ff4444" }]}>עזוב קהילה</Text>
+            </TouchableOpacity>
             <TouchableOpacity
               style={styles.closeButton}
               onPress={() => setShowMembers(false)}>
@@ -592,13 +678,23 @@ const styles = StyleSheet.create({
     marginHorizontal: 8,
     textAlign: "right",
   },
-  inputContainer: {
-    flexDirection: "row-reverse",
-    padding: 10,
-    backgroundColor: "#fff",
-    borderTopWidth: 1,
-    borderTopColor: "#ddd",
-  },
+  inputContainer:
+    Platform.OS === "ios"
+      ? {
+          flexDirection: "row-reverse",
+          padding: 10,
+          backgroundColor: "#fff",
+          borderTopWidth: 1,
+          borderTopColor: "#ddd",
+          marginBottom: 3,
+        }
+      : {
+          flexDirection: "row-reverse",
+          padding: 10,
+          backgroundColor: "#fff",
+          borderTopWidth: 1,
+          borderTopColor: "#ddd",
+        },
   sendButton: {
     backgroundColor: "black",
     paddingVertical: 10,
@@ -650,18 +746,20 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   closeButton: {
-    marginTop: 15,
     padding: 10,
-    backgroundColor: "white",
     borderRadius: 10,
+    backgroundColor: "white",
+    marginTop: 10,
+    width: "100%",
     borderWidth: 1,
-    borderColor: "Black",
+    borderColor: "black",
+    alignSelf: "center",
     alignItems: "center",
   },
   closeButtonText: {
     color: "black",
     fontSize: 16,
-    fontWeight: "bold",
+    alignSelf: "center",
   },
   optionButton: {
     paddingVertical: 12,
