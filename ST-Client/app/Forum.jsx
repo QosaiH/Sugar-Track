@@ -27,19 +27,24 @@ import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useRouter } from "expo-router"; // Use Link from expo-router for navigation
 
+
 export default function Forum({ userData }) {
   // State for search and sorting
   const [searchQuery, setSearchQuery] = useState("");
   const [sortOption, setSortOption] = useState("newest"); // newest | popular
 
   // State for list items
-  const [items, setItems] = useState([]);
+  const [allItems, setAllItems] = useState([]); // all items from db
+  const [items, setItems] = useState([]); // filtered and sorted
   const [expandedItems, setExpandedItems] = useState({});
 
   // Modal states
   const [modalVisible, setModalVisible] = useState(false);
   const [newPostTitle, setNewPostTitle] = useState("");
   const [newPostContent, setNewPostContent] = useState("");
+
+  // For per-item comment input
+  const [commentInputs, setCommentInputs] = useState({}); // { [itemId]: string }
 
   // Mock current user
   const currentUser = {
@@ -48,6 +53,8 @@ export default function Forum({ userData }) {
     profilePicture: userData.profilePicture,
   };
   const [userVotes, setUserVotes] = useState({}); // { postId: "liked" | "disliked" }
+
+  // Fetch all items from db
   useEffect(() => {
     const unsubscribe = onSnapshot(collection(db, "forumItems"), (snapshot) => {
       const updatedItems = snapshot.docs.map((doc) => {
@@ -59,21 +66,32 @@ export default function Forum({ userData }) {
           userVote: vote,
         };
       });
-
-      const sortedItems = [...updatedItems];
-      if (sortOption === "popular") {
-        sortedItems.sort(
-          (a, b) => b.likes + b.comments.length - (a.likes + a.comments.length)
-        );
-      } else {
-        sortedItems.sort((a, b) => b.createdAt.seconds - a.createdAt.seconds);
-      }
-
-      setItems(sortedItems);
+      setAllItems(updatedItems);
     });
-
     return () => unsubscribe();
-  }, [sortOption, currentUser.id]);
+  }, [currentUser.id]);
+
+  // Filter and sort items when allItems, searchQuery, or sortOption changes
+  useEffect(() => {
+    let filtered = allItems;
+    if (searchQuery.trim()) {
+      const q = searchQuery.trim().toLowerCase();
+      filtered = allItems.filter(
+        (item) =>
+          (item.title && item.title.toLowerCase().includes(q)) ||
+          (item.description && item.description.toLowerCase().includes(q))
+      );
+    }
+    const sortedItems = [...filtered];
+    if (sortOption === "popular") {
+      sortedItems.sort(
+        (a, b) => b.likes + b.comments.length - (a.likes + a.comments.length)
+      );
+    } else {
+      sortedItems.sort((a, b) => b.createdAt.seconds - a.createdAt.seconds);
+    }
+    setItems(sortedItems);
+  }, [allItems, searchQuery, sortOption]);
 
   // Handle sort change
   const handleSortChange = (option) => {
@@ -111,6 +129,7 @@ export default function Forum({ userData }) {
 
   // Comment handler
   const handleComment = async (item, commentText) => {
+    if (!commentText.trim()) return;
     const itemRef = doc(db, "forumItems", item.id);
     const newComment = {
       userId: currentUser.id,
@@ -118,10 +137,11 @@ export default function Forum({ userData }) {
       text: commentText,
       timestamp: new Date(),
     };
-
     await updateDoc(itemRef, {
       comments: arrayUnion(newComment),
     });
+    // Clear input for this item
+    setCommentInputs((prev) => ({ ...prev, [item.id]: "" }));
   };
   useEffect(() => {
     const initialVotes = {};
@@ -398,16 +418,12 @@ export default function Forum({ userData }) {
                         תגובות ({item.comments.length}):
                       </Text>
                       {item.comments.map((comment, index) => (
-                        <Text
-                          key={index}
-                          style={{ color: "white", textAlign: "right" }}>
-                          {comment.text}
-                          <Text
-                            style={{ fontWeight: "bold", textAlign: "right" }}>
-                            {" "}
-                            :{comment.userName}
+                        <View key={index} style={{ flexDirection: 'row-reverse', alignItems: 'center', marginBottom: 2, width: '100%' }}>
+                          <Text style={{ color: "white", fontWeight: "bold", textAlign: "right", marginLeft: 5 }}>
+                            {comment.userName}
                           </Text>
-                        </Text>
+                          <Text style={{ color: "white", textAlign: "right" }}> : {comment.text}</Text>
+                        </View>
                       ))}
                     </View>
 
@@ -416,8 +432,10 @@ export default function Forum({ userData }) {
                       <TextInput
                         placeholder="כתוב תגובה..."
                         placeholderTextColor="black"
+                        value={commentInputs[item.id] || ""}
+                        onChangeText={text => setCommentInputs(prev => ({ ...prev, [item.id]: text }))}
                         onSubmitEditing={({ nativeEvent }) => {
-                          handleComment(item, nativeEvent.text);
+                          handleComment(item, commentInputs[item.id] || "");
                           Keyboard.dismiss(); // Dismiss keyboard after sending
                         }}
                         blurOnSubmit
