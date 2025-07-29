@@ -68,13 +68,20 @@ export default function CreateCommunity() {
       style={styles.background}
       resizeMode="cover"
     >
+      {/* Back arrow top left */}
+      <TouchableOpacity
+        style={styles.backArrow}
+        onPress={() => router.back()}
+      >
+        <Text style={{ fontSize: 32, color: "white" }}>{"←"}</Text>
+      </TouchableOpacity>
       <KeyboardAvoidingView
         style={{ flex: 1 }}
         behavior={Platform.OS === "ios" ? "padding" : undefined}
       >
         <ScrollView contentContainerStyle={styles.container}>
           <Text style={styles.title}>יצירת קהילה חדשה</Text>
-
+          {/* ...existing code... */}
           <TextInput
             style={styles.input}
             placeholder="שם הקהילה"
@@ -82,7 +89,6 @@ export default function CreateCommunity() {
             onChangeText={setName}
             placeholderTextColor="#888"
           />
-
           <TextInput
             style={[styles.input, { height: 100 }]}
             placeholder="תיאור קצר על מטרת הקהילה"
@@ -91,20 +97,17 @@ export default function CreateCommunity() {
             multiline
             placeholderTextColor="#888"
           />
-
           <TouchableOpacity onPress={pickImage} style={styles.imageButton}>
             <Text style={styles.imageButtonText}>
               {imageBase64 ? "📷 שנה תמונה" : "בחר תמונה לקהילה"}
             </Text>
           </TouchableOpacity>
-
           {imageBase64 && (
             <Image
               source={{ uri: `data:image/png;base64,${imageBase64}` }}
               style={styles.preview}
             />
           )}
-
           <TouchableOpacity onPress={handleCreate} style={styles.createButton}>
             <Text style={styles.createButtonText}>+ יצירת קהילה</Text>
           </TouchableOpacity>
@@ -117,9 +120,25 @@ export default function CreateCommunity() {
 const styles = StyleSheet.create({
   background: {
     flex: 1,
+    width: "100%",
+    height: Platform.OS === "web" ? "100%" : "120%",
+    justifyContent: "space-around",
+    marginBottom: Platform.OS === "web" ? 0 : -30,
+  },
+  backArrow: {
+    position: "absolute",
+    left: 18,
+    top: 38,
+    zIndex: 10,
+    padding: 8,
   },
   container: {
     padding: 24,
+    marginTop: Platform.select({
+      ios: 100,
+      web: 50,
+      android: 50,
+    }),
     alignItems: "center",
     justifyContent: "center",
   },
