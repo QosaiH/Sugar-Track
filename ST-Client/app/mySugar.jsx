@@ -36,6 +36,7 @@ export default function mySugar() {
   const [newMessage, setNewMessage] = useState("");
   const [chatId, setChatId] = useState("");
   const [loading, setLoading] = useState(false);
+  const flatListRef = React.useRef(null);
 
   const ai = new GoogleGenAI({ apiKey: API_KEY });
   const model = "gemini-2.5-flash";
@@ -71,6 +72,13 @@ export default function mySugar() {
 
     initializeChat();
   }, [user.id]);
+
+  // Scroll to end when messages change
+  useEffect(() => {
+    if (flatListRef.current && messages.length > 0) {
+      flatListRef.current.scrollToEnd({ animated: false });
+    }
+  }, [messages]);
 
   const sendMessage = async () => {
     if (!newMessage.trim()) return;
@@ -142,7 +150,6 @@ export default function mySugar() {
             data={messages}
             renderItem={({ item }) => {
               const isSender = item.senderId === user.id;
-
               return (
                 <View
                   style={[
@@ -155,7 +162,6 @@ export default function mySugar() {
                       style={styles.userImage}
                     />
                   )}
-
                   <View
                     style={[
                       styles.messageBubble,
@@ -211,6 +217,12 @@ export default function mySugar() {
             }}
             keyExtractor={(_, index) => index.toString()}
             contentContainerStyle={{ paddingBottom: 10 }}
+            ref={flatListRef}
+            onContentSizeChange={() => {
+              if (flatListRef.current && messages.length > 0) {
+                flatListRef.current.scrollToEnd({ animated: false });
+              }
+            }}
           />
 
           {loading && (
