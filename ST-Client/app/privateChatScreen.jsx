@@ -39,6 +39,7 @@ export default function PrivateChatScreen() {
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState("");
   const [chatId, setChatId] = useState("");
+  const [showProfileModal, setShowProfileModal] = useState(false);
   const ai = new GoogleGenAI({ apiKey: API_KEY });
   const model = "gemini-2.5-flash";
   let botResponseText = "";
@@ -137,6 +138,23 @@ export default function PrivateChatScreen() {
       analyzedSentiment: botResponseText,
     });
   };
+
+  // Delete chat function
+  const deleteChat = async () => {
+    try {
+      await setDoc(doc(db, "privateChats", chatId), {
+        users: [user.id, otherUser.id].sort(),
+        messages: [],
+        createdAt: new Date().toISOString(),
+      });
+      Alert.alert("הצ'אט נמחק בהצלחה");
+      setShowProfileModal(false);
+      router.back();
+    } catch (err) {
+      Alert.alert("שגיאה", "מחיקת הצ'אט נכשלה");
+    }
+  };
+
   return (
     <SafeAreaProvider style={{ flex: 1, width: "100%", marginTop: 35 }}>
       <View style={styles.header}>
@@ -146,7 +164,9 @@ export default function PrivateChatScreen() {
           <AntDesign name="arrowleft" size={24} color="black" />
         </TouchableOpacity>
 
-        <View style={styles.userInfo}>
+        <TouchableOpacity
+          style={styles.userInfo}
+          onPress={() => setShowProfileModal(true)}>
           <Image
             source={
               otherUser.profilePicture
@@ -163,7 +183,7 @@ export default function PrivateChatScreen() {
           <Text style={styles.username}>
             {otherUser.username || otherUser.userName}
           </Text>
-        </View>
+        </TouchableOpacity>
       </View>
 
       <KeyboardAvoidingView
@@ -186,18 +206,20 @@ export default function PrivateChatScreen() {
                     isSender ? styles.rightAlign : styles.leftAlign,
                   ]}>
                   {!isSender && (
-                    <Image
-                      source={
-                        otherUser.profilePicture
-                          ? otherUser.profilePicture.startsWith("data:image")
-                            ? { uri: otherUser.profilePicture }
-                            : {
-                                uri: `data:image/png;base64,${otherUser.profilePicture}`,
-                              }
-                          : require("../Images/placeholder.png")
-                      }
-                      style={styles.avatar}
-                    />
+                    <TouchableOpacity onPress={() => setShowProfileModal(true)}>
+                      <Image
+                        source={
+                          otherUser.profilePicture
+                            ? otherUser.profilePicture.startsWith("data:image")
+                              ? { uri: otherUser.profilePicture }
+                              : {
+                                  uri: `data:image/png;base64,${otherUser.profilePicture}`,
+                                }
+                            : require("../Images/placeholder.png")
+                        }
+                        style={styles.avatar}
+                      />
+                    </TouchableOpacity>
                   )}
 
                   <View
@@ -270,6 +292,54 @@ export default function PrivateChatScreen() {
           </View>
         </ImageBackground>
       </KeyboardAvoidingView>
+
+      {/* Profile Modal */}
+      {showProfileModal && (
+        <View style={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundColor: 'rgba(0,0,0,0.5)',
+          justifyContent: 'center',
+          alignItems: 'center',
+          zIndex: 100,
+        }}>
+          <View style={{
+            backgroundColor: 'white',
+            borderRadius: 20,
+            padding: 24,
+            alignItems: 'center',
+            width: '80%',
+            maxWidth: 350,
+          }}>
+            <Image
+              source={
+                otherUser.profilePicture
+                  ? otherUser.profilePicture.startsWith("data:image")
+                    ? { uri: otherUser.profilePicture }
+                    : { uri: `data:image/png;base64,${otherUser.profilePicture}` }
+                  : require("../Images/placeholder.png")
+              }
+              style={{ width: 100, height: 100, borderRadius: 50, marginBottom: 16, borderWidth: 1, borderColor: '#ccc' }}
+            />
+            <Text style={{ fontSize: 22, fontWeight: 'bold', marginBottom: 12 }}>{otherUser.username || otherUser.userName}</Text>
+            <TouchableOpacity
+              style={{ backgroundColor: '#ff4444', padding: 12, borderRadius: 10, width: '100%', marginBottom: 10 }}
+              onPress={deleteChat}
+            >
+              <Text style={{ color: 'white', fontSize: 16, textAlign: 'center', fontWeight: 'bold' }}>מחק צ'אט</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={{ backgroundColor: '#eee', padding: 12, borderRadius: 10, width: '100%' }}
+              onPress={() => setShowProfileModal(false)}
+            >
+              <Text style={{ color: 'black', fontSize: 16, textAlign: 'center' }}>סגור</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      )}
     </SafeAreaProvider>
   );
 }
