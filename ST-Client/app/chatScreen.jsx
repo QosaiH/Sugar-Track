@@ -26,7 +26,7 @@ import {
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { AntDesign } from "@expo/vector-icons";
 import { GoogleGenAI } from "@google/genai";
-import { Picker } from "@react-native-picker/picker"; // הוספת ה-Picker
+// Picker removed; using ActionSheet for iOS compatibility
 import { SafeAreaProvider } from "react-native-safe-area-context";
 
 const API_KEY = "AIzaSyAonlahcFhubsUWuy1dRrsWcD9ERZBhPDY";
@@ -48,6 +48,7 @@ export default function ChatScreen() {
   const [reportDescription, setReportDescription] = useState("");
   const [selectedMessage, setSelectedMessage] = useState(null);
   const [selectedReportReason, setSelectedReportReason] = useState(""); // הוספת סטייט לסיבת הדיווח
+  const [showReasonSheet, setShowReasonSheet] = useState(false); // fix for ActionSheet
   const ai = new GoogleGenAI({ apiKey: API_KEY });
   const model = "gemini-2.5-flash";
   let botResponseText = "";
@@ -391,7 +392,7 @@ export default function ChatScreen() {
               })()}
               keyExtractor={(item) => item.id}
               renderItem={({ item }) => (
-                <View style={styles.memberItem}>
+                <View style={[styles.memberItem, { paddingVertical: 6 }]}> 
                   <Image
                     source={
                       item.profilePicture
@@ -404,23 +405,25 @@ export default function ChatScreen() {
                     }
                     style={styles.memberImage}
                   />
-                  <Text style={styles.memberName}>{item.username}</Text>
-                  {item.id !== user.id && (
-                    <TouchableOpacity
-                      style={styles.optionButton}
-                      onPress={() => {
-                        router.push({
-                          pathname: "/privateChatScreen",
-                          params: {
-                            receiver: JSON.stringify(item),
-                            sender: JSON.stringify(user),
-                          },
-                        });
-                        setShowUserOptionsModal(false);
-                      }}>
-                      <Text style={styles.optionText}>שלח הודעה</Text>
-                    </TouchableOpacity>
-                  )}
+                  <View style={{ flex: 1, flexDirection: 'column', alignItems: 'flex-end', marginRight: 8 }}>
+                    <Text style={styles.memberName}>{item.username}</Text>
+                    {item.id !== user.id && (
+                      <TouchableOpacity
+                        style={[styles.optionButton, { marginTop: 4, borderRadius: 8, backgroundColor: '#007AFF' }]}
+                        onPress={() => {
+                          router.push({
+                            pathname: "/privateChatScreen",
+                            params: {
+                              receiver: JSON.stringify(item),
+                              sender: JSON.stringify(user),
+                            },
+                          });
+                          setShowUserOptionsModal(false);
+                        }}>
+                        <Text style={[styles.optionText, { color: 'white', fontWeight: 'bold' }]}>שלח הודעה פרטית</Text>
+                      </TouchableOpacity>
+                    )}
+                  </View>
                 </View>
               )}
               style={{ maxHeight: 180 }}
@@ -465,9 +468,13 @@ export default function ChatScreen() {
         <View style={styles.modalContainer}>
           <View style={styles.modalContent}>
             <Image
-              source={{
-                uri: `data:image/png;base64,${selectedUser.profilePicture}`,
-              }}
+              source={
+                selectedUser.profilePicture
+                  ? selectedUser.profilePicture.startsWith("data:image")
+                    ? { uri: selectedUser.profilePicture }
+                    : { uri: `data:image/png;base64,${selectedUser.profilePicture}` }
+                  : require("../Images/placeholder.png")
+              }
               style={styles.modalImage}
             />
             <Text style={styles.modalTitle}>{selectedUser.username}</Text>
@@ -505,19 +512,34 @@ export default function ChatScreen() {
               <Text style={styles.modalReportTitle}>
                 האם אתה בטוח שברצונך לדווח על ההודעה הזו?
               </Text>
-
-              <Picker
-                selectedValue={selectedReportReason}
-                onValueChange={(itemValue) =>
-                  setSelectedReportReason(itemValue)
-                }
-                style={styles.picker}>
-                <Picker.Item label="בחר סיבה" value="" />
-                <Picker.Item label="שפה פוגענית" value="שפה פוגענית" />
-                <Picker.Item label="הטרדה" value="הטרדה" />
-                <Picker.Item label="תוכן לא הולם" value="תוכן לא הולם" />
-                <Picker.Item label="אחר" value="other" />
-              </Picker>
+              {/* Custom ActionSheet for reason selection */}
+              <TouchableOpacity
+                style={styles.actionSheetButton}
+                onPress={() => setShowReasonSheet(true)}>
+                <Text style={{ color: '#007AFF', fontSize: 16 }}>
+                  {selectedReportReason ? selectedReportReason : 'בחר סיבה'}
+                </Text>
+              </TouchableOpacity>
+              {showReasonSheet && (
+                <View style={styles.actionSheetContainer}>
+                  {["שפה פוגענית", "הטרדה", "תוכן לא הולם", "אחר"].map((reason) => (
+                    <TouchableOpacity
+                      key={reason}
+                      style={styles.actionSheetItem}
+                      onPress={() => {
+                        setSelectedReportReason(reason);
+                        setShowReasonSheet(false);
+                      }}>
+                      <Text style={{ fontSize: 16, textAlign: 'center' }}>{reason}</Text>
+                    </TouchableOpacity>
+                  ))}
+                  <TouchableOpacity
+                    style={styles.actionSheetCancel}
+                    onPress={() => setShowReasonSheet(false)}>
+                    <Text style={{ color: 'red', fontSize: 16, textAlign: 'center' }}>ביטול</Text>
+                  </TouchableOpacity>
+                </View>
+              )}
               <TextInput
                 placeholder="תיאור הדיווח"
                 placeholderTextColor="#aaa"
@@ -851,13 +873,52 @@ const styles = StyleSheet.create({
     alignSelf: "center",
   },
   closeButtonText: { color: "black", fontSize: 16, alignSelf: "center" },
-  picker: {
-    textAlign: "right",
-    height: 50,
-    width: "100%",
-    marginBottom: 10,
+  // ...existing styles...
+  actionSheetButton: {
     borderWidth: 1,
-    borderRadius: 5,
-    borderColor: "#ccc",
+    borderColor: '#007AFF',
+    borderRadius: 10,
+    padding: 14,
+    marginBottom: 10,
+    backgroundColor: '#f7f7f7',
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.12,
+    shadowRadius: 6,
+    elevation: 4,
+  },
+  actionSheetContainer: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'white',
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    padding: 18,
+    elevation: 10,
+    zIndex: 100,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.15,
+    shadowRadius: 8,
+    flexDirection: 'column',
+    alignItems: 'stretch',
+  },
+  actionSheetItem: {
+    paddingVertical: 16,
+    paddingHorizontal: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: '#eee',
+    textAlign: 'right',
+    alignItems: 'flex-end',
+  },
+  actionSheetCancel: {
+    paddingVertical: 16,
+    alignItems: 'center',
+    marginTop: 8,
+    borderRadius: 10,
+    backgroundColor: '#f7f7f7',
   },
 });
