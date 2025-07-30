@@ -21,6 +21,7 @@ export default function Home({ userData }) {
     text: "הדרך הטובה ביותר לחזות את העתיד היא להמציא אותו.",
     author: "- פיטר דרוקר",
   });
+  // Removed notification dot logic
 
   useFocusEffect(
     React.useCallback(() => {
@@ -93,8 +94,7 @@ export default function Home({ userData }) {
         useNativeDriver: true,
       }),
     ]).start();
-
-    console.log("Bell icon pressed");
+    router.push("/Notifications");
   };
 
   const handleLogPress = () => {
@@ -111,10 +111,9 @@ export default function Home({ userData }) {
       resizeMode="cover">
       {/* Bell Icon */}
       <Animated.View
-        style={[styles.bellButton, { transform: [{ scale: bellScale }] }]}>
+        style={[styles.bellButton, { transform: [{ scale: bellScale }] }]}> 
         <TouchableOpacity onPress={handleBellPress} activeOpacity={0.7}>
           <Ionicons name="notifications-outline" size={32} color="white" />
-          <View style={styles.bellBadge} />
         </TouchableOpacity>
       </Animated.View>
 
