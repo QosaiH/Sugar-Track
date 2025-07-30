@@ -301,6 +301,8 @@ const styles = StyleSheet.create({
     top: 40,
     left: 30,
     zIndex: 1,
+    marginTop:30 ,
+    
   },
   profileImageContainer: {
     marginTop: 20,
