@@ -73,10 +73,12 @@ export default function mySugar() {
     initializeChat();
   }, [user.id]);
 
-  // Scroll to end when messages change
+  // גלילה אוטומטית לתחתית הצ'אט בכל שינוי הודעות
   useEffect(() => {
     if (flatListRef.current && messages.length > 0) {
-      flatListRef.current.scrollToEnd({ animated: false });
+      setTimeout(() => {
+        flatListRef.current.scrollToEnd({ animated: true });
+      }, 100);
     }
   }, [messages]);
 
@@ -152,10 +154,8 @@ export default function mySugar() {
               const isSender = item.senderId === user.id;
               return (
                 <View
-                  style={[
-                    styles.messageContainer,
-                    isSender ? styles.rightAlign : styles.leftAlign,
-                  ]}>
+                  style={[styles.messageContainer, isSender ? styles.rightAlign : styles.leftAlign]}
+                >
                   {!isSender && (
                     <Image
                       source={require("../Images/logo.png")}
@@ -163,39 +163,30 @@ export default function mySugar() {
                     />
                   )}
                   <View
-                    style={[
-                      styles.messageBubble,
-                      isSender ? styles.senderBubble : styles.receiverBubble,
-                    ]}>
+                    style={[styles.messageBubble, isSender ? styles.senderBubble : styles.receiverBubble]}
+                  >
                     <Text
-                      style={[
-                        styles.nameText,
-                        isSender
-                          ? styles.senderNameText
-                          : styles.reciverNameText,
-                      ]}>
+                      style={[styles.nameText, isSender ? styles.senderNameText : styles.reciverNameText]}
+                    >
                       {item.senderName}
                     </Text>
                     <Text
-                      style={[
-                        styles.messageText,
-                        isSender
-                          ? styles.senderMessageText
-                          : styles.receiverMessageText,
-                      ]}>
+                      style={[styles.messageText, isSender ? styles.senderMessageText : styles.receiverMessageText]}
+                    >
                       {item.text}
                     </Text>
                     <Text
-                      style={[
-                        styles.timeText,
-                        isSender
-                          ? styles.senderTimeText
-                          : styles.reciverTimeText,
-                      ]}>
-                      {new Date(item.timestamp).toLocaleTimeString("he-IL", {
-                        hour: "2-digit",
-                        minute: "2-digit",
-                      })}
+                      style={[styles.timeText, isSender ? styles.senderTimeText : styles.reciverTimeText]}
+                    >
+                      {(() => {
+                        const dateObj = new Date(item.timestamp);
+                        const day = String(dateObj.getDate()).padStart(2, '0');
+                        const month = String(dateObj.getMonth() + 1).padStart(2, '0');
+                        const year = dateObj.getFullYear();
+                        const hours = String(dateObj.getHours()).padStart(2, '0');
+                        const minutes = String(dateObj.getMinutes()).padStart(2, '0');
+                        return `${day}/${month}/${year} ${hours}:${minutes}`;
+                      })()}
                     </Text>
                   </View>
                   {isSender && (
@@ -218,11 +209,6 @@ export default function mySugar() {
             keyExtractor={(_, index) => index.toString()}
             contentContainerStyle={{ paddingBottom: 10 }}
             ref={flatListRef}
-            onContentSizeChange={() => {
-              if (flatListRef.current && messages.length > 0) {
-                flatListRef.current.scrollToEnd({ animated: false });
-              }
-            }}
           />
 
           {loading && (
