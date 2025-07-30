@@ -87,7 +87,7 @@ export default function AdminBottomNav() {
               shadowOpacity: 0,
               width: "100%",
               // height: 60,
-              marginBottom: Platform.OS === "ios" ? 30 : 0,
+              marginBottom: Platform.OS === "ios" ? 13 : 0,
               zIndex: 1,
             },
             tabBarActiveTintColor: "white",

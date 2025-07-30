@@ -62,7 +62,8 @@ export default function Menu({ isVisible, onClose }) {
 
               <TouchableOpacity
                 style={styles.menuItem}
-                onPress={() => handleNavigate("./quoteFix")}>
+                onPress={() => handleNavigate("/Admin/quoteFix")}
+              >
                 <Text style={styles.menuText}>עריכת ציטוט</Text>
               </TouchableOpacity>
 
@@ -89,7 +90,7 @@ const styles = StyleSheet.create({
     alignSelf: "flex-end",
     justifyContent: "center",
     width: "40%",
-    height: "100%",
+    height: "102%",
     borderWidth: 1,
     borderColor: "white",
     borderRadius: 1,

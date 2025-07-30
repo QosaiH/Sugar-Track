@@ -40,14 +40,18 @@ export default function Header() {
 
 const styles = StyleSheet.create({
   header: {
-    padding: 10,
     flexDirection: "row",
     justifyContent: "space-between",
     width: "100%",
     height: 75,
     alignItems: "center",
     backgroundColor: "white",
-    marginBottom: Platform.OS === "web" ? 0 : -48,
+    marginBottom: Platform.select({
+      ios: -35,
+      web: 0,
+      android: -48,
+    }),
+    paddingHorizontal: 10,
   },
   points: {
     color: "black",
