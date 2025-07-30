@@ -47,42 +47,32 @@ export default function Menu({ isVisible, onClose }) {
 
   return (
     <Modal transparent animationType="none" visible={isVisible}>
-      <View style={styles.overlay}>
-        <TouchableOpacity
-          style={styles.overlay}
-          onPress={onClose}
-          activeOpacity={1}>
-          <Animated.View
-            style={[styles.drawer, { transform: [{ translateX: slideAnim }] }]}>
-            <ImageBackground
-              source={require("../Images/Vector.png")}
-              style={backgroundStyle}>
-              <Text style={styles.title}>תפריט</Text>
+      <TouchableOpacity style={styles.overlay} onPress={onClose} activeOpacity={1}>
+        <Animated.View style={[styles.drawer, { transform: [{ translateX: slideAnim }] }]}> 
+          <ImageBackground
+            source={require("../Images/Vector.png")}
+            style={backgroundStyle}>
+            <Text style={styles.title}>תפריט</Text>
 
-              <TouchableOpacity style={styles.menuItem} onPress={onClose}>
-                <Link href="/ProfileEdit" asChild>
-                  <Text style={styles.menuText}>פרופיל</Text>
-                </Link>
-              </TouchableOpacity>
+            <TouchableOpacity style={styles.menuItem} onPress={() => { onClose(); router.push("/ProfileEdit"); }}>
+              <Text style={styles.menuText}>פרופיל</Text>
+            </TouchableOpacity>
 
-              <TouchableOpacity style={styles.menuItem} onPress={onClose}>
-                <Text style={styles.menuText}>התראות</Text>
-              </TouchableOpacity>
+            <TouchableOpacity style={styles.menuItem} onPress={() => { onClose(); router.push("/Notifications"); }}>
+              <Text style={styles.menuText}>התראות</Text>
+            </TouchableOpacity>
 
-              {/* פריט חדש לתפריט */}
-              <TouchableOpacity style={styles.menuItem} onPress={onClose}>
-                <Link href="/DiabetesRights" asChild>
-                  <Text style={styles.menuText}>זכויות חולי סוכרת</Text>
-                </Link>
-              </TouchableOpacity>
+            {/* פריט חדש לתפריט */}
+            <TouchableOpacity style={styles.menuItem} onPress={() => { onClose(); router.push("/DiabetesRights"); }}>
+              <Text style={styles.menuText}>זכויות חולי סוכרת</Text>
+            </TouchableOpacity>
 
-              <TouchableOpacity style={styles.menuItem} onPress={handleLogout}>
-                <Text style={styles.menuText}>יציאה</Text>
-              </TouchableOpacity>
-            </ImageBackground>
-          </Animated.View>
-        </TouchableOpacity>
-      </View>
+            <TouchableOpacity style={styles.menuItem} onPress={handleLogout}>
+              <Text style={styles.menuText}>יציאה</Text>
+            </TouchableOpacity>
+          </ImageBackground>
+        </Animated.View>
+      </TouchableOpacity>
     </Modal>
   );
 }
