@@ -45,6 +45,8 @@ export default function Forum({ userData }) {
 
   // For per-item comment input
   const [commentInputs, setCommentInputs] = useState({}); // { [itemId]: string }
+  // Debug notification message per item
+  const [notifDebug, setNotifDebug] = useState({}); // { [itemId]: string }
 
   // Mock current user
   const currentUser = {
@@ -140,6 +142,22 @@ export default function Forum({ userData }) {
     await updateDoc(itemRef, {
       comments: arrayUnion(newComment),
     });
+    let debugMsg = `התגובה נשלחה ע"י: ${currentUser.id} (${currentUser.name}) | בעל הפוסט: ${item.authorId}`;
+    // יצירת התראה לבעל הפוסט אם המגיב אינו הוא עצמו
+    if (item.authorId && item.authorId !== currentUser.id) {
+      await addDoc(collection(db, "notifications"), {
+        userId: item.authorId,
+        postId: item.id,
+        commentText: commentText,
+        commenterName: currentUser.name,
+        timestamp: new Date(),
+        read: false,
+      });
+      debugMsg += ` | התראה נוצרה עבור משתמש: ${item.authorId} בפוסט: ${item.id}`;
+    } else {
+      debugMsg += " | לא נוצרה התראה (המשתמש הוא בעל הפוסט)";
+    }
+    setNotifDebug(prev => ({ ...prev, [item.id]: debugMsg }));
     // Clear input for this item
     setCommentInputs((prev) => ({ ...prev, [item.id]: "" }));
   };
